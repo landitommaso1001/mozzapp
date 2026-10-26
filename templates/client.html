@@ -1,25 +1,25 @@
 {% extends 'layout.html' %} 
 {% block content %}
 
-<!-- Full-width User Banner -->
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: #ffffff; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 4px;">
-    <div>👤 Operatore: **{{ session['user_name'] }}**</div>
-    <div><a href="/logout" style="color: #ef4444; font-weight: 600;">🚪 Esci</a></div>
+<!-- Header User Data Strip -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #ffffff; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
+    <div style="font-size: 13px;">👤 Operatore: **{{ session['user_name'] }}**</div>
+    <div><a href="/logout" style="color: #ef4444; font-weight: 600; font-size: 12px;">🚪 Esci</a></div>
 </div>
 
-<!-- Main Split Container -->
-<div style="display: grid; grid-template-columns: 35% 65%; gap: 14px; align-items: start;">
+<!-- Asymmetrical Two Column Matrix Section -->
+<div style="display: flex; gap: 16px; align-items: start; width: 100%;">
 
-    <!-- LEFT COLUMN: Product Selector Form (35% Width) -->
-    <div style="display: flex; flex-direction: column; gap: 8px;">
+    <!-- LEFT COLUMN: Product Order Entry Form (35% Real Estate) -->
+    <div style="width: 35%; flex-shrink: 0;">
         
-        <!-- The form wraps around everything required for submitting a new order -->
-        <form method="POST" action="/submit_order" style="margin: 0; padding: 0;">
+        <!-- 3. FIXED: Form submission uses an empty action to dynamically post back to the calling route path safely -->
+        <form method="POST" action="">
             
             {% if is_admin %}
-            <div class="card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px; margin-bottom: 8px;">
-                <label style="font-weight: 600; display: block; margin-bottom: 4px; color: #0284c7;">A nome di quale Cliente stiamo ordinando?</label>
-                <select name="client_id" style="width: 100%; padding: 4px; font-size: 11px; border: 1px solid #e2e8f0; border-radius: 3px;">
+            <div class="card" style="margin-bottom: 10px;">
+                <label style="font-weight: 600; display: block; margin-bottom: 6px; color: #0284c7;">A nome di quale Cliente stiamo ordinando?</label>
+                <select name="client_id" style="width: 100%;">
                     <option value="">-- Vendita Diretta al Banco / Ordine Interno --</option>
                     {% for c in all_clients %}
                     <option value="{{ c.id }}">{{ c.name }} (📞 {{ c.phone }})</option>
@@ -28,27 +28,27 @@
             </div>
             {% endif %}
 
-            <div class="card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 10px;">
-                <h3 style="color: #0284c7; font-size: 12px; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">🛒 Nuovo Ordine Prodotti</h3>
+            <div class="card">
+                <h3 style="color: #0284c7; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">🛒 Nuovo Ordine Prodotti</h3>
                 
                 {% if products %}
-                <div style="max-height: 400px; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
                     {% for prod in products %}
-                    <div style="padding: 6px; border: 1px solid #f1f5f9; border-radius: 4px; background: #f8fafc;">
-                        <span style="font-weight: 600; display: block; margin-bottom: 4px; font-size: 11px; color: #0f172a;">{{ prod.name }}</span>
+                    <div style="padding: 6px 8px; border: 1px solid #f1f5f9; border-radius: 4px; background: #f8fafc;">
+                        <strong style="display: block; margin-bottom: 4px; color: #0f172a;">{{ prod.name }}</strong>
                         
                         {% if prod.parsed_formats %} 
                             {% for fmt in prod.parsed_formats %}
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; font-size: 10px;">
-                                <span style="color: #475569;">{{ fmt.name }} (€ {{"%.2f"|format(fmt.price)}})</span>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <span style="color: #475569; font-size: 12px;">{{ fmt.name }} (€ {{"%.2f"|format(fmt.price)}})</span>
                                 {% set key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
-                                <input type="number" name="qty_{{ key }}" value="{{ prefilled_items.get(key, 0) }}" min="0" style="width: 40px; padding: 2px; text-align: center; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 10px;">
+                                <input type="number" name="item_{{ key }}" value="{{ prefilled_items.get(key, 0) }}" min="0" style="width: 50px; text-align: center;">
                             </div>
                             {% endfor %} 
                         {% else %}
-                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px;">
-                                <span style="color: #475569;">Standard (€ {{"%.2f"|format(prod.price_per_kg)}}/Kg)</span>
-                                <input type="number" name="qty_{{ prod.name }}" value="{{ prefilled_items.get(prod.name, 0) }}" min="0" style="width: 40px; padding: 2px; text-align: center; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: #475569; font-size: 12px;">Standard (€ {{"%.2f"|format(prod.price_per_kg)}}/Kg)</span>
+                                <input type="number" name="item_{{ prod.name }}" value="{{ prefilled_items.get(prod.name, 0) }}" min="0" style="width: 50px; text-align: center;">
                             </div>
                         {% endif %}
                     </div>
@@ -56,62 +56,56 @@
                 </div>
                 {% endif %}
 
-                <div style="font-weight: 700; font-size: 12px; margin: 10px 0 6px 0; text-align: right; color: #0f172a;">
-                    Totale: € <span id="order-total-display">0.00</span>
+                <div style="font-weight: 700; font-size: 13px; margin: 12px 0 8px 0; text-align: right; color: #0f172a;">
+                    Totale: € 0.00
                 </div>
                 
-                <div style="display: flex; justify-content: space-between; gap: 6px; margin-top: 8px;">
-                    <button type="reset" class="btn" style="background: #e2e8f0; color: #334155; border: 1px solid #cbd5e1; flex: 1; padding: 4px; font-size: 10px;">🗑 Svuota</button>
-                    <button type="submit" class="btn" style="background: #10b981; color: white; border: none; flex: 2; padding: 4px; font-weight: 600; font-size: 10px;">Invia Ordine</button>
+                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                    <button type="submit" name="action" value="clear" style="background: #e2e8f0; color: #334155; flex: 1;">🗑 Svuota</button>
+                    <button type="submit" name="action" value="submit" style="background: #10b981; color: white; border: none; flex: 2; font-weight: 700;">Invia Ordine</button>
                 </div>
             </div>
         </form>
     </div>
 
-    <!-- RIGHT COLUMN: Order History Lists Grid (65% Width) -->
-    <div class="card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 10px;">
-        <h3 style="color: #0284c7; font-size: 12px; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
+    <!-- RIGHT COLUMN: Active Orders History Matrix (65% Real Estate) -->
+    <div class="card" style="width: 65%; flex-grow: 1;">
+        <h3 style="color: #0284c7; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
             📋 {% if is_admin %} Storico Ordini Filtrato {% else %} Storico Dei Tuoi Ordini {% endif %}
         </h3>
 
         {% if orders %}
-        <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
             {% for order in orders %}
-            <div style="border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px 8px; background: #ffffff; display: flex; flex-direction: column; gap: 4px;">
+            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; background: #ffffff;">
                 
-                <!-- Order Metadata Row -->
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; font-size: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; margin-bottom: 6px;">
                     <div>
-                        <strong style="color: #0f172a;">Ordine #{{ order.id }}</strong> 
-                        <span style="color: #64748b; margin-left: 4px;">({{ order.date }})</span>
+                        <span style="font-weight: 700; color: #0f172a;">ID: {{ order.id }}</span>
+                        <span style="color: #64748b; margin-left: 6px;">({{ order.date }})</span>
                     </div>
-                    <div style="display: flex; gap: 4px; align-items: center;">
-                        <span style="padding: 2px 5px; background: #f1f5f9; border-radius: 3px; font-weight: 500; color: #334155;">📦 {{ order.status }}</span>
-                        <span style="padding: 2px 5px; background: #e0f2fe; border-radius: 3px; font-weight: 500; color: #0369a1;">💰 {{ order.payment_status }}</span>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <span style="padding: 2px 6px; background: #f1f5f9; border-radius: 4px; font-weight: 500; font-size: 11px;">📦 {{ order.status }}</span>
+                        <span style="padding: 2px 6px; background: #e0f2fe; border-radius: 4px; font-weight: 500; font-size: 11px; color: #0369a1;">💰 {{ order.payment_status }}</span>
                         {% if order.time %}
-                        <span style="color: #64748b; font-size: 9px; margin-left: 2px;">⏱ {{ order.time }}</span>
+                        <span style="color: #64748b; font-size: 11px; margin-left: 2px;">⏱ {{ order.time }}</span>
                         {% endif %}
                     </div>
                 </div>
 
-                <!-- Products Summary Content String -->
-                <div style="color: #334155; font-size: 11px; padding: 2px 0;">
+                <div style="color: #334155; font-size: 13px; padding: 4px 0; font-family: monospace;">
                     {{ order.items }}
                 </div>
 
-                <!-- Order Action Bottom Line -->
-                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 4px; margin-top: 2px;">
-                    <div style="font-weight: 600; font-size: 11px; color: #0f172a;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 6px; margin-top: 6px;">
+                    <div style="font-weight: 700; font-size: 13px; color: #0f172a;">
                         Totale: <span style="color: #10b981;">€ {{ "%.2f"|format(order.total) }}</span>
                     </div>
-                    <div style="display: flex; gap: 4px;">
-                        <form method="POST" action="/repeat_order/{{ order.id }}" style="display: inline; margin: 0;">
-                            <button type="submit" class="btn" style="padding: 2px 6px; font-size: 10px; background: #f8fafc; border: 1px solid #cbd5e1;">🔄 Ripeti</button>
-                        </form>
+                    <div style="display: flex; gap: 6px;">
+                        <!-- Safe internal loop wrappers -->
+                        <a href="/repeat_order/{{ order.id }}" class="btn" style="padding: 3px 8px; font-size: 11px;">🔄 Ripeti</a>
                         {% if order.status == 'In Ricezione' %}
-                        <form method="POST" action="/cancel_order/{{ order.id }}" style="display: inline; margin: 0;">
-                            <button type="submit" class="btn" style="padding: 2px 6px; font-size: 10px; background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5;">❌ Annulla</button>
-                        </form>
+                        <a href="/cancel_order/{{ order.id }}" class="btn" style="background: #fee2e2; color: #ef4444; border-color: #fca5a5; padding: 3px 8px; font-size: 11px;">❌ Annulla</a>
                         {% endif %}
                     </div>
                 </div>
@@ -120,7 +114,7 @@
             {% endfor %}
         </div>
         {% else %}
-        <div style="color: #64748b; font-style: italic; padding: 8px 4px; text-align: center; font-size: 11px;">
+        <div style="color: #64748b; font-style: italic; padding: 12px 0; text-align: center;">
             Nessun ordine presente nello storico per questa selezione.
         </div>
         {% endif %}
