@@ -4,107 +4,223 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caseificio Vicedomini</title>
+    <!-- Google Fonts Inter for ultra-crisp small text readability -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f5f6f8; color: #333; line-height: 1.5; }
-        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        
-        .navbar { background: #ffffff; padding: 15px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-        .navbar-brand { font-size: 1.25rem; font-weight: bold; color: #b5835a; text-decoration: none; }
-        .nav-links { display: flex; gap: 15px; list-style: none; }
-        .nav-link { text-decoration: none; color: #555; font-weight: 500; padding: 6px 12px; border-radius: 6px; }
-        .nav-link:hover, .nav-link.active { color: #b5835a; background: #faf4ee; }
+        :root {
+            --bg-deep: #0f172a;        /* Deep midnight ocean foundation */
+            --card-deep: #1e293b;      /* Crisp sub-surface card blocks */
+            --text-bright: #f8fafc;    /* Highly readable primary values */
+            --text-muted: #94a3b8;     /* Muted subtext & metrics labels */
+            --ocean-blue: #38bdf8;     /* Vibrant electric blue for focus/links */
+            --border-subtle: #334155;  /* Clean hairline component dividers */
+            --action-green: #4ade80;   /* Confirmation text and success actions */
+            --danger-red: #f87171;     /* Delete / warning system accents */
+        }
 
-        .row { display: flex; flex-wrap: wrap; margin: 20px -10px 0 -10px; }
-        .col-12 { width: 100%; padding: 0 10px; }
-        .col-lg-7 { width: 58.33%; padding: 0 10px; }
-        .col-lg-5 { width: 41.66%; padding: 0 10px; }
-        .col-lg-8 { width: 66.66%; padding: 0 10px; }
-        .col-lg-4 { width: 33.33%; padding: 0 10px; }
-        @media (max-width: 992px) { .col-lg-7, .col-lg-5, .col-lg-8, .col-lg-4 { width: 100%; } }
+        /* 1. Global Scale-Down and Density Setup */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        .card { background: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e8ecf0; }
-        .border-top-dark { border-top: 5px solid #2d3748; }
-        .border-dashed { border: 2px dashed #cbd5e1; }
-        
-        .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem; }
-        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: #f8fafc; color: #475569; font-weight: 600; }
-        .table-dark th { background-color: #1e293b; color: #ffffff; }
+        body {
+            background-color: var(--bg-deep) !important;
+            color: var(--text-bright) !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+            font-size: 12px !important; /* Scaled down characters to fit maximum items */
+            line-height: 1.4;
+            padding: 8px 12px;
+        }
 
-        .form-control, .form-select { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; background-color: #fff; }
-        .form-control-sm, .form-select-sm { padding: 4px 8px; font-size: 0.875rem; }
-        .d-flex { display: flex; }
-        .align-items-center { align-items: center; }
-        .justify-content-between { justify-content: space-between; }
-        .justify-content-center { justify-content: center; }
-        .gap-2 { gap: 10px; }
+        a {
+            color: var(--ocean-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
         
-        .btn { display: inline-block; padding: 10px 20px; border-radius: 6px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; text-align: center; }
-        .btn-primary { background-color: #b5835a; color: white; width: 100%; }
-        .btn-dark { background-color: #1e293b; color: white; }
-        .btn-outline-dark { background-color: transparent; border: 1px solid #1e293b; color: #1e293b; }
-        .btn-outline-danger { background-color: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 2px 8px; font-size: 0.85rem; border-radius: 4px; }
-        .btn-outline-danger:hover { background-color: #ef4444; color: white; }
-        .btn-info { background-color: #0ea5e9; color: white; }
-        .btn-success { background-color: #10b981; color: white; text-decoration: none; padding: 4px 10px; font-size: 0.85rem; border-radius: 4px; }
+        a:hover {
+            text-decoration: underline;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--text-bright);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        h1 { font-size: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px; }
+        h2 { font-size: 14px; margin-top: 10px; color: var(--ocean-blue); }
+        h3 { font-size: 13px; margin-top: 8px; }
+        h4 { font-size: 12px; color: var(--text-muted); }
+
+        /* 2. Compact Navigation Header Layout */
+        header {
+            background: var(--card-deep);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 6px 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-bright);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 12px;
+        }
+
+        nav ul li a {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
         
-        .badge { display: inline-block; padding: 4px 8px; font-size: 0.75rem; font-weight: 700; border-radius: 4px; text-transform: uppercase; }
-        .bg-warning { background-color: #fef08a; color: #854d0e; }
-        .bg-info { background-color: #e0f2fe; color: #0369a1; }
-        .bg-secondary { background-color: #3b82f6; color: white; } /* Dynamic Blue Ready Color */
-        .bg-success { background-color: #d1fae5; color: #065f46; }
-        .bg-danger { background-color: #fee2e2; color: #991b1b; }
-        .bg-muted { background-color: #e2e8f0; color: #334155; }
-        
-        .flash-container { 
-    position: fixed; 
-    top: 30px; 
-    right: 30px; 
-    z-index: 9999; /* Forces the alert to float cleanly on top of all card sections */
-    width: 340px; 
-	}
-        .alert { 
-    padding: 16px 20px; 
-    border-radius: 10px; 
-    background: #ffffff; 
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); 
-    margin-bottom: 12px; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    border-left: 5px solid #10b981; 
-    font-size: 0.95rem;
-    font-weight: 500;
-	}
+        nav ul li a:hover {
+            background: var(--border-subtle);
+        }
+
+        /* 3. Global Framework Container Overrides */
+        main {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* High-density grid-cards for loop data (Orders, Products lists) */
+        .card, div[style*="border"], blockquote, fieldset {
+            background: var(--card-deep) !important;
+            border: 1px solid var(--border-subtle) !important;
+            border-radius: 6px !important;
+            padding: 6px 10px !important; /* Compressed padding spacing */
+            margin-bottom: 6px !important;
+            color: var(--text-bright) !important;
+        }
+
+        /* 4. Ultra-Compact High-Density Matrix Tables */
+        table, .table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            margin: 8px 0 !important;
+            background: var(--card-deep) !important;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        table th, table td {
+            padding: 4px 8px !important; /* Extremely tight compression vertical space */
+            border-bottom: 1px solid var(--border-subtle) !important;
+            text-align: left;
+            font-size: 11px !important;
+            color: var(--text-bright) !important;
+        }
+
+        table th {
+            background-color: rgba(51, 65, 85, 0.5) !important;
+            color: var(--ocean-blue) !important;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 10px !important;
+            letter-spacing: 0.5px;
+        }
+
+        table tr:last-child td {
+            border-bottom: none !important;
+        }
+
+        table tr:hover td {
+            background: rgba(56, 189, 248, 0.05) !important; /* Soft active row hover tracking */
+        }
+
+        /* 5. Compressed Forms, Input Fields, and Operational Action Buttons */
+        input, select, textarea {
+            background-color: var(--bg-deep) !important;
+            border: 1px solid var(--border-subtle) !important;
+            color: var(--text-bright) !important;
+            font-family: inherit !important;
+            font-size: 11px !important;
+            padding: 3px 6px !important; /* Tight internal sizing */
+            border-radius: 4px !important;
+            margin: 2px 0 6px 0 !important;
+            display: inline-block;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--ocean-blue) !important;
+            outline: none;
+        }
+
+        button, .btn {
+            font-family: inherit !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            padding: 3px 8px !important;
+            border-radius: 4px !important;
+            cursor: pointer;
+            border: none !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin: 2px;
+            transition: opacity 0.1s ease;
+        }
+
+        button:hover, .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Semantic Colors for Buttons and Status Text */
+        button[type="submit"], button:contains("Salva"), button:contains("Approva"), button[style*="green"] {
+            background-color: var(--action-green) !important;
+            color: #042f1a !important;
+        }
+
+        button:contains("Annulla"), button:contains("Rimuovi"), button:contains("Resetta") {
+            background-color: var(--danger-red) !important;
+            color: #4c0505 !important;
+        }
+
+        /* Utility helper classes for layout alignments */
+        hr {
+            border: 0;
+            border-top: 1px solid var(--border-subtle);
+            margin: 8px 0;
+        }
     </style>
 </head>
 <body>
 
-    <header class="navbar">
-        <div class="container d-flex justify-content-between align-items-center">
-            <a class="navbar-brand" href="/">🧀 Caseificio Vicedomini</a>
-            <nav>
-                <ul class="nav-links">
-                    <li><a class="nav-link {% if view == 'client' %}active{% endif %}" href="/">🛒 Vista Cliente</a></li>
-                    <li><a class="nav-link {% if view == 'admin' %}active{% endif %}" href="/admin">🏭 Vista Admin</a></li>
-                </ul>
-            </nav>
+    <header>
+        <div class="brand-title">
+            <span>🧀</span> Caseificio Vicedomini
         </div>
+        <nav>
+            <ul>
+                <li><a href="/?view=client">🛒 Vista Cliente</a></li>
+                <li><a href="/?view=admin">🏭 Vista Admin</a></li>
+            </ul>
+        </nav>
     </header>
 
-    
-
-    <main class="container">
+    <main>
         {% block content %}{% endblock %}
     </main>
 
-    <script>
-        setTimeout(function() {
-            var box = document.getElementById('flash-box');
-            if(box) box.style.display = 'none';
-        }, 4000);
-    </script>
 </body>
 </html>
