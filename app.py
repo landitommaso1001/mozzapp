@@ -1,6 +1,5 @@
 import os
-from flask import Flask
-from flask import redirect, url_for, session
+from flask import Flask, redirect, url_for, session
 from extensions import db
 from models import Product, Order, User
 from routes.client_routes import client_bp
@@ -18,12 +17,19 @@ app.config['ADMIN_NAME'] = "admin"
 
 db.init_app(app)
 
+# 1. FIXED: Enforce a global root interceptor route before loading blueprints
+@app.route('/')
+def global_root_index():
+    if 'user_id' not in session:
+        return redirect('/login')
+    if session.get('user_role') == 'admin':
+        return redirect('/admin/?active_tab=orders')
+    return redirect('/order')
+
 # Register Feature Packets
 app.register_blueprint(client_bp)
 app.register_blueprint(admin_bp, url_prefix='/admin')
 
-
-# 🌟 STEP 1: DEFINE THE FUNCTION FIRST SO PYTHON RECOGNIZES IT
 def seed_data():
     if User.query.count() == 0:
         admin_user = User(name="admin", phone="1234567890", role="admin")
@@ -38,22 +44,9 @@ def seed_data():
     if Order.query.count() == 0:
         db.session.commit()
 
-
-# 🌟 STEP 2: RUN THE EXECUTION BLOCK BELOW THE DEFINITION
 with app.app_context():
     db.create_all()
     seed_data()
-
-# Forces root traffic directly to the login portal screen
-@app.route('/')
-def index():
-    if 'user_id' not in session:
-        return redirect(url_for('client_bp.login')) # Adjust to match your login blueprint name if different
-    
-    # If already logged in, route them based on their profile role
-    if session.get('user_role') == 'admin':
-        return redirect('/admin/')
-    return redirect(url_for('client_bp.order_page')) # Adjust to your client view name
 
 if __name__ == '__main__':
     app.run(debug=True)
