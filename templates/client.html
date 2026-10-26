@@ -1,16 +1,16 @@
 {% extends 'layout.html' %} 
 {% block content %}
 
-<!-- Header User Strip -->
+<!-- Header Context Indicator Bar -->
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #ffffff; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
     <div style="font-size: 13px;">👤 User: <strong>{{ session['user_name'] }}</strong></div>
     <div><a href="/logout" style="color: #ef4444; font-weight: 600; font-size: 12px;">🚪 Esci</a></div>
 </div>
 
-<!-- Asymmetrical Grid Split -->
+<!-- Asymmetrical Core Layout Split Wrapper -->
 <div style="display: flex; gap: 16px; align-items: start; width: 100%;">
 
-    <!-- LEFT COLUMN: Product Selection (35% Width) -->
+    <!-- LEFT COLUMN: Product Picker Selection Frame (35% Screen Width) -->
     <div style="width: 35%; flex-shrink: 0;">
         <form method="POST" action="">
             {% if is_admin %}
@@ -39,12 +39,14 @@
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                                 <span style="color: #475569; font-size: 12px;">{{ fmt.name }} (€ {{"%.2f"|format(fmt.price)}})</span>
                                 {% set key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
+                                <!-- 3. FIXED: Restored exact name="item_" syntax variable property -->
                                 <input type="number" name="item_{{ key }}" value="{{ prefilled_items.get(key, 0) }}" min="0" style="width: 50px; text-align: center;">
                             </div>
                             {% endfor %} 
                         {% else %}
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <span style="color: #475569; font-size: 12px;">Standard (€ {{"%.2f"|format(prod.price_per_kg)}}/Kg)</span>
+                                <!-- 3. FIXED: Restored core item submission parameter name tag -->
                                 <input type="number" name="item_{{ prod.name }}" value="{{ prefilled_items.get(prod.name, 0) }}" min="0" style="width: 50px; text-align: center;">
                             </div>
                         {% endif %}
@@ -65,7 +67,7 @@
         </form>
     </div>
 
-    <!-- RIGHT COLUMN: Order History Logs (65% Width) -->
+    <!-- RIGHT COLUMN: Real-Time Order History Matrix Logging (65% Screen Width) -->
     <div class="card" style="width: 65%; flex-grow: 1;">
         <h3 style="color: #0284c7; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
             📋 {% if is_admin %} Storico Ordini Filtrato {% else %} Storico Dei Tuoi Ordini {% endif %}
@@ -102,7 +104,7 @@
             {% endfor %}
         </div>
         {% else %}
-        <div style="color: #64748b; font-style: italic; padding: 12px 0; text-align: center;">Nessun ordine presente.</div>
+        <div style="color: #64748b; font-style: italic; padding: 12px 0; text-align: center;">Nessun ordine presente nello storico per questa selezione.</div>
         {% endif %}
     </div>
 </div>
