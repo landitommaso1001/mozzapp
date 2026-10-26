@@ -19,12 +19,15 @@ db.init_app(app)
 
 # 1. FIXED: Enforce a global root interceptor route before loading blueprints
 @app.route('/')
+
 def global_root_index():
     if 'user_id' not in session:
         return redirect('/login')
+    
+    # If already logged in, route them based on their profile role using your native query view format
     if session.get('user_role') == 'admin':
         return redirect('/admin/?active_tab=orders')
-    return redirect('/order')
+    return redirect('/?view=client')
 
 # Register Feature Packets
 app.register_blueprint(client_bp)
