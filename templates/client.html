@@ -1,7 +1,7 @@
 {% extends 'layout.html' %} 
 {% block content %}
 
-<!-- Header User Data Strip -->
+<!-- Full-Width Context Info Line -->
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #ffffff; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
     <div style="font-size: 13px;">👤 Operatore: **{{ session['user_name'] }}**</div>
     <div><a href="/logout" style="color: #ef4444; font-weight: 600; font-size: 12px;">🚪 Esci</a></div>
@@ -10,10 +10,10 @@
 <!-- Asymmetrical Two Column Matrix Section -->
 <div style="display: flex; gap: 16px; align-items: start; width: 100%;">
 
-    <!-- LEFT COLUMN: Product Order Entry Form (35% Real Estate) -->
+    <!-- LEFT COLUMN: Product Picker Entry Form (35% Width) -->
     <div style="width: 35%; flex-shrink: 0;">
         
-        <!-- 3. FIXED: Form submission uses an empty action to dynamically post back to the calling route path safely -->
+        <!-- Empty action post target ensures it communicates with the calling route view -->
         <form method="POST" action="">
             
             {% if is_admin %}
@@ -42,12 +42,14 @@
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                                 <span style="color: #475569; font-size: 12px;">{{ fmt.name }} (€ {{"%.2f"|format(fmt.price)}})</span>
                                 {% set key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
+                                <!-- 🌟 FIXED: Restored name property variable tag directly -->
                                 <input type="number" name="item_{{ key }}" value="{{ prefilled_items.get(key, 0) }}" min="0" style="width: 50px; text-align: center;">
                             </div>
                             {% endfor %} 
                         {% else %}
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <span style="color: #475569; font-size: 12px;">Standard (€ {{"%.2f"|format(prod.price_per_kg)}}/Kg)</span>
+                                <!-- 🌟 FIXED: Restored standard item tracking input tag directly -->
                                 <input type="number" name="item_{{ prod.name }}" value="{{ prefilled_items.get(prod.name, 0) }}" min="0" style="width: 50px; text-align: center;">
                             </div>
                         {% endif %}
@@ -68,7 +70,7 @@
         </form>
     </div>
 
-    <!-- RIGHT COLUMN: Active Orders History Matrix (65% Real Estate) -->
+    <!-- RIGHT COLUMN: Active Order Logging Records Matrix (65% Width) -->
     <div class="card" style="width: 65%; flex-grow: 1;">
         <h3 style="color: #0284c7; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
             📋 {% if is_admin %} Storico Ordini Filtrato {% else %} Storico Dei Tuoi Ordini {% endif %}
@@ -102,7 +104,6 @@
                         Totale: <span style="color: #10b981;">€ {{ "%.2f"|format(order.total) }}</span>
                     </div>
                     <div style="display: flex; gap: 6px;">
-                        <!-- Safe internal loop wrappers -->
                         <a href="/repeat_order/{{ order.id }}" class="btn" style="padding: 3px 8px; font-size: 11px;">🔄 Ripeti</a>
                         {% if order.status == 'In Ricezione' %}
                         <a href="/cancel_order/{{ order.id }}" class="btn" style="background: #fee2e2; color: #ef4444; border-color: #fca5a5; padding: 3px 8px; font-size: 11px;">❌ Annulla</a>
