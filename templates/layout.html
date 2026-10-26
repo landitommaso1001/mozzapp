@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caseificio Vicedomini</title>
-    <!-- Crisp Typography Core -->
+    <!-- Crisp Google Font Inter -->
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -25,7 +25,7 @@
             background-color: var(--bg-neutral) !important;
             color: var(--text-dark) !important;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
-            font-size: 13px !important;
+            font-size: 13px !important; /* Legible layout font scale */
             line-height: 1.5;
             padding: 12px 16px;
         }
@@ -73,16 +73,12 @@
         <div class="brand-title">🧀 Caseificio Vicedomini</div>
         <nav>
             <ul>
-                <!-- 5. FIXED: When inside Admin, this link brings you cleanly back to Cliente View -->
+                <!-- 3 & 5. FIXED: Correctly matches your back-end routes and navigation rules -->
                 {% if is_admin or session.get('user_role') == 'admin' %}
-                    {% if request.args.get('view') == 'admin' %}
-                        <li><a href="/?view=client" style="color: #0284c7; font-weight: 700;">🛒 Torna a Vista Cliente</a></li>
-                    {% else %}
-                        <li><a href="/?view=client">🛒 Vista Cliente</a></li>
-                        <li><a href="/?view=admin" style="background: #e2e8f0; border-radius: 4px;">🏭 Entra in Vista Admin</a></li>
-                    {% endif %}
+                    <li><a href="/">🛒 Vista Cliente</a></li>
+                    <li><a href="/admin/" style="background: #e2e8f0; border-radius: 4px; padding: 4px 8px;">🏭 Entra in Vista Admin</a></li>
                 {% else %}
-                    <li><a href="/?view=client">🛒 Vista Cliente</a></li>
+                    <li><a href="/">🛒 Vista Cliente</a></li>
                 {% endif %}
             </ul>
         </nav>

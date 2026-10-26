@@ -1,18 +1,19 @@
 {% extends 'layout.html' %} 
 {% block content %}
 
-
+<!-- Header User Data Bar -->
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #ffffff; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
     <div style="font-size: 13px;">👤 User: <strong>{{ session['user_name'] }}</strong></div>
     <div><a href="/logout" style="color: #ef4444; font-weight: 600; font-size: 12px;">🚪 Chiudi Sessione</a></div>
 </div>
 
-<!-- Asymmetrical Grid Wrapper layout -->
+<!-- Asymmetrical Two Column Grid Framework -->
 <div style="display: flex; gap: 16px; align-items: start; width: 100%;">
 
-    <!-- LEFT COLUMN: Product Counter Picker Form (35% Width) -->
+    <!-- LEFT COLUMN: Product Counter Selector Form (35% Real Estate) -->
     <div style="width: 35%; flex-shrink: 0;">
         <form method="POST" action="">
+            
             {% if is_admin or session.get('user_role') == 'admin' %}
             <div class="card" style="margin-bottom: 10px;">
                 <label style="font-weight: 600; display: block; margin-bottom: 6px; color: #0284c7;">A nome di quale Cliente stiamo ordinando?</label>
@@ -38,16 +39,16 @@
                             {% for fmt in prod.parsed_formats %}
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                                 <span style="color: #475569; font-size: 12px;">{{ fmt.name }} (€ {{"%.2f"|format(fmt.price)}})</span>
-                                {% set key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
-                                <!-- 2. FIXED: Restored exact default input naming keys to save inputs directly -->
-                                <input type="number" name="item_{{ key }}" value="{{ prefilled_items.get(key, 0) }}" min="0" style="width: 55px; text-align: center; padding: 2px;">
+                                {% set key = prod.id ~ '_' ~ fmt.name %}
+                                <!-- 2. FIXED: Restored your native core input naming array syntax exactly -->
+                                <input type="number" name="qty_{{ key }}" value="{{ prefilled_items.get(key, 0) if prefilled_items else 0 }}" min="0" style="width: 55px; text-align: center; padding: 2px;">
                             </div>
                             {% endfor %} 
                         {% else %}
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <span style="color: #475569; font-size: 12px;">Standard (€ {{"%.2f"|format(prod.price_per_kg)}}/Kg)</span>
-                                <!-- 2. FIXED: Core input mappings synchronized to fix submission loops -->
-                                <input type="number" name="item_{{ prod.name }}" value="{{ prefilled_items.get(prod.name, 0) }}" min="0" style="width: 55px; text-align: center; padding: 2px;">
+                                <!-- 2. FIXED: Aligned names back to database product objects keys -->
+                                <input type="number" name="qty_{{ prod.id }}" value="{{ prefilled_items.get(prod.id|string, 0) if prefilled_items else 0 }}" min="0" style="width: 55px; text-align: center; padding: 2px;">
                             </div>
                         {% endif %}
                     </div>
@@ -67,7 +68,7 @@
         </form>
     </div>
 
-    <!-- RIGHT COLUMN: Production History Logs Array (65% Width) -->
+    <!-- RIGHT COLUMN: Historical Orders List Array Output (65% Real Estate) -->
     <div class="card" style="width: 65%; flex-grow: 1;">
         <h3 style="color: #0284c7; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
             📋 {% if is_admin or session.get('user_role') == 'admin' %} Storico Ordini Registrati {% else %} Storico Dei Tuoi Ordini {% endif %}
