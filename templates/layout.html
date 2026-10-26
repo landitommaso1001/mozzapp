@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caseificio Vicedomini</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f5f6f8; color: #333; line-height: 1.5; }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        
+        .navbar { background: #ffffff; padding: 15px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .navbar-brand { font-size: 1.25rem; font-weight: bold; color: #b5835a; text-decoration: none; }
+        .nav-links { display: flex; gap: 15px; list-style: none; }
+        .nav-link { text-decoration: none; color: #555; font-weight: 500; padding: 6px 12px; border-radius: 6px; }
+        .nav-link:hover, .nav-link.active { color: #b5835a; background: #faf4ee; }
+
+        .row { display: flex; flex-wrap: wrap; margin: 20px -10px 0 -10px; }
+        .col-12 { width: 100%; padding: 0 10px; }
+        .col-lg-7 { width: 58.33%; padding: 0 10px; }
+        .col-lg-5 { width: 41.66%; padding: 0 10px; }
+        .col-lg-8 { width: 66.66%; padding: 0 10px; }
+        .col-lg-4 { width: 33.33%; padding: 0 10px; }
+        @media (max-width: 992px) { .col-lg-7, .col-lg-5, .col-lg-8, .col-lg-4 { width: 100%; } }
+
+        .card { background: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e8ecf0; }
+        .border-top-dark { border-top: 5px solid #2d3748; }
+        .border-dashed { border: 2px dashed #cbd5e1; }
+        
+        .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem; }
+        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        th { background-color: #f8fafc; color: #475569; font-weight: 600; }
+        .table-dark th { background-color: #1e293b; color: #ffffff; }
+
+        .form-control, .form-select { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; background-color: #fff; }
+        .form-control-sm, .form-select-sm { padding: 4px 8px; font-size: 0.875rem; }
+        .d-flex { display: flex; }
+        .align-items-center { align-items: center; }
+        .justify-content-between { justify-content: space-between; }
+        .justify-content-center { justify-content: center; }
+        .gap-2 { gap: 10px; }
+        
+        .btn { display: inline-block; padding: 10px 20px; border-radius: 6px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; text-align: center; }
+        .btn-primary { background-color: #b5835a; color: white; width: 100%; }
+        .btn-dark { background-color: #1e293b; color: white; }
+        .btn-outline-dark { background-color: transparent; border: 1px solid #1e293b; color: #1e293b; }
+        .btn-outline-danger { background-color: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 2px 8px; font-size: 0.85rem; border-radius: 4px; }
+        .btn-outline-danger:hover { background-color: #ef4444; color: white; }
+        .btn-info { background-color: #0ea5e9; color: white; }
+        .btn-success { background-color: #10b981; color: white; text-decoration: none; padding: 4px 10px; font-size: 0.85rem; border-radius: 4px; }
+        
+        .badge { display: inline-block; padding: 4px 8px; font-size: 0.75rem; font-weight: 700; border-radius: 4px; text-transform: uppercase; }
+        .bg-warning { background-color: #fef08a; color: #854d0e; }
+        .bg-info { background-color: #e0f2fe; color: #0369a1; }
+        .bg-secondary { background-color: #3b82f6; color: white; } /* Dynamic Blue Ready Color */
+        .bg-success { background-color: #d1fae5; color: #065f46; }
+        .bg-danger { background-color: #fee2e2; color: #991b1b; }
+        .bg-muted { background-color: #e2e8f0; color: #334155; }
+        
+        .flash-container { 
+    position: fixed; 
+    top: 30px; 
+    right: 30px; 
+    z-index: 9999; /* Forces the alert to float cleanly on top of all card sections */
+    width: 340px; 
+	}
+        .alert { 
+    padding: 16px 20px; 
+    border-radius: 10px; 
+    background: #ffffff; 
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); 
+    margin-bottom: 12px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    border-left: 5px solid #10b981; 
+    font-size: 0.95rem;
+    font-weight: 500;
+	}
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand" href="/">🧀 Caseificio Vicedomini</a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a class="nav-link {% if view == 'client' %}active{% endif %}" href="/">🛒 Vista Cliente</a></li>
+                    <li><a class="nav-link {% if view == 'admin' %}active{% endif %}" href="/admin">🏭 Vista Admin</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        setTimeout(function() {
+            var box = document.getElementById('flash-box');
+            if(box) box.style.display = 'none';
+        }, 4000);
+    </script>
+</body>
+</html>

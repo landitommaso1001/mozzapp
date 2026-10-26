@@ -1,0 +1,22 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div style="max-width: 400px; margin: 60px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+    <h2 style="color: #2c3e50; text-align: center; margin-bottom: 25px;">📝 Registra Nuovo Account</h2>
+    <form method="POST" action="{{ url_for('client_bp.register') }}">
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; font-weight:bold; margin-bottom:5px;">Nome / Ragione Sociale:</label>
+            <input type="text" name="name" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; font-weight:bold; margin-bottom:5px;">Numero di Telefono:</label>
+            <input type="text" name="phone" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display:block; font-weight:bold; margin-bottom:5px;">Password:</label>
+            <input type="password" name="password" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+        </div>
+        <button type="submit" style="background:#1e293b; color:white; border:none; padding:12px; width:100%; font-weight:bold; border-radius:6px; cursor:pointer;">Crea Account</button>
+    </form>
+    <p style="text-align:center; margin-top:20px; font-size:0.9rem;">Hai già un account? <a href="{{ url_for('client_bp.login') }}" style="color:#1e293b; font-weight:bold;">Accedi</a></p>
+</div>
+{% endblock %}

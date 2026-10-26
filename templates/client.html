@@ -1,0 +1,125 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="client-dashboard-layout" style="display: flex; gap: 25px; padding: 20px; font-family: sans-serif; align-items: flex-start;">
+    
+    <!-- LEFT SIDEBAR: ORDER CREATION GRID WORKSPACE -->
+    <div class="order-creation-column" style="flex: 2; min-width: 450px;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e9ecef;">
+            <span>👤 Operatore: <strong>{{ session['user_name'] }}</strong></span>
+            <a href="{{ url_for('client_bp.logout') }}" style="background: #dc3545; color: white; text-decoration: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 0.9em;">🚪 Esci</a>
+        </div>
+
+        <form action="{{ url_for('client_bp.index') }}" method="POST" id="orderForm" style="background: white; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            
+            {% if is_admin %}
+            <div class="admin-order-selector" style="background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                <label for="admin_target_client_id" style="display: block; margin-bottom: 6px; font-weight: bold; color: #533f03;">A nome di quale Cliente stiamo ordinando?</label>
+                <!-- Onchange triggers automatic history reloading loop -->
+                <select name="admin_target_client_id" id="admin_target_client_id" onchange="reloadClientHistory(this.value);" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 1em; background: white;">
+                    <option value="0" {% if selected_client_id == 0 %}selected{% endif %}>-- Vendita Diretta al Banco / Ordine Interno --</option>
+                    {% for c in all_clients %}
+                        <option value="{{ c.id }}" {% if selected_client_id == c.id %}selected{% endif %}>{{ c.name }} (📞 {{ c.phone }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #0275d8; padding-bottom: 6px; margin-bottom: 15px;">🛒 Nuovo Ordine Prodotti</h3>
+
+            {% if products %}
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                {% for prod in products %}
+                    <div style="background: #fdfdfd; border: 1px solid #eee; padding: 12px; border-radius: 6px;">
+                        <h4 style="margin: 0 0 8px 0; color: #0275d8;">{{ prod.name }}</h4>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                        {% if prod.parsed_formats %}
+                            {% for fmt in prod.parsed_formats %}
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 6px 10px; border-radius: 4px; border: 1px solid #f0f0f0; font-size: 0.95em;">
+                                <span>{{ fmt.name }} (<span style="color: #28a745;">€ {{"%.2f"|format(fmt.price)}}</span>)</span>
+                                {% set key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
+                                <input type="number" name="qty_{{ prod.id }}_{{ fmt.name }}" min="0" value="{{ prefilled_items.get(key, 0) }}" style="width: 65px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 6px 10px; border-radius: 4px; border: 1px solid #f0f0f0; font-size: 0.95em;">
+                                <span>Standard (<span style="color: #28a745;">€ {{"%.2f"|format(prod.price_per_kg)}}/Kg</span>)</span>
+                                <input type="number" name="qty_{{ prod.id }}_default" min="0" value="{{ prefilled_items.get(prod.name, 0) }}" style="width: 65px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
+                            </div>
+                        {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #dee2e6; margin-top: 15px;">
+                <span style="font-weight: bold; font-size: 1.1em;">Totale: <span style="color: #28a745;">€ 0.00</span></span>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" onclick="document.getElementById('orderForm').reset();" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.9em;">🗑 Svuota</button>
+                    <button type="submit" style="background: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.95em;">Invia Ordine</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <!-- RIGHT SIDEBAR: REGISTERED CLIENT HISTORY DRILL DOWN LOG -->
+    <div class="history-display-column" style="flex: 1.2; min-width: 350px; background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); max-height: 85vh; overflow-y: auto;">
+        <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #6c757d; padding-bottom: 6px; margin-bottom: 15px;">
+            📋 
+            {% if is_admin %}
+                Storico Ordini Filtrato
+            {% else %}
+                Storico Dei Tuoi Ordini
+            {% endif %}
+        </h3>
+        
+        {% if orders %}
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+            {% for order in orders %}
+                <div style="border: 1px solid #ddd; padding: 12px; border-radius: 6px; background: white; font-size: 0.9em; {% if order.status == 'Annullato' %}opacity: 0.6;{% endif %}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <strong>{{ order.id }}</strong> <span style="color: #666; font-size: 0.85em;">({{ order.date }})</span>
+                    </div>
+                    
+                    <div style="margin-bottom: 8px; display: flex; gap: 4px; flex-wrap: wrap;">
+                        <span style="background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">📦 {{ order.status }}</span>
+                        <span style="background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">💰 {{ order.payment_status }}</span>
+                    </div>
+
+                    {% if order.time %}
+                        <p style="margin: 0 0 5px 0; font-size: 0.85em; color: #0275d8;">⏱ Consegna stimata: <strong>{{ order.time }}</strong></p>
+                    {% endif %}
+
+                    <p style="background: #f8f9fa; padding: 8px; border-radius: 4px; border-left: 2px solid #6c757d; margin: 5px 0; font-size: 0.9em; white-space: normal; word-break: break-word;">{{ order.items }}</p>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                        <span style="font-weight: bold;">Totale: € {{ "%.2f"|format(order.total) }}</span>
+                        <div style="display: flex; gap: 4px;">
+                            <a href="{{ url_for('client_bp.index', reorder=order.id, selected_client_id=selected_client_id) }}" style="background: #17a2b8; color: white; text-decoration: none; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">🔄 Ripeti</a>
+                            {% if order.status == 'In Ricezione' %}
+                                <form action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" method="POST" style="margin: 0;">
+                                    <button type="submit" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold; cursor: pointer;">❌ Annulla</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: #777; font-style: italic; margin: 0; font-size: 0.95em;">Nessun ordine presente nello storico per questa selezione.</p>
+        {% endif %}
+    </div>
+
+</div> <!-- Closes .client-dashboard-layout wrapper grid -->
+
+<!-- JAVASCRIPT RELOAD INTERCEPT LISTENER SCRIPT -->
+<script>
+function reloadClientHistory(clientId) {
+    // Dynamically inject parameter context value, forcing Jinja filter reloading instantly
+    window.location.href = "{{ url_for('client_bp.index') }}?selected_client_id=" + clientId;
+}
+</script>
+
+{% endblock %}

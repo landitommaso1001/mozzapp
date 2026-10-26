@@ -1,0 +1,314 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="admin-container" style="padding: 20px; font-family: sans-serif;">
+    
+    <h1 style="margin-top: 0; color: #333;">🏭 Controllo Caseificio</h1>
+
+    <!-- LINK HEADERS -->
+    <div class="tabs-nav-bar" style="display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
+        <a href="{{ url_for('admin.index', active_tab='orders') }}" class="tab-link {% if active_tab == 'orders' %}active{% endif %}" style="padding: 10px 15px; text-decoration: none; color: #333; font-weight: bold; border-radius: 4px; {% if active_tab == 'orders' %}background: #0275d8; color: white;{% endif %}">📋 Ordini Attivi</a>
+        <a href="{{ url_for('admin.index', active_tab='catalog') }}" class="tab-link {% if active_tab == 'catalog' %}active{% endif %}" style="padding: 10px 15px; text-decoration: none; color: #333; font-weight: bold; border-radius: 4px; {% if active_tab == 'catalog' %}background: #0275d8; color: white;{% endif %}">⚙ Configura Listino</a>
+        <a href="{{ url_for('admin.index', active_tab='analytics') }}" class="tab-link {% if active_tab == 'analytics' %}active{% endif %}" style="padding: 10px 15px; text-decoration: none; color: #333; font-weight: bold; border-radius: 4px; {% if active_tab == 'analytics' %}background: #0275d8; color: white;{% endif %}">📊 Resoconto Vendite</a>
+        <a href="{{ url_for('admin.index', active_tab='users_management') }}" class="tab-link {% if active_tab == 'users_management' %}active{% endif %}" style="padding: 10px 15px; text-decoration: none; color: #333; font-weight: bold; border-radius: 4px; {% if active_tab == 'users_management' %}background: #0275d8; color: white;{% endif %}">👥 Gestione Utenti & Sicurezza</a>
+    </div>
+
+    <!-- ORDERS VIEW -->
+    {% if active_tab == 'orders' %}
+    <div class="tab-content">
+        <h2>Elenco Ordini Ricevuti</h2>
+        {% if orders %}
+            {% for o in orders %}
+            <div class="order-card" style="border: 1px solid #ccc; padding: 15px; border-radius: 6px; margin-bottom: 15px; background: #fff;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <strong>{{ o.id }}</strong> - <span>{{ o.client }}</span>
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <span style="background: #eee; padding: 4px 8px; border-radius: 4px; font-size: 0.9em;">📦 Status: {{ o.status }}</span>
+                    <span style="background: #eee; padding: 4px 8px; border-radius: 4px; font-size: 0.9em; margin-left: 5px;">💰 Pagamento: {{ o.payment_status }}</span>
+                </div>
+                <p style="margin: 4px 0; font-size: 0.9em; color: #666;"><strong>Data:</strong> {{ o.date }} | **Ora Consegna:** {{ o.time or 'In Attesa' }}</p>
+                <p style="background: #f9f9f9; padding: 8px; border-radius: 4px; border-left: 3px solid #0275d8;">{{ o.items }}</p>
+                <p style="font-weight: bold; margin-bottom: 10px;">Totale: € {{ "%.2f"|format(o.total) }}</p>
+                
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    {% if o.status == 'In Ricezione' %}
+                        <form action="{{ url_for('admin.update_order_status', new_status='Confermato', order_id=o.id) }}" method="POST" style="margin: 0; display: flex; gap: 5px;">
+                            <input type="text" name="delivery_time" placeholder="Ora (es. 09:00)" required style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                            <button type="submit" style="background: #5cb85c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">✓ Approva</button>
+                        </form>
+                    {% elif o.status == 'Confermato' %}
+                        <form action="{{ url_for('admin.update_order_status', new_status='Pronto', order_id=o.id) }}" method="POST" style="margin: 0;">
+                            <button type="submit" style="background: #f0ad4e; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">🧀 Segna come Pronto</button>
+                        </form>
+                    {% elif o.status == 'Pronto' %}
+                        <form action="{{ url_for('admin.update_order_status', new_status='Consegnato', order_id=o.id) }}" method="POST" style="margin: 0;">
+                            <button type="submit" style="background: #0275d8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">🚚 Registra Consegna</button>
+                        </form>
+                    {% endif %}
+
+                    {% if o.payment_status != 'Pagato' and o.status != 'Annullato' %}
+                        <form action="{{ url_for('admin.mark_order_paid', order_id=o.id) }}" method="POST" style="margin: 0;">
+                            <button type="submit" style="background: #5bc0de; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">💰 Salda</button>
+                        </form>
+                    {% endif %}
+
+                    {% if o.status in ['In Ricezione', 'Confermato', 'Pronto'] %}
+                        <form action="{{ url_for('admin.cancel_order', order_id=o.id) }}" method="POST" style="margin: 0;">
+                            <button type="submit" style="background: #d9534f; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">❌ Annulla</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #666; font-style: italic;">Nessun ordine presente nel sistema.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- CATALOG VIEW -->
+    {% if active_tab == 'catalog' %}
+    <div class="tab-content">
+        <h2>⚙ Configurazione Listino Prodotti</h2>
+        {% if products %}
+            <form action="{{ url_for('admin.save_all_products') }}" method="POST">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background: #eee; text-align: left;">
+                            <th style="padding: 10px; border: 1px solid #ddd;">Nome Prodotto</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Prezzo Base / Kg (€)</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Formati & Overrides (Separati da virgola)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prod in products %}
+                        <tr>
+                            <input type="hidden" name="product_id[]" value="{{ prod.id }}">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><input type="text" name="name[]" value="{{ prod.name }}" required style="width: 95%; padding: 6px;"></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><input type="number" step="0.01" name="price[]" value="{{ '%.2f'|format(prod.price_per_kg) }}" required style="width: 90%; padding: 6px;"></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><input type="text" name="formats[]" value="{{ prod.sizes_raw or '' }}" style="width: 98%; padding: 6px;" placeholder="Es: Standard (200g), Piccolo:4.50"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="submit" style="background: #5cb85c; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer;">💾 Salva Tutte le Modifiche del Listino</button>
+            </form>
+
+            <h4 style="margin-top: 30px; color: #d9534f;">🗑 Eliminazione Rapida Prodotti</h4>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px;">
+                {% for prod in products %}
+                    <form action="{{ url_for('admin.delete_product', product_id=prod.id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Eliminare definitivamente questo prodotto?');">
+                        <button type="submit" style="background: #f2dede; color: #a94442; border: 1px solid #ebccd1; padding: 6px 12px; border-radius: 4px; cursor: pointer;">× {{ prod.name }}</button>
+                    </form>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: #666; font-style: italic;">Il listino è attualmente vuoto.</p>
+        {% endif %}
+
+        <div style="background: #f9f9f9; padding: 20px; border-radius: 6px; border: 1px solid #ddd; max-width: 500px;">
+            <h3 style="margin-top: 0;">➕ Aggiungi Prodotto al Listino</h3>
+            <form action="{{ url_for('admin.add_product') }}" method="POST" style="display: flex; flex-direction: column; gap: 10px;">
+                <input type="text" name="name" placeholder="Nome Prodotto" required style="padding: 8px;">
+                <input type="number" step="0.01" name="price" placeholder="Prezzo Base al Kg" required style="padding: 8px;">
+                <input type="text" name="formats" placeholder="Formati (Opzionale, es: 250g, 500g)" style="padding: 8px;">
+                <button type="submit" style="background: #0275d8; color: white; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer;">Aggiungi al Listino</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    <!-- ANALYTICS VIEW -->
+    {% if active_tab == 'analytics' %}
+    <div class="tab-content">
+        <h2>📊 Resoconto Finanziario & Riepilogo Produzione</h2>
+        
+        <div style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap;">
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 6px; flex: 1; min-width: 150px;">
+                <h4 style="margin: 0; color: #166534;">Volume Totale Affari</h4>
+                <p style="font-size: 1.5em; font-weight: bold; margin: 5px 0 0 0;">€ {{ "%.2f"|format(total_revenue) }}</p>
+            </div>
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 6px; flex: 1; min-width: 150px;">
+                <h4 style="margin: 0; color: #1e40af;">Entrate Incassate</h4>
+                <p style="font-size: 1.5em; font-weight: bold; margin: 5px 0 0 0;">€ {{ "%.2f"|format(paid_revenue) }}</p>
+            </div>
+            <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 6px; flex: 1; min-width: 150px;">
+                <h4 style="margin: 0; color: #991b1b;">Crediti Da Riscuotere</h4>
+                <p style="font-size: 1.5em; font-weight: bold; margin: 5px 0 0 0;">€ {{ "%.2f"|format(unpaid_revenue) }}</p>
+            </div>
+        </div>
+
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 6px; border: 1px solid #ddd; margin-bottom: 25px;">
+            <h4 style="margin-top: 0; margin-bottom: 10px;">🔍 Filtra Resoconto Vendite & Produzione</h4>
+            <form action="{{ url_for('admin.index') }}" method="GET" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+                <input type="hidden" name="active_tab" value="analytics">
+                <div>
+                    <label style="display: block; font-size: 0.85em;">Da data:</label>
+                    <input type="date" name="start_date" value="{{ start_date }}" style="padding: 6px;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85em;">A data:</label>
+                    <input type="date" name="end_date" value="{{ end_date }}" style="padding: 6px;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85em;">Prodotto:</label>
+                    <select name="product_name" style="padding: 6px;">
+                        <option value="">-- Tutti i Prodotti --</option>
+                        {% for p in products %}
+                            <option value="{{ p.name }}" {% if product_name == p.name %}selected{% endif %}>{{ p.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85em;">Formato:</label>
+                    <input type="text" name="format_name" value="{{ format_name }}" placeholder="Es: 250g" style="padding: 6px;">
+                </div>
+                <div>
+                    <button type="submit" style="background: #0275d8; color: white; border: none; padding: 7px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">Filtra</button>
+                    <a href="{{ url_for('admin.index', active_tab='analytics') }}" style="background: #ccc; color: #333; text-decoration: none; padding: 7px 15px; border-radius: 4px; font-weight: bold; margin-left: 5px; font-size: 0.9em;">Resetta</a>
+                </div>
+            </form>
+        </div>
+
+        <h3>📋 Totale Quantità Richieste per Singolo Formato</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px; background: white;">
+            <thead>
+                <tr style="background: #eee; text-align: left;">
+                    <th style="padding: 10px; border: 1px solid #ddd;">Descrizione Prodotto / Formato</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Quantità (Pezzi)</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Peso Totale (Kg)</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Valore (€)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if product_summary %}
+                    {% for name_key, metrics in product_summary.items() %}
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">🥛 {{ name_key }}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ metrics.qty }} pz</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ "%.2f"|format(metrics.kg) }} Kg</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">€ {{ "%.2f"|format(metrics.revenue) }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr style="background: #f5f5f5; font-weight: bold; border-top: 2px solid #333;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">⭐ TOTALE GENERALE FILTRATO</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">{{ grand_total_qty }} pz</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">{{ "%.2f"|format(grand_total_kg) }} Kg</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">€ {{ "%.2f"|format(grand_total_revenue) }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" style="padding: 15px; text-align: center; color: #777; font-style: italic;">Nessun dato corrispondente ai filtri impostati.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <div style="background: #fff5f5; border: 1px solid #feb2b2; padding: 20px; border-radius: 6px; margin-bottom: 25px;">
+            <h3 style="margin-top: 0; color: #c53030;">⚠ Zona Pericolo: Manutenzione Sistema</h3>
+            <p style="margin-bottom: 15px; color: #742a2a; font-size: 0.95em;">L'azione sottostante è irreversibile. Verranno eliminati permanentemente tutti gli ordini effettuati e i clienti.</p>
+            <form action="{{ url_for('admin.reset_database') }}" method="POST" onsubmit="return confirm('Sei assolutamente sicuro di resettare il database?');">
+                <button type="submit" style="background: #c53030; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer;">🗑 Resetta Database ed Azzera Storici</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    <!-- USER & DIRECTORY PRIVILEGES VIEW -->
+    {% if active_tab == 'users_management' %}
+    <div class="tab-content">
+        <h2>👥 Pannello Gestione Utenti & Credenziali</h2>
+        <hr style="margin-bottom: 25px; border: 0; border-top: 1px solid #ddd;">
+
+        <!-- ADMIN SECURITIES BLOCK -->
+        <div class="management-card admin-security-box" style="background: #fff8f8; border: 1px solid #ffcccc; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
+            <h3 style="color: #d9534f; margin-top: 0; margin-bottom: 15px;">🔒 Sicurezza Account Admin</h3>
+            <p style="margin-bottom: 15px;">Stai gestendo le credenziali di accesso per l'utente globale: <strong>{{ session['user_name'] }}</strong></p>
+            
+            <form action="{{ url_for('admin.change_admin_password') }}" method="POST" style="max-width: 400px; display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                    <label style="display:block; margin-bottom:6px; font-weight: bold;">Password Attuale Admin:</label>
+                    <input type="password" name="old_password" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:6px; font-weight: bold;">Nuova Password Admin:</label>
+                    <input type="password" name="new_password" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; box-sizing: border-box;">
+                </div>
+                <button type="submit" style="background: #d9534f; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 5px;">Aggiorna Password Admin</button>
+            </form>
+        </div>
+
+        <!-- NEW CLIENT REGISTRATION FORM -->
+        <div class="management-card" style="background: #f9f9f9; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e0e0e0;">
+            <h3 style="margin-top: 0; margin-bottom: 15px;">➕ Registra Nuovo Cliente</h3>
+            <form action="{{ url_for('admin.create_client') }}" method="POST" style="max-width: 400px; display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                    <label style="display:block; margin-bottom:6px; font-weight: bold;">Nome / Ragione Sociale Cliente:</label>
+                    <input type="text" name="name" placeholder="Es: Mario Rossi" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:6px; font-weight: bold;">Numero di Telefono (Login ID):</label>
+                    <input type="text" name="phone" placeholder="Es: 3331234567" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:6px; font-weight: bold;">Password Iniziale del Cliente:</label>
+                    <input type="password" name="password" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; box-sizing: border-box;">
+                </div>
+                <button type="submit" style="background: #0275d8; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 5px;">Salva Account Cliente</button>
+            </form>
+        </div>
+
+        <!-- CLIENT DB DIRECTORY LOG ROSTER -->
+        <div class="management-card" style="background: #fff; padding: 25px; border-radius: 8px; border: 1px solid #e0e0e0;">
+            <h3 style="margin-top: 0; margin-bottom: 15px;">📋 Registro Anagrafica Clienti</h3>
+            {% if clients %}
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="background: #f5f5f5;">
+                            <th style="padding: 12px; border-bottom: 2px solid #ddd; font-weight: bold;">Nome Cliente</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #ddd; font-weight: bold;">Recapito Telefonico</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #ddd; font-weight: bold;">Nuova Password (Lascia vuoto per non cambiare)</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #ddd; font-weight: bold; text-align: center;">Azioni Operative</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                            {% for c in clients %}
+        <tr style="border-bottom: 1px solid #eee;">
+            <!-- 🌟 THE FIX: The entire row shares a single clean form parameter structure -->
+            <form action="{{ url_for('admin.update_client', client_id=c.id) }}" method="POST" style="margin: 0;">
+                <td style="padding: 12px; vertical-align: middle;">
+                    <input type="text" name="name" value="{{ c.name }}" required style="padding: 8px; width: 90%; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </td>
+                <td style="padding: 12px; vertical-align: middle;">
+                    <input type="text" name="phone" value="{{ c.phone }}" required style="padding: 8px; width: 90%; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </td>
+                <td style="padding: 12px; vertical-align: middle;">
+    <!-- Added explicit minlength boundary security attributes and visual placeholder hint guidelines -->
+    <input type="text" 
+           name="password" 
+           placeholder="Nuova Password (min. 4 caratteri)" 
+           minlength="4"
+           autocomplete="new-password" 
+           style="padding: 8px; width: 90%; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: monospace;">
+</td>
+                <td style="padding: 12px; text-align: center; vertical-align: middle; display: flex; gap: 6px; justify-content: center; align-items: center;">
+                    <button type="submit" style="background: #28a745; color: white; border: none; padding: 8px 14px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.9em; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">💾 Salva</button>
+            </form> <!-- form closes inside row before deletion container -->
+
+                    <!-- Separate dedicated standalone removal execution form -->
+                    <form action="{{ url_for('admin.delete_client', client_id=c.id) }}" method="POST" style="margin: 0; display: inline-block;" onsubmit="return confirm('Rimuovere definitivamente l\'account di {{ c.name }}? Gli storici ordini verranno mantenuti anonimi.');">
+                        <button type="submit" style="background: #ffcccc; color: #b91c1c; border: 1px solid #fca5a5; padding: 8px 14px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.9em; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">🗑 Rimuovi</button>
+                    </form>
+                </td>
+        </tr>
+    {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p style="color: #777; font-style: italic; margin: 0;">Nessun cliente registrato nel database al momento.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
