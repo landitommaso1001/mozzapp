@@ -7,32 +7,23 @@ from routes.admin_routes import admin_bp
 
 app = Flask(__name__)
 
-# 🌟 PRODUCTION UPGRADE: Secure keys from environment variables
-app.secret_key = os.environ.get("SECRET_KEY", "fallback_local_secret_mozzarella")
-
-# 🌟 POSTGRESQL SWITCH: Read Neon link online, fall back to SQLite locally
-default_db_uri = 'sqlite:///dairy.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", default_db_uri)
+# Production configuration keys
+app.secret_key = os.environ.get("SECRET_KEY", "fallback_secret_mozzarella")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "sqlite:///dairy.db")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Static Admin Credentials Configuration
 app.config['ADMIN_PHONE'] = os.environ.get("ADMIN_PHONE", "3755234419")
 app.config['ADMIN_PASSWORD'] = os.environ.get("ADMIN_PASSWORD", "3755234419") 
 app.config['ADMIN_NAME'] = "admin"
 
 db.init_app(app)
 
-# 🌟 PRODUCTION STABILIZATION: Run table creation outside of the __main__ block
-with app.app_context():
-    db.create_all()
-    seed_data()
-
 # Register Feature Packets
 app.register_blueprint(client_bp)
 app.register_blueprint(admin_bp, url_prefix='/admin')
 
+
+# 🌟 STEP 1: DEFINE THE FUNCTION FIRST SO PYTHON RECOGNIZES IT
 def seed_data():
-    # Seed default Admin account if no users exist
     if User.query.count() == 0:
         admin_user = User(name="Direttore Caseificio", phone="3331234567", role="admin")
         admin_user.set_password("adminpass123")
@@ -48,6 +39,13 @@ def seed_data():
         o2 = Order(id="ORD-120", client="Mario Rossi", date="2026-10-10", items="3x Burrata Fresca", total=54.0, status="Consegnato", payment_status="Pagato", time="09:00")
         db.session.add_all([o1, o2])
     db.session.commit()
+
+
+# 🌟 STEP 2: RUN THE EXECUTION BLOCK BELOW THE DEFINITION
+with app.app_context():
+    db.create_all()
+    seed_data()
+
 
 if __name__ == '__main__':
     app.run(debug=True)
