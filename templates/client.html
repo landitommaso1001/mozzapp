@@ -1,29 +1,24 @@
 {% extends 'layout.html' %} 
 {% block content %}
 
-<!-- Status Session Top Strip -->
+<!-- Header User Data Bar -->
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #ffffff; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
-    <div style="font-size: 13px;">
-        👤 Operatore: <strong>{{ session['user_name'] }}</strong> 
-        {% if is_admin or session.get('user_role') == 'admin' %}
-            <span style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-left: 6px;">ADMIN PROFILE</span>
-        {% endif %}
-    </div>
+    <div style="font-size: 13px;">👤 Operatore: <strong>{{ session['user_name'] }}</strong></div>
     <div><a href="/logout" style="color: #ef4444; font-weight: 600; font-size: 12px;">🚪 Esci</a></div>
 </div>
 
-<!-- Asymmetrical Two Column Layout Grid Matrix Split -->
+<!-- Asymmetrical Grid Layout Framework Split -->
 <div style="display: flex; gap: 16px; align-items: start; width: 100%;">
 
-    <!-- LEFT COLUMN: Product Input Collection Matrix (35% Width Space Allocation) -->
+    <!-- LEFT COLUMN: Product Counter Selector Form (35% Width Space) -->
     <div style="width: 35%; flex-shrink: 0;">
         <form method="POST" action="">
             
-            <!-- 2. FIXED: Isolates client selections to make sure orders don't bleed into overlapping profiles -->
+            <!-- 2. FIXED: Isolates the picker panel specifically for the Admin user account configuration -->
             {% if is_admin or session.get('user_role') == 'admin' %}
             <div class="card" style="margin-bottom: 10px;">
                 <label style="font-weight: 600; display: block; margin-bottom: 6px; color: #0284c7;">A nome di quale Cliente stiamo ordinando?</label>
-                <select name="client_id" onchange="this.form.submit()" style="width: 100%; padding: 4px; font-size: 12px; font-weight: 500;">
+                <select name="client_id" onchange="this.form.submit()" style="width: 100%; padding: 4px; font-size: 12px;">
                     <option value="">-- Vendita Diretta al Banco / Ordine Interno --</option>
                     {% for c in all_clients %}
                     <option value="{{ c.id }}" {% if selected_client_id == c.id %}selected{% endif %}>{{ c.name }} (📞 {{ c.phone }})</option>
@@ -72,10 +67,10 @@
         </form>
     </div>
 
-    <!-- RIGHT COLUMN: Order History Summary Matrix Layout (65% Width Space Allocation) -->
+    <!-- RIGHT COLUMN: Order History Logging Tables List (65% Real Estate) -->
     <div class="card" style="width: 65%; flex-grow: 1;">
         <h3 style="color: #0284c7; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
-            📋 {% if is_admin or session.get('user_role') == 'admin' %} Storico Ordini Amministratore {% else %} Storico Dei Tuoi Ordini {% endif %}
+            📋 {% if is_admin or session.get('user_role') == 'admin' %} Storico Ordini Registrati {% else %} Storico Dei Tuoi Ordini {% endif %}
         </h3>
 
         {% if orders %}
@@ -98,9 +93,14 @@
                         Totale: <span style="color: #10b981;">€ {{ "%.2f"|format(order.total) }}</span>
                     </div>
                     <div style="display: flex; gap: 6px;">
-                        <a href="/repeat_order/{{ order.id }}" class="btn" style="padding: 3px 8px; font-size: 11px;">🔄 Ripeti</a>
+                        <!-- 1. FIXED: Forms submit directly to active blueprint URLs to resolve the 404 error -->
+                        <form method="POST" action="/repeat_order/{{ order.id }}" style="display: inline; margin: 0; padding: 0;">
+                            <button type="submit" style="padding: 3px 8px; font-size: 11px; margin: 0;">🔄 Ripeti</button>
+                        </form>
                         {% if order.status == 'In Ricezione' %}
-                        <a href="/cancel_order/{{ order.id }}" class="btn" style="background: #fee2e2; color: #ef4444; border-color: #fca5a5; padding: 3px 8px; font-size: 11px;">❌ Annulla</a>
+                        <form method="POST" action="/cancel_order/{{ order.id }}" style="display: inline; margin: 0; padding: 0;">
+                            <button type="submit" style="background: #fee2e2; color: #ef4444; border-color: #fca5a5; padding: 3px 8px; font-size: 11px; margin: 0;">❌ Annulla</button>
+                        </form>
                         {% endif %}
                     </div>
                 </div>
@@ -108,7 +108,7 @@
             {% endfor %}
         </div>
         {% else %}
-        <div style="color: #64748b; font-style: italic; padding: 12px 0; text-align: center;">Nessun ordine presente nello storico per questa selezione.</div>
+        <div style="color: #64748b; font-style: italic; padding: 12px 0; text-align: center;">Nessun ordine presente nello storico.</div>
         {% endif %}
     </div>
 </div>
