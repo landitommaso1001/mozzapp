@@ -17,7 +17,7 @@ app.config['ADMIN_NAME'] = "admin"
 
 db.init_app(app)
 
-# Register Feature Packets - Keep native query management intact
+# Register Feature Packets natively to enforce core login parameters
 app.register_blueprint(client_bp)
 app.register_blueprint(admin_bp, url_prefix='/admin')
 

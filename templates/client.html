@@ -4,19 +4,19 @@
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #ffffff; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
     <div style="font-size: 13px;">👤 User: <strong>{{ session['user_name'] }}</strong></div>
-    <div><a href="/logout" style="color: #ef4444; font-weight: 600; font-size: 12px;">🚪 Esci</a></div>
+    <div><a href="/logout" style="color: #ef4444; font-weight: 600; font-size: 12px;">🚪 Chiudi Sessione</a></div>
 </div>
 
-<!-- Side-by-Side Asymmetrical Column Wrapper -->
+<!-- Asymmetrical Grid Wrapper layout -->
 <div style="display: flex; gap: 16px; align-items: start; width: 100%;">
 
-    <!-- LEFT COLUMN: Product Picker Section (35% Width) -->
+    <!-- LEFT COLUMN: Product Counter Picker Form (35% Width) -->
     <div style="width: 35%; flex-shrink: 0;">
         <form method="POST" action="">
-            {% if is_admin %}
+            {% if is_admin or session.get('user_role') == 'admin' %}
             <div class="card" style="margin-bottom: 10px;">
                 <label style="font-weight: 600; display: block; margin-bottom: 6px; color: #0284c7;">A nome di quale Cliente stiamo ordinando?</label>
-                <select name="client_id" style="width: 100%;">
+                <select name="client_id" style="width: 100%; padding: 4px; font-size: 12px;">
                     <option value="">-- Vendita Diretta al Banco / Ordine Interno --</option>
                     {% for c in all_clients %}
                     <option value="{{ c.id }}">{{ c.name }} (📞 {{ c.phone }})</option>
@@ -39,15 +39,15 @@
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                                 <span style="color: #475569; font-size: 12px;">{{ fmt.name }} (€ {{"%.2f"|format(fmt.price)}})</span>
                                 {% set key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
-                                <!-- 🌟 FIXED: Input names restored to your original prefilled dictionary structures -->
-                                <input type="number" name="{{ key }}" value="{{ prefilled_items.get(key, 0) }}" min="0" style="width: 50px; text-align: center;">
+                                <!-- 2. FIXED: Restored exact default input naming keys to save inputs directly -->
+                                <input type="number" name="item_{{ key }}" value="{{ prefilled_items.get(key, 0) }}" min="0" style="width: 55px; text-align: center; padding: 2px;">
                             </div>
                             {% endfor %} 
                         {% else %}
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <span style="color: #475569; font-size: 12px;">Standard (€ {{"%.2f"|format(prod.price_per_kg)}}/Kg)</span>
-                                <!-- 🌟 FIXED: Mapped standard fields cleanly to native loops to guarantee order persistence -->
-                                <input type="number" name="{{ prod.name }}" value="{{ prefilled_items.get(prod.name, 0) }}" min="0" style="width: 50px; text-align: center;">
+                                <!-- 2. FIXED: Core input mappings synchronized to fix submission loops -->
+                                <input type="number" name="item_{{ prod.name }}" value="{{ prefilled_items.get(prod.name, 0) }}" min="0" style="width: 55px; text-align: center; padding: 2px;">
                             </div>
                         {% endif %}
                     </div>
@@ -67,10 +67,10 @@
         </form>
     </div>
 
-    <!-- RIGHT COLUMN: Active Order History Matrix Logging (65% Width) -->
+    <!-- RIGHT COLUMN: Production History Logs Array (65% Width) -->
     <div class="card" style="width: 65%; flex-grow: 1;">
         <h3 style="color: #0284c7; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
-            📋 {% if is_admin %} Storico Ordini Filtrato {% else %} Storico Dei Tuoi Ordini {% endif %}
+            📋 {% if is_admin or session.get('user_role') == 'admin' %} Storico Ordini Registrati {% else %} Storico Dei Tuoi Ordini {% endif %}
         </h3>
 
         {% if orders %}
@@ -79,16 +79,15 @@
             <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; background: #ffffff;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; margin-bottom: 6px;">
                     <div>
-                        <span style="font-weight: 700; color: #0f172a;">ID: {{ order.id }}</span>
+                        <span style="font-weight: 700; color: #0f172a;">ID Ordine: #{{ order.id }}</span>
                         <span style="color: #64748b; margin-left: 6px;">({{ order.date }})</span>
                     </div>
                     <div style="display: flex; gap: 6px; align-items: center;">
-                        <span style="padding: 2px 6px; background: #f1f5f9; border-radius: 4px;">📦 {{ order.status }}</span>
-                        <span style="padding: 2px 6px; background: #e0f2fe; border-radius: 4px; color: #0369a1;">💰 {{ order.payment_status }}</span>
-                        {% if order.time %}⏱ {{ order.time }}{% endif %}
+                        <span style="padding: 2px 6px; background: #f1f5f9; border-radius: 4px; font-size: 11px;">📦 {{ order.status }}</span>
+                        <span style="padding: 2px 6px; background: #e0f2fe; border-radius: 4px; font-size: 11px; color: #0369a1;">💰 {{ order.payment_status }}</span>
                     </div>
                 </div>
-                <div style="color: #334155; font-size: 13px; padding: 4px 0;">{{ order.items }}</div>
+                <div style="color: #334155; font-size: 13px; padding: 4px 0; font-family: monospace;">{{ order.items }}</div>
                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 6px; margin-top: 6px;">
                     <div style="font-weight: 700; font-size: 13px; color: #0f172a;">
                         Totale: <span style="color: #10b981;">€ {{ "%.2f"|format(order.total) }}</span>
@@ -104,7 +103,7 @@
             {% endfor %}
         </div>
         {% else %}
-        <div style="color: #64748b; font-style: italic; padding: 12px 0; text-align: center;">Nessun ordine presente.</div>
+        <div style="color: #64748b; font-style: italic; padding: 12px 0; text-align: center;">Nessun ordine presente nello storico.</div>
         {% endif %}
     </div>
 </div>

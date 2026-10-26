@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caseificio Vicedomini</title>
+    <!-- Crisp Typography Core -->
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -72,10 +73,16 @@
         <div class="brand-title">🧀 Caseificio Vicedomini</div>
         <nav>
             <ul>
-                <li><a href="/?view=client">🛒 Vista Cliente</a></li>
-                <!-- 🌟 FIXED: Role security protection wrapper stops regular clients from accessing Admin menu links -->
-                {% if session.get('user_role') == 'admin' or is_admin %}
-                <li><a href="/?view=admin">🏭 Vista Admin</a></li>
+                <!-- 5. FIXED: When inside Admin, this link brings you cleanly back to Cliente View -->
+                {% if is_admin or session.get('user_role') == 'admin' %}
+                    {% if request.args.get('view') == 'admin' %}
+                        <li><a href="/?view=client" style="color: #0284c7; font-weight: 700;">🛒 Torna a Vista Cliente</a></li>
+                    {% else %}
+                        <li><a href="/?view=client">🛒 Vista Cliente</a></li>
+                        <li><a href="/?view=admin" style="background: #e2e8f0; border-radius: 4px;">🏭 Entra in Vista Admin</a></li>
+                    {% endif %}
+                {% else %}
+                    <li><a href="/?view=client">🛒 Vista Cliente</a></li>
                 {% endif %}
             </ul>
         </nav>
