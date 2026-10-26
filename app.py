@@ -17,8 +17,13 @@ app.config['ADMIN_NAME'] = "admin"
 
 db.init_app(app)
 
-# 1. FIXED: Enforce a global root interceptor route before loading blueprints
-@app.route('/')
+@app.errorhandler(404)
+def handle_routing_fallbacks(e):
+    if 'user_id' not in session:
+        return redirect('/login')
+    if session.get('user_role') == 'admin':
+        return redirect('/admin/?active_tab=orders')
+    return redirect('/?view=client')
 
 def global_root_index():
     if 'user_id' not in session:
