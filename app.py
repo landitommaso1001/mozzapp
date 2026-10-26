@@ -22,6 +22,10 @@ app.config['ADMIN_NAME'] = "admin"
 
 db.init_app(app)
 
+# 🌟 PRODUCTION STABILIZATION: Run table creation outside of the __main__ block
+with app.app_context():
+    db.create_all()
+    seed_data()
 
 # Register Feature Packets
 app.register_blueprint(client_bp)
@@ -46,7 +50,4 @@ def seed_data():
     db.session.commit()
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        seed_data()
     app.run(debug=True)
