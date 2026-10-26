@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caseificio Vicedomini</title>
-    <!-- Crisp Google Font Inter -->
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -25,7 +24,7 @@
             background-color: var(--bg-neutral) !important;
             color: var(--text-dark) !important;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
-            font-size: 13px !important; /* Legible standard font dimensions */
+            font-size: 13px !important;
             line-height: 1.5;
             padding: 12px 16px;
         }
@@ -73,9 +72,11 @@
         <div class="brand-title">🧀 Caseificio Vicedomini</div>
         <nav>
             <ul>
-                <!-- 🌟 FIXED: Native layout menu parameters fully synchronized -->
                 <li><a href="/?view=client">🛒 Vista Cliente</a></li>
-                <li><a href="/admin/?active_tab=orders">🏭 Vista Admin</a></li>
+                <!-- 🌟 FIXED: Role security protection wrapper stops regular clients from accessing Admin menu links -->
+                {% if session.get('user_role') == 'admin' or is_admin %}
+                <li><a href="/?view=admin">🏭 Vista Admin</a></li>
+                {% endif %}
             </ul>
         </nav>
     </header>

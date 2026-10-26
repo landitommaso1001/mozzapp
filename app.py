@@ -1,5 +1,5 @@
 import os
-from flask import Flask, redirect, url_for, session
+from flask import Flask
 from extensions import db
 from models import Product, Order, User
 from routes.client_routes import client_bp
@@ -17,24 +17,7 @@ app.config['ADMIN_NAME'] = "admin"
 
 db.init_app(app)
 
-@app.errorhandler(404)
-def handle_routing_fallbacks(e):
-    if 'user_id' not in session:
-        return redirect('/login')
-    if session.get('user_role') == 'admin':
-        return redirect('/admin/?active_tab=orders')
-    return redirect('/?view=client')
-
-def global_root_index():
-    if 'user_id' not in session:
-        return redirect('/login')
-    
-    # If already logged in, route them based on their profile role using your native query view format
-    if session.get('user_role') == 'admin':
-        return redirect('/admin/?active_tab=orders')
-    return redirect('/?view=client')
-
-# Register Feature Packets
+# Register Feature Packets - Keep native query management intact
 app.register_blueprint(client_bp)
 app.register_blueprint(admin_bp, url_prefix='/admin')
 
