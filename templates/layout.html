@@ -10,18 +10,18 @@
     <link href="https://googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* Modern High-Density Light Palette */
         :root {
-            --bg-deep: #0f172a;        /* Deep midnight ocean foundation */
-            --card-deep: #1e293b;      /* Crisp sub-surface card blocks */
-            --text-bright: #f8fafc;    /* Highly readable primary values */
-            --text-muted: #94a3b8;     /* Muted subtext & metrics labels */
-            --ocean-blue: #38bdf8;     /* Vibrant electric blue for focus/links */
-            --border-subtle: #334155;  /* Clean hairline component dividers */
-            --action-green: #4ade80;   /* Confirmation text and success actions */
-            --danger-red: #f87171;     /* Delete / warning system accents */
+            --bg-clean: #ffffff;        /* Pure white paper canvas */
+            --bg-neutral: #f8fafc;     /* Soft ash grey for structural blocks */
+            --text-dark: #0f172a;      /* Deep slate for razor-sharp characters */
+            --text-muted: #64748b;     /* Slate grey for secondary indicators */
+            --ocean-blue: #0284c7;     /* High-contrast crisp blue for primary headers/links */
+            --border-hairline: #e2e8f0;/* Tight, clean border separation lines */
+            --action-green: #10b981;   /* Confirmed status color */
+            --danger-red: #ef4444;     /* Operational hazard/cancel button color */
         }
 
-        /* 1. Global Scale-Down and Density Setup */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -29,11 +29,11 @@
         }
 
         body {
-            background-color: var(--bg-deep) !important;
-            color: var(--text-bright) !important;
+            background-color: var(--bg-neutral) !important;
+            color: var(--text-dark) !important;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-            font-size: 12px !important; /* Scaled down characters to fit maximum items */
-            line-height: 1.4;
+            font-size: 11px !important; /* Scaled down characters for maximal data footprint */
+            line-height: 1.3;
             padding: 8px 12px;
         }
 
@@ -42,123 +42,122 @@
             text-decoration: none;
             font-weight: 500;
         }
-        
-        a:hover {
-            text-decoration: underline;
-        }
 
         h1, h2, h3, h4 {
-            color: var(--text-bright);
+            color: var(--text-dark);
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
-        h1 { font-size: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px; }
-        h2 { font-size: 14px; margin-top: 10px; color: var(--ocean-blue); }
-        h3 { font-size: 13px; margin-top: 8px; }
-        h4 { font-size: 12px; color: var(--text-muted); }
+        h1 { font-size: 14px; border-bottom: 1px solid var(--border-hairline); padding-bottom: 4px; margin-bottom: 10px; }
+        h2 { font-size: 12px; color: var(--ocean-blue); text-transform: uppercase; letter-spacing: 0.3px; }
+        h3 { font-size: 11px; margin-top: 4px; }
 
-        /* 2. Compact Navigation Header Layout */
+        /* Compact Header Navbar */
         header {
-            background: var(--card-deep);
-            border: 1px solid var(--border-subtle);
-            border-radius: 6px;
-            padding: 6px 12px;
-            margin-bottom: 12px;
+            background: var(--bg-clean);
+            border: 1px solid var(--border-hairline);
+            border-radius: 4px;
+            padding: 4px 10px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
 
         .brand-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
-            color: var(--text-bright);
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            color: var(--text-dark);
         }
 
         nav ul {
             list-style: none;
             display: flex;
-            gap: 12px;
+            gap: 8px;
         }
 
         nav ul li a {
-            font-size: 11px;
+            font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 2px 6px;
-            border-radius: 4px;
+            letter-spacing: 0.3px;
+            padding: 2px 4px;
+            border-radius: 3px;
         }
         
         nav ul li a:hover {
-            background: var(--border-subtle);
+            background: var(--bg-neutral);
         }
 
-        /* 3. Global Framework Container Overrides */
+        /* 🌟 ASYMMETRICAL SPLIT-SCREEN ENGINE FOR THE ORDER VIEW */
+        /* Targets pages with h3 or blocks running product selections alongside order lists */
         main {
             max-width: 100%;
             margin: 0 auto;
         }
 
-        /* High-density grid-cards for loop data (Orders, Products lists) */
-        .card, div[style*="border"], blockquote, fieldset {
-            background: var(--card-deep) !important;
-            border: 1px solid var(--border-subtle) !important;
-            border-radius: 6px !important;
-            padding: 6px 10px !important; /* Compressed padding spacing */
-            margin-bottom: 6px !important;
-            color: var(--text-bright) !important;
+        /* Auto-activates side-by-side splitting if there are consecutive operational blocks */
+        main:has(h3:contains("Nuovo Ordine")) {
+            display: grid;
+            grid-template-columns: 35% 65%; /* 35% Left Side for selection, 65% Right Side for orders */
+            gap: 12px;
+            align-items: start;
         }
 
-        /* 4. Ultra-Compact High-Density Matrix Tables */
+        /* Forces full width title blocks inside the grid structure */
+        main:has(h3:contains("Nuovo Ordine")) > h3:first-of-type,
+        main:has(h3:contains("Nuovo Ordine")) > div:first-of-type:not(form) {
+            grid-column: span 2;
+        }
+
+        /* Keeps standard styling intact for other application views */
+        .card, div[style*="border"], blockquote, fieldset, form {
+            background: var(--bg-clean) !important;
+            border: 1px solid var(--border-hairline) !important;
+            border-radius: 4px !important;
+            padding: 6px 8px !important;
+            margin-bottom: 6px !important;
+        }
+
+        /* High-Density Tables configuration */
         table, .table {
             width: 100% !important;
             border-collapse: collapse !important;
-            margin: 8px 0 !important;
-            background: var(--card-deep) !important;
-            border-radius: 6px;
-            overflow: hidden;
+            margin: 4px 0 !important;
+            background: var(--bg-clean) !important;
         }
 
         table th, table td {
-            padding: 4px 8px !important; /* Extremely tight compression vertical space */
-            border-bottom: 1px solid var(--border-subtle) !important;
+            padding: 3px 6px !important; /* Extremely compressed row height padding */
+            border-bottom: 1px solid var(--border-hairline) !important;
             text-align: left;
             font-size: 11px !important;
-            color: var(--text-bright) !important;
         }
 
         table th {
-            background-color: rgba(51, 65, 85, 0.5) !important;
-            color: var(--ocean-blue) !important;
+            background-color: var(--bg-neutral) !important;
+            color: var(--text-muted) !important;
             font-weight: 600;
             text-transform: uppercase;
-            font-size: 10px !important;
-            letter-spacing: 0.5px;
-        }
-
-        table tr:last-child td {
-            border-bottom: none !important;
+            font-size: 9px !important;
+            letter-spacing: 0.3px;
         }
 
         table tr:hover td {
-            background: rgba(56, 189, 248, 0.05) !important; /* Soft active row hover tracking */
+            background: #f1f5f9 !important; /* Highlighting for row scanning */
         }
 
-        /* 5. Compressed Forms, Input Fields, and Operational Action Buttons */
+        /* Smaller input fields and action execution buttons */
         input, select, textarea {
-            background-color: var(--bg-deep) !important;
-            border: 1px solid var(--border-subtle) !important;
-            color: var(--text-bright) !important;
+            background-color: var(--bg-clean) !important;
+            border: 1px solid var(--border-hairline) !important;
+            color: var(--text-dark) !important;
             font-family: inherit !important;
-            font-size: 11px !important;
-            padding: 3px 6px !important; /* Tight internal sizing */
-            border-radius: 4px !important;
-            margin: 2px 0 6px 0 !important;
-            display: inline-block;
+            font-size: 10px !important;
+            padding: 2px 4px !important;
+            border-radius: 3px !important;
+            margin-bottom: 4px !important;
         }
 
         input:focus, select:focus {
@@ -168,39 +167,28 @@
 
         button, .btn {
             font-family: inherit !important;
-            font-size: 11px !important;
+            font-size: 10px !important;
             font-weight: 600 !important;
-            padding: 3px 8px !important;
-            border-radius: 4px !important;
+            padding: 2px 6px !important;
+            border-radius: 3px !important;
             cursor: pointer;
-            border: none !important;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            margin: 2px;
-            transition: opacity 0.1s ease;
+            border: 1px solid var(--border-hairline) !important;
+            background: var(--bg-neutral);
+            color: var(--text-dark);
+            margin: 1px;
         }
 
         button:hover, .btn:hover {
-            opacity: 0.9;
+            background: #e2e8f0;
         }
 
-        /* Semantic Colors for Buttons and Status Text */
-        button[type="submit"], button:contains("Salva"), button:contains("Approva"), button[style*="green"] {
-            background-color: var(--action-green) !important;
-            color: #042f1a !important;
-        }
-
-        button:contains("Annulla"), button:contains("Rimuovi"), button:contains("Resetta") {
-            background-color: var(--danger-red) !important;
-            color: #4c0505 !important;
-        }
-
-        /* Utility helper classes for layout alignments */
-        hr {
-            border: 0;
-            border-top: 1px solid var(--border-subtle);
-            margin: 8px 0;
+        /* Operational Colors for Instant Context Mapping */
+        .status-badge {
+            font-size: 9px;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-weight: 600;
+            text-transform: uppercase;
         }
     </style>
 </head>
@@ -208,7 +196,7 @@
 
     <header>
         <div class="brand-title">
-            <span>🧀</span> Caseificio Vicedomini
+            🧀 Caseificio Vicedomini
         </div>
         <nav>
             <ul>
