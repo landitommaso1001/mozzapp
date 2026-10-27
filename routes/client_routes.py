@@ -222,14 +222,16 @@ def cancel_order(order_id):
         
     if order.status == 'In Ricezione':
         order.status = 'Annullato'
+        order.payment_status = 'Annullato' # Fix contradiction state too
         db.session.commit()
-        flash(f"Ordine {order_id} annullato.", "success")
+        flash(f"Ordine {order_id} annullato con successo.", "success")
     else:
         flash("Impossibile annullare l'ordine.", "error")
         
     if is_admin:
-        selected_client = request.args.get('selected_client_id', '0')
+        # 🌟 FIXED: Pull state context cleanly from hidden payload fields
+        selected_client = request.form.get('hidden_selected_client_id', '0')
         return redirect(url_for('client_bp.index', selected_client_id=selected_client))
-    
+        
     return redirect(url_for('client_bp.index'))
 
