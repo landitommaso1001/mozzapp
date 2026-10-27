@@ -152,8 +152,9 @@ def index():
         flash(f"Ordine inoltrato con successo per '{order_client_name}'!", 'success')
         
         if is_admin:
-            return redirect(url_for('admin.index', active_tab='orders'))
+           return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
         return redirect(url_for('client_bp.index'))
+
 
     # Reorder functionality parser
     prefilled_items = {}
@@ -220,5 +221,7 @@ def cancel_order(order_id):
         flash("Impossibile annullare l'ordine.", "error")
         
     if is_admin:
-        return redirect(url_for('admin.index', active_tab='orders'))
+        selected_client = request.args.get('selected_client_id', '0')
+        return redirect(url_for('client_bp.index', selected_client_id=selected_client))
     return redirect(url_for('client_bp.index'))
+
