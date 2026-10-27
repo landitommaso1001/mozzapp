@@ -105,14 +105,15 @@
                         <!-- 🌟 FIXED 2: Ripeti button appends the ?reorder= ID to populate values on reload -->
                         <a href="{{ url_for('client_bp.index') }}?reorder={{ order.id }}&selected_client_id={{ selected_client_id }}" class="btn" style="padding: 3px 8px; font-size: 11px; background: #f8fafc; border: 1px solid #cbd5e1; display: inline-block;">🔄 Ripeti</a>
                         
-                        <!-- 🌟 FIXED 3: Annulla uses a safe POST form that reaches your exact subpath endpoint configuration -->
-                        {% if order.status == 'In Ricezione' %}
-<form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="display: inline; margin: 0; padding: 0;">
-    <!-- Safely pass down selection variables inside form values -->
+                        
+{% if order.status == 'In Ricezione' %}
+<form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="display: inline; margin: 0; padding: 0;" onsubmit="return confirm('Sei sicuro di voler annullare questo ordine?');">
+    <!-- Pass selection parameters cleanly via hidden field instead of the URL string query -->
     <input type="hidden" name="hidden_selected_client_id" value="{{ selected_client_id }}">
-    <button type="submit" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 3px 8px; font-size: 11px; margin: 0;">❌ Annulla</button>
+    <button type="submit" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 3px 8px; font-size: 11px; margin: 0; cursor: pointer; border-radius: 4px;">❌ Annulla</button>
 </form>
-                       {% endif %}                        
+{% endif %}
+                       
                     </div>
                 </div>
             </div>
