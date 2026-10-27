@@ -328,7 +328,7 @@ def reset_orders():
     except Exception as e:
         db.session.rollback()
         flash(f"Errore durante lo svuotamento degli ordini: {str(e)}", "danger")
-    return redirect(url_for('admin.index', active_tab='analytics'))
+    return redirect(url_for('admin.index', active_tab='reset_data'))
 
 @admin_bp.route('/database/reset_clients', methods=['POST'])
 @admin_required
@@ -341,7 +341,7 @@ def reset_clients():
     except Exception as e:
         db.session.rollback()
         flash(f"Errore durante l'eliminazione dei clienti: {str(e)}", "danger")
-    return redirect(url_for('admin.index', active_tab='analytics'))
+    return redirect(url_for('admin.index', active_tab='reset_data'))
 
 
 @admin_bp.route('/profile/admin/password', methods=['POST'])
