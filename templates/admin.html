@@ -16,51 +16,96 @@
     <!-- ORDERS VIEW -->
     {% if active_tab == 'orders' %}
     <div class="tab-content">
-        <h2>Elenco Ordini Ricevuti</h2>
+        
+        <!-- Quick Status Filter Sub-Navigation Roster Matrix -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; background: #f1f5f9; padding: 8px; border-radius: 6px;">
+            <a href="{{ url_for('admin.index', active_tab='orders', client_id=current_client_id) }}" style="padding: 6px 12px; border-radius: 4px; font-weight: 600; font-size: 12px; {% if not current_status %}background: #0275d8; color: white;{% else %}background: white; color: #475569; border: 1px solid #cbd5e1;{% endif %}">📋 Tutti</a>
+            <a href="{{ url_for('admin.index', active_tab='orders', status='In Ricezione', client_id=current_client_id) }}" style="padding: 6px 12px; border-radius: 4px; font-weight: 600; font-size: 12px; {% if current_status == 'In Ricezione' %}background: #ef4444; color: white;{% else %}background: white; color: #b91c1c; border: 1px solid #fca5a5;{% endif %}">⚠️ Da Approvare</a>
+            <a href="{{ url_for('admin.index', active_tab='orders', status='Confermato', client_id=current_client_id) }}" style="padding: 6px 12px; border-radius: 4px; font-weight: 600; font-size: 12px; {% if current_status == 'Confermato' %}background: #f0ad4e; color: white;{% else %}background: white; color: #d97706; border: 1px solid #fde68a;{% endif %}">🧀 Da Produrre</a>
+            <a href="{{ url_for('admin.index', active_tab='orders', status='Pronto', client_id=current_client_id) }}" style="padding: 6px 12px; border-radius: 4px; font-weight: 600; font-size: 12px; {% if current_status == 'Pronto' %}background: #10b981; color: white;{% else %}background: white; color: #059669; border: 1px solid #a7f3d0;{% endif %}">🚚 Pronti / In Consegna</a>
+            <a href="{{ url_for('admin.index', active_tab='orders', status='Consegnato', client_id=current_client_id) }}" style="padding: 6px 12px; border-radius: 4px; font-weight: 600; font-size: 12px; {% if current_status == 'Consegnato' %}background: #64748b; color: white;{% else %}background: white; color: #475569; border: 1px solid #cbd5e1;{% endif %}">✓ Consegnati</a>
+            <a href="{{ url_for('admin.index', active_tab='orders', status='Annullato', client_id=current_client_id) }}" style="padding: 6px 12px; border-radius: 4px; font-weight: 600; font-size: 12px; {% if current_status == 'Annullato' %}background: #0f172a; color: white;{% else %}background: white; color: #475569; border: 1px solid #cbd5e1;{% endif %}">❌ Annullati</a>
+        </div>
+
+        <!-- Quick Client Context Switcher Dropdown Toolbar Layer -->
+        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; background: white; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
+            <label style="font-weight: 600; font-size: 12px; color: #334155;">👤 Filtra per Cliente:</label>
+            <select onchange="location.href=this.value;" style="padding: 4px 8px; font-size: 12px;">
+                <option value="{{ url_for('admin.index', active_tab='orders', status=current_status) }}">-- Tutti i Clienti / Tutto il Sistema --</option>
+                <option value="{{ url_for('admin.index', active_tab='orders', status=current_status, client_id='banco') }}" {% if current_client_id == 'banco' %}selected{% endif %}>Vendita Diretta / Banco</option>
+                {% for c in clients %}
+                <option value="{{ url_for('admin.index', active_tab='orders', status=current_status, client_id=c.id) }}" {% if current_client_id == str(c.id) or current_client_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Highly Compact Actionable Matrix Table Layout Sheet -->
         {% if orders %}
-            {% for o in orders %}
-            <div class="order-card" style="border: 1px solid #ccc; padding: 15px; border-radius: 6px; margin-bottom: 15px; background: #fff;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <strong>{{ o.id }}</strong> - <span>{{ o.client }}</span>
-                </div>
-                <div style="margin-bottom: 8px;">
-                    <span style="background: #eee; padding: 4px 8px; border-radius: 4px; font-size: 0.9em;">📦 Status: {{ o.status }}</span>
-                    <span style="background: #eee; padding: 4px 8px; border-radius: 4px; font-size: 0.9em; margin-left: 5px;">💰 Pagamento: {{ o.payment_status }}</span>
-                </div>
-                <p style="margin: 4px 0; font-size: 0.9em; color: #666;"><strong>Data:</strong> {{ o.date }} | **Ora Consegna:** {{ o.time or 'In Attesa' }}</p>
-                <p style="background: #f9f9f9; padding: 8px; border-radius: 4px; border-left: 3px solid #0275d8;">{{ o.items }}</p>
-                <p style="font-weight: bold; margin-bottom: 10px;">Totale: € {{ "%.2f"|format(o.total) }}</p>
-                
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    {% if o.status == 'In Ricezione' %}
-                        <form action="{{ url_for('admin.update_order_status', new_status='Confermato', order_id=o.id) }}" method="POST" style="margin: 0; display: flex; gap: 5px;">
-                            <input type="text" name="delivery_time" placeholder="Ora (es. 09:00)" required style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
-                            <button type="submit" style="background: #5cb85c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">✓ Approva</button>
-                        </form>
-                    {% elif o.status == 'Confermato' %}
-                        <form action="{{ url_for('admin.update_order_status', new_status='Pronto', order_id=o.id) }}" method="POST" style="margin: 0;">
-                            <button type="submit" style="background: #f0ad4e; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">🧀 Segna come Pronto</button>
-                        </form>
-                    {% elif o.status == 'Pronto' %}
-                        <form action="{{ url_for('admin.update_order_status', new_status='Consegnato', order_id=o.id) }}" method="POST" style="margin: 0;">
-                            <button type="submit" style="background: #0275d8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">🚚 Registra Consegna</button>
-                        </form>
-                    {% endif %}
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse; margin: 0 !important;">
+                <thead>
+                    <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                        <th style="padding: 8px; text-align: left; font-size: 11px;">ID Ordine</th>
+                        <th style="padding: 8px; text-align: left; font-size: 11px;">Cliente</th>
+                        <th style="padding: 8px; text-align: left; font-size: 11px;">Data / Ora Consegna</th>
+                        <th style="padding: 8px; text-align: left; font-size: 11px;">Articoli Ordinati</th>
+                        <th style="padding: 8px; text-align: right; font-size: 11px;">Totale</th>
+                        <th style="padding: 8px; text-align: center; font-size: 11px;">Stato / Azioni Operative Veloci</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in orders %}
+                    <tr style="border-bottom: 1px solid #f1f5f9; hover:background-color: #f8fafc;">
+                        <td style="padding: 8px; font-weight: bold; color: #0f172a; font-size: 12px;">{{ o.id }}</td>
+                        <td style="padding: 8px; color: #334155; font-size: 12px;">{{ o.client }}</td>
+                        <td style="padding: 8px; font-size: 11px; color: #64748b;">
+                            <div>📅 {{ o.date }}</div>
+                            {% if o.time %}<div style="color: #0284c7; font-weight: 600;">⏰ {{ o.time }}</div>{% else %}<div style="color: #94a3b8; font-style: italic;">In Attesa</div>{% endif %}
+                        </td>
+                        <td style="padding: 8px; font-family: monospace; font-size: 11px; color: #0f172a; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ o.items }}">
+                            {{ o.items }}
+                        </td>
+                        <td style="padding: 8px; text-align: right; font-weight: 700; color: #10b981; font-size: 12px;">€ {{ "%.2f"|format(o.total) }}</td>
+                        <td style="padding: 8px; vertical-align: middle;">
+                            <div style="display: flex; gap: 4px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                                
+                                <!-- Status Badges -->
+                                <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; background: #f1f5f9; color: #475569;">📦 {{ o.status }}</span>
+                                <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; {% if o.payment_status == 'Pagato' %}background:#d1fae5; color:#065f46;{% else %}background:#fee2e2; color:#991b1b;{% endif %}">💰 {{ o.payment_status }}</span>
 
-                    {% if o.payment_status != 'Pagato' and o.status != 'Annullato' %}
-                        <form action="{{ url_for('admin.mark_order_paid', order_id=o.id) }}" method="POST" style="margin: 0;">
-                            <button type="submit" style="background: #5bc0de; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">💰 Salda</button>
-                        </form>
-                    {% endif %}
+                                <!-- Action Triggers -->
+                                {% if o.status == 'In Ricezione' %}
+                                    <form action="{{ url_for('admin.update_order_status', new_status='Confermato', order_id=o.id) }}?status={{ current_status }}&client_id={{ current_client_id }}" method="POST" style="margin: 0; display: flex; gap: 2px;">
+                                        <input type="text" name="delivery_time" placeholder="Ora (es. 09:00)" required style="padding: 2px 4px !important; font-size: 11px !important; width: 80px;">
+                                        <button type="submit" style="background: #5cb85c; color: white; padding: 2px 6px !important; font-size: 11px !important;">✓ Approva</button>
+                                    </form>
+                                {% elif o.status == 'Confermato' %}
+                                    <form action="{{ url_for('admin.update_order_status', new_status='Pronto', order_id=o.id) }}?status={{ current_status }}&client_id={{ current_client_id }}" method="POST" style="margin: 0;">
+                                        <button type="submit" style="background: #f0ad4e; color: white; padding: 2px 6px !important; font-size: 11px !important;">🧀 Pronto</button>
+                                    </form>
+                                {% elif o.status == 'Pronto' %}
+                                    <form action="{{ url_for('admin.update_order_status', new_status='Consegnato', order_id=o.id) }}?status={{ current_status }}&client_id={{ current_client_id }}" method="POST" style="margin: 0;">
+                                        <button type="submit" style="background: #0275d8; color: white; padding: 2px 6px !important; font-size: 11px !important;">🚚 Consegnato</button>
+                                    </form>
+                                {% endif %}
 
-                    {% if o.status in ['In Ricezione', 'Confermato', 'Pronto'] %}
-                        <form action="{{ url_for('admin.cancel_order', order_id=o.id) }}" method="POST" style="margin: 0;">
-                            <button type="submit" style="background: #d9534f; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">❌ Annulla</button>
-                        </form>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
+                                {% if o.payment_status != 'Pagato' and o.status != 'Annullato' %}
+                                    <form action="{{ url_for('admin.mark_order_paid', order_id=o.id) }}?status={{ current_status }}&client_id={{ current_client_id }}" method="POST" style="margin: 0;">
+                                        <button type="submit" style="background: #5bc0de; color: white; padding: 2px 6px !important; font-size: 11px !important;">💰 Salda</button>
+                                    </form>
+                                {% endif %}
+
+                                {% if o.status in ['In Ricezione', 'Confermato', 'Pronto'] %}
+                                    <form action="{{ url_for('admin.cancel_order', order_id=o.id) }}?status={{ current_status }}&client_id={{ current_client_id }}" method="POST" style="margin: 0;" onsubmit="return confirm('Annullare l\'ordine {{ o.id }}?');">
+                                        <button type="submit" style="background: #d9534f; color: white; padding: 2px 6px !important; font-size: 11px !important;">❌ Annulla</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
         {% else %}
             <p style="color: #666; font-style: italic;">Nessun ordine presente nel sistema.</p>
         {% endif %}
