@@ -136,7 +136,7 @@ def index():
                     if not filter_format or filter_format.lower() in full_name.lower():
                         fmt_matched = True
                         
-                    if prod_matched and fmt_matched:
+                    if prod_matched:
                         computed_weight = parse_format_weight_kg(full_name, qty)
                         unit_price = parse_admin_format_price(full_name, matched_prod_obj)
                         computed_revenue = unit_price * qty
