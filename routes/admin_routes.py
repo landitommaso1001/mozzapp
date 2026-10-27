@@ -22,11 +22,11 @@ def admin_required(f):
 def index():
     active_tab = request.args.get('active_tab', 'orders')
     
-    # 🌟 UPDATED: Date Range Navigation View Parameters
+    # Date Range Navigation View Parameters
     filter_status = request.args.get('status', '')  
     filter_client_id = request.args.get('client_id', '') 
-    filter_date_from = request.args.get('date_from', '') # Start Date Constraint
-    filter_date_to = request.args.get('date_to', '')     # End Date Constraint
+    filter_date_from = request.args.get('date_from', '') 
+    filter_date_to = request.args.get('date_to', '')     
     
     filter_start_date = request.args.get('start_date', '')
     filter_end_date = request.args.get('end_date', '')
@@ -40,7 +40,7 @@ def index():
     if filter_status:
         order_query = order_query.filter_by(status=filter_status)
         
-    # 🌟 FIXED & UPDATED: Securely inject structural Date Range filters into SQL
+    # Inject structural Date Range filters into SQL
     if filter_date_from:
         order_query = order_query.filter(Order.date >= filter_date_from)
     if filter_date_to:
@@ -175,7 +175,7 @@ def index():
         catalog_map=catalog_map,
         current_status=filter_status,      
         current_client_id=filter_client_id,
-        current_date_from=filter_date_from, # Bind down state variables
+        current_date_from=filter_date_from, 
         current_date_to=filter_date_to
     )
 
@@ -277,6 +277,12 @@ def update_order_status():
     order_id = request.args.get('order_id')
     new_status = request.args.get('new_status')
     
+    # 🌟 FIXED: Safely capture query states at runtime to avoid UnboundLocalError
+    status = request.args.get('status', '')
+    client_id = request.args.get('client_id', '')
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
+    
     order = Order.query.filter_by(id=order_id).first_or_404()
     try:
         if new_status == 'Confermato':
@@ -287,12 +293,20 @@ def update_order_status():
     except Exception as e:
         db.session.rollback()
         flash(f"Errore: {str(e)}", "danger")
-    return redirect(url_for('admin.index', active_tab='orders'))
+        
+    return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=date_from, date_to=date_to))
 
 @admin_bp.route('/order/mark_paid', methods=['POST'])
 @admin_required
 def mark_order_paid():
     order_id = request.args.get('order_id')
+    
+    # 🌟 FIXED: Safely capture query states at runtime to avoid UnboundLocalError
+    status = request.args.get('status', '')
+    client_id = request.args.get('client_id', '')
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
+    
     order = Order.query.filter_by(id=order_id).first_or_404()
     try:
         order.payment_status = 'Pagato'
@@ -301,23 +315,74 @@ def mark_order_paid():
     except Exception as e:
         db.session.rollback()
         flash(f"Errore: {str(e)}", "danger")
-    return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=request.args.get('date_from',''), date_to=request.args.get('date_to','')))
+        
+    return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=date_from, date_to=date_to))
+
 
 
 @admin_bp.route('/order/cancel', methods=['POST'])
 @admin_required
 def cancel_order():
     order_id = request.args.get('order_id')
+    
+    # 🌟 FIXED: Safely capture query states at runtime to avoid UnboundLocalError
+    status = request.args.get('status', '')
+    client_id = request.args.get('client_id', '')
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
+    
     order = Order.query.filter_by(id=order_id).first_or_404()
     try:
         order.status = 'Annullato'
+        # 🌟 FIXED: Syncs values perfectly to prevent "Annullato + In Attesa" contradiction
+        order.payment_status = 'Annullato'
         db.session.commit()
         flash(f"Ordine #{order_id} annullato.", "warning")
     except Exception as e:
         db.session.rollback()
         flash(f"Errore: {str(e)}", "danger")
-    return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=request.args.get('date_from',''), date_to=request.args.get('date_to','')))
+        
+    return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=date_from, date_to=date_to))
 
+@admin_bp.route('/product/save_all', methods=['POST'])
+@admin_required
+def save_all_products():
+    try:
+        product_ids = request.form.getlist('product_id[]')
+        names = request.form.getlist('name[]')
+        prices = request.form.getlist('price[]')
+        formats_list = request.form.getlist('formats[]')
+        
+        for i in range(len(product_ids)):
+            p_id = int(product_ids[i])
+            product = Product.query.get(p_id)
+            if product:
+                product.name = names[i].strip()
+                product.price_per_kg = float(prices[i]) if prices[i] else 0.0
+                product.sizes_raw = formats_list[i].strip()
+                
+        db.session.commit()
+        flash("Tutti i prodotti del catalogo sono stati aggiornati con successo!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Errore durante il salvataggio collettivo: {str(e)}", "danger")
+    return redirect(url_for('admin.index', active_tab='catalog'))
+
+@admin_bp.route('/product/add', methods=['POST'])
+@admin_required
+def add_product():
+    try:
+        name = request.form.get('name')
+        price = float(request.form.get('price', 0.0))
+        formats = request.form.get('formats', '')
+        new_product = Product(name=name, price_per_kg=price, sizes_raw=formats, available=True)
+        db.session.add(new_product)
+        db.session.commit()
+        flash(f"Prodotto '{name}' aggiunto!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Errore: {str(e)}", "danger")
+    return redirect(url_for('admin.index', active_tab='catalog'))
 
 @admin_bp.route('/product/delete/<int:product_id>', methods=['POST'])
 @admin_required
@@ -336,7 +401,6 @@ def delete_product(product_id):
 @admin_required
 def reset_orders():
     try:
-        # Delete only order records
         Order.query.delete()
         db.session.commit()
         flash("Storico ordini azzerato con successo!", "success")
@@ -349,7 +413,6 @@ def reset_orders():
 @admin_required
 def reset_clients():
     try:
-        # Delete only client profiles
         User.query.filter_by(role='client').delete()
         db.session.commit()
         flash("Anagrafica clienti svuotata con successo!", "success")
@@ -357,7 +420,6 @@ def reset_clients():
         db.session.rollback()
         flash(f"Errore durante l'eliminazione dei clienti: {str(e)}", "danger")
     return redirect(url_for('admin.index', active_tab='reset_data'))
-
 
 @admin_bp.route('/profile/admin/password', methods=['POST'])
 @admin_required
@@ -394,7 +456,6 @@ def delete_client(client_id):
         flash(f"Errore: {str(e)}", "danger")
     return redirect(url_for('admin.index', active_tab='users_management'))
 
-# 🌟 FORTIFIED ROTTA: Dynamic updates with terminal logging verification
 @admin_bp.route('/client/update/<int:client_id>', methods=['POST'])
 @admin_required
 def update_client(client_id):
@@ -404,11 +465,9 @@ def update_client(client_id):
     new_password = request.form.get('password')
     
     try:
-        # 1. Update Username if modified
         if new_name and new_name.strip():
             client.name = new_name.strip()
             
-        # 2. Update Phone number and guard against duplicates
         if new_phone and new_phone.strip() != client.phone:
             existing = User.query.filter_by(phone=new_phone.strip()).first()
             if existing:
@@ -416,28 +475,22 @@ def update_client(client_id):
                 return redirect(url_for('admin.index', active_tab='users_management'))
             client.phone = new_phone.strip()
             
-        # 3. Securely override password with explicit min-length validation check
         if new_password and new_password.strip():
             clean_pass = new_password.strip()
-            
-            # 🌟 ENFORCE MINIMUM 4 CHARACTERS CRITERIA
             if len(clean_pass) >= 4:
                 client.set_password(clean_pass)
-                
-                # Flag database field state explicitly so SQL updates it immediately
                 from sqlalchemy.orm.attributes import flag_modified
                 flag_modified(client, "password_hash")
-                
                 flash(f"Password per '{client.name}' modificata con successo!", "success")
             else:
-                # ❌ REJECT WITH ERROR MESSAGE IF CRITERIA IS NOT MET
-                flash(f"Modifica Fallita: La password per '{client.name}' deve contenere almeno 4 caratteri. L'inserimento attuale è stato rifiutato.", "danger")
+                flash(f"Modifica Fallita: Almeno 4 caratteri richiesta.", "danger")
                 return redirect(url_for('admin.index', active_tab='users_management'))
             
         db.session.commit()
         flash(f"Dati anagrafici di '{client.name}' salvati correttamente.", "success")
     except Exception as e:
         db.session.rollback()
-        flash(f"Errore durante l'aggiornamento dell'anagrafica: {str(e)}", "danger")
+        flash(f"Errore: {str(e)}", "danger")
         
     return redirect(url_for('admin.index', active_tab='users_management'))
+
