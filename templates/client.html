@@ -107,11 +107,12 @@
                         
                         <!-- 🌟 FIXED 3: Annulla uses a safe POST form that reaches your exact subpath endpoint configuration -->
                         {% if order.status == 'In Ricezione' %}
-                        <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}?selected_client_id={{ selected_client_id }}" style="display: inline; margin: 0; padding: 0;">
-                            <button type="submit" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 3px 8px; font-size: 11px; margin: 0;">❌ Annulla</button>
-                        </form>
-                        {% endif %}
-                        
+<form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="display: inline; margin: 0; padding: 0;">
+    <!-- Safely pass down selection variables inside form values -->
+    <input type="hidden" name="hidden_selected_client_id" value="{{ selected_client_id }}">
+    <button type="submit" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 3px 8px; font-size: 11px; margin: 0;">❌ Annulla</button>
+</form>
+                       {% endif %}                        
                     </div>
                 </div>
             </div>
