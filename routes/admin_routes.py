@@ -17,18 +17,33 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Apply security wrapper to the core index
 @admin_bp.route('/', methods=['GET', 'POST'])
 @admin_required
 def index():
     active_tab = request.args.get('active_tab', 'orders')
+    
+    # 🌟 NEW: Navigation & View Filter Parameters
+    filter_status = request.args.get('status', '')  # Filtering by lifecycle state
+    filter_client_id = request.args.get('client_id', '') # Filtering by Client profile
     
     filter_start_date = request.args.get('start_date', '')
     filter_end_date = request.args.get('end_date', '')
     filter_product = request.args.get('product_name', '')
     filter_format = request.args.get('format_name', '')
 
-    admin_orders = Order.query.order_by(Order.serial_id.desc()).all()
+    # Base query for orders
+    order_query = Order.query
+
+    # Apply Admin Tab Filters dynamically
+    if filter_status:
+        order_query = order_query.filter_by(status=filter_status)
+    if filter_client_id:
+        if filter_client_id == 'banco':
+            order_query = order_query.filter(Order.user_id == None)
+        else:
+            order_query = order_query.filter_by(user_id=int(filter_client_id))
+
+    admin_orders = order_query.order_by(Order.serial_id.desc()).all()
     catalog_products = Product.query.all()
     client_list = User.query.filter_by(role='client').all()
     
@@ -39,7 +54,7 @@ def index():
             for f in p.sizes_raw.split(','):
                 clean_f = f.strip()
                 if ":" in clean_f:
-                    clean_f = clean_f.split(":").strip()
+                    clean_f = clean_f.split(":")[0].strip()
                 if clean_f:
                     formats.append(clean_f)
             catalog_map[p.name] = formats
@@ -55,24 +70,30 @@ def index():
     grand_total_kg = 0.0
     grand_total_revenue = 0.0
     
-    for o in admin_orders:
+    # Process financials & analytics metrics
+    all_unfiltered_orders = Order.query.all()
+    for o in all_unfiltered_orders:
         if o.status == 'Annullato':
             continue
-            
         total_revenue += o.total
         if o.payment_status == 'Pagato':
             paid_revenue += o.total
         else:
             unpaid_revenue += o.total
+
+    # Secondary contextual loop for active list view aggregates
+    for o in admin_orders:
+        if o.status == 'Annullato':
+            continue
             
         order_date_valid = True
         if filter_start_date or filter_end_date:
             try:
                 o_date = datetime.strptime(o.date, "%Y-%m-%d")
-                if filter_start_date:
-                    if o_date < datetime.strptime(filter_start_date, "%Y-%m-%d"): order_date_valid = False
-                if filter_end_date:
-                    if o_date > datetime.strptime(filter_end_date, "%Y-%m-%d"): order_date_valid = False
+                if filter_start_date and o_date < datetime.strptime(filter_start_date, "%Y-%m-%d"): 
+                    order_date_valid = False
+                if filter_end_date and o_date > datetime.strptime(filter_end_date, "%Y-%m-%d"): 
+                    order_date_valid = False
             except Exception:
                 pass
 
@@ -141,8 +162,11 @@ def index():
         end_date=filter_end_date,
         product_name=filter_product,
         format_name=filter_format,
-        catalog_map=catalog_map
+        catalog_map=catalog_map,
+        current_status=filter_status,      # Pass active state variables
+        current_client_id=filter_client_id  # Pass active profile states
     )
+
 
 @admin_bp.route('/client/create', methods=['POST'])
 @admin_required
