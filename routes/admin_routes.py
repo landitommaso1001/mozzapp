@@ -22,9 +22,11 @@ def admin_required(f):
 def index():
     active_tab = request.args.get('active_tab', 'orders')
     
-    # 🌟 NEW: Navigation & View Filter Parameters
-    filter_status = request.args.get('status', '')  # Filtering by lifecycle state
-    filter_client_id = request.args.get('client_id', '') # Filtering by Client profile
+    # 🌟 UPDATED: Date Range Navigation View Parameters
+    filter_status = request.args.get('status', '')  
+    filter_client_id = request.args.get('client_id', '') 
+    filter_date_from = request.args.get('date_from', '') # Start Date Constraint
+    filter_date_to = request.args.get('date_to', '')     # End Date Constraint
     
     filter_start_date = request.args.get('start_date', '')
     filter_end_date = request.args.get('end_date', '')
@@ -34,9 +36,17 @@ def index():
     # Base query for orders
     order_query = Order.query
 
-    # Apply Admin Tab Filters dynamically
+    # Apply Lifecycle Status Filter
     if filter_status:
         order_query = order_query.filter_by(status=filter_status)
+        
+    # 🌟 FIXED & UPDATED: Securely inject structural Date Range filters into SQL
+    if filter_date_from:
+        order_query = order_query.filter(Order.date >= filter_date_from)
+    if filter_date_to:
+        order_query = order_query.filter(Order.date <= filter_date_to)
+        
+    # Apply Client Filter
     if filter_client_id:
         if filter_client_id == 'banco':
             order_query = order_query.filter(Order.user_id == None)
@@ -54,7 +64,7 @@ def index():
             for f in p.sizes_raw.split(','):
                 clean_f = f.strip()
                 if ":" in clean_f:
-                    clean_f = clean_f.split(":")[0].strip()
+                    clean_f = clean_f.split(":").strip()
                 if clean_f:
                     formats.append(clean_f)
             catalog_map[p.name] = formats
@@ -70,7 +80,7 @@ def index():
     grand_total_kg = 0.0
     grand_total_revenue = 0.0
     
-    # Process financials & analytics metrics
+    # Process financial metric card totals globally
     all_unfiltered_orders = Order.query.all()
     for o in all_unfiltered_orders:
         if o.status == 'Annullato':
@@ -81,7 +91,7 @@ def index():
         else:
             unpaid_revenue += o.total
 
-    # Secondary contextual loop for active list view aggregates
+    # Secondary loop for rendering dynamic items matching selection queries
     for o in admin_orders:
         if o.status == 'Annullato':
             continue
@@ -163,9 +173,12 @@ def index():
         product_name=filter_product,
         format_name=filter_format,
         catalog_map=catalog_map,
-        current_status=filter_status,      # Pass active state variables
-        current_client_id=filter_client_id  # Pass active profile states
+        current_status=filter_status,      
+        current_client_id=filter_client_id,
+        current_date_from=filter_date_from, # Bind down state variables
+        current_date_to=filter_date_to
     )
+
 
 
 @admin_bp.route('/client/create', methods=['POST'])
@@ -288,7 +301,8 @@ def mark_order_paid():
     except Exception as e:
         db.session.rollback()
         flash(f"Errore: {str(e)}", "danger")
-    return redirect(url_for('admin.index', active_tab='orders'))
+    return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=request.args.get('date_from',''), date_to=request.args.get('date_to','')))
+
 
 @admin_bp.route('/order/cancel', methods=['POST'])
 @admin_required
@@ -302,7 +316,8 @@ def cancel_order():
     except Exception as e:
         db.session.rollback()
         flash(f"Errore: {str(e)}", "danger")
-    return redirect(url_for('admin.index', active_tab='orders'))
+    return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=request.args.get('date_from',''), date_to=request.args.get('date_to','')))
+
 
 @admin_bp.route('/product/delete/<int:product_id>', methods=['POST'])
 @admin_required
