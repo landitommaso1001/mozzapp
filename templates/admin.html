@@ -115,16 +115,16 @@
                                 <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; {% if o.payment_status == 'Pagato' %}background:#d1fae5; color:#065f46;{% else %}background:#fee2e2; color:#991b1b;{% endif %}">💰 {{ o.payment_status }}</span>
 
                                 {% if o.status == 'In Ricezione' %}
-                                    <form action="{{ url_for('admin.update_order_status', new_status='Confermato', order_id=o.id) }}?status={{ current_status }}&client_id={{ current_client_id }}&date_from={{ current_date_from }}&date_to={{ current_date_to }}" method="POST" style="margin: 0; display: flex; gap: 2px;">
+                                    <form action="{{ url_for('admin.update_order_status', new_status='Confermato', order_id=o.id) }}&status={{ current_status }}&client_id={{ current_client_id }}&date_from={{ current_date_from }}&date_to={{ current_date_to }}" method="POST">
                                         <input type="text" name="delivery_time" placeholder="Ora" required style="padding: 2px 4px !important; font-size: 11px !important; width: 60px;">
                                         <button type="submit" style="background: #5cb85c; color: white; padding: 2px 6px !important; font-size: 11px !important; border:none; border-radius:3px; cursor:pointer;">✓ Approva</button>
                                     </form>
                                 {% elif o.status == 'Confermato' %}
-                                    <form action="{{ url_for('admin.update_order_status', new_status='Pronto', order_id=o.id) }}?status={{ current_status }}&client_id={{ current_client_id }}&date_from={{ current_date_from }}&date_to={{ current_date_to }}" method="POST" style="margin: 0;">
+                                    <form action="{{ url_for('admin.update_order_status', new_status='Pronto', order_id=o.id) }}&status={{ current_status }}&client_id={{ current_client_id }}&date_from={{ current_date_from }}&date_to={{ current_date_to }}" method="POST">
                                         <button type="submit" style="background: #f0ad4e; color: white; padding: 2px 6px !important; font-size: 11px !important; border:none; border-radius:3px; cursor:pointer;">🧀 Pronto</button>
                                     </form>
                                 {% elif o.status == 'Pronto' %}
-                                    <form action="{{ url_for('admin.update_order_status', new_status='Consegnato', order_id=o.id) }}?status={{ current_status }}&client_id={{ current_client_id }}&date_from={{ current_date_from }}&date_to={{ current_date_to }}" method="POST" style="margin: 0;">
+                                    <form action="{{ url_for('admin.update_order_status', new_status='Consegnato', order_id=o.id) }}&status={{ current_status }}&client_id={{ current_client_id }}&date_from={{ current_date_from }}&date_to={{ current_date_to }}" method="POST">
                                         <button type="submit" style="background: #0275d8; color: white; padding: 2px 6px !important; font-size: 11px !important; border:none; border-radius:3px; cursor:pointer;">🚚 Consegnato</button>
                                     </form>
                                 {% endif %}
