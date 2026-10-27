@@ -22,43 +22,43 @@ def admin_required(f):
 def index():
     active_tab = request.args.get('active_tab', 'orders')
     
-    # Date Range Navigation View Parameters
+    # Standard Date Range / Dashboard parameters (keep these)
     filter_status = request.args.get('status', '')  
     filter_client_id = request.args.get('client_id', '') 
     filter_date_from = request.args.get('date_from', '') 
     filter_date_to = request.args.get('date_to', '')     
     
+    # Analytics-specific Tab query options
     filter_start_date = request.args.get('start_date', '')
     filter_end_date = request.args.get('end_date', '')
     filter_product = request.args.get('product_name', '')
-    filter_format = ""
     
+    # --- NEW PARAMETERS FOR ANALYTICS FILTERING ---
+    analytics_client_id = request.args.get('analytics_client_id', '')
+    analytics_payment_status = request.args.get('analytics_payment_status', '')
+    # -----------------------------------------------
+    
+    filter_format = "" # Neutralized from previous hotfix
+
     # Base query for orders
     order_query = Order.query
-
-    # Apply Lifecycle Status Filter
     if filter_status:
         order_query = order_query.filter_by(status=filter_status)
-        
-    # Inject structural Date Range filters into SQL
     if filter_date_from:
         order_query = order_query.filter(Order.date >= filter_date_from)
     if filter_date_to:
         order_query = order_query.filter(Order.date <= filter_date_to)
-        
-    # Apply Client Filter
     if filter_client_id:
         if filter_client_id == 'banco':
             order_query = order_query.filter(Order.user_id == None)
         else:
             order_query = order_query.filter_by(user_id=int(filter_client_id))
 
-    # Base configuration fetches
     admin_orders = order_query.order_by(Order.serial_id.desc()).all()
     catalog_products = Product.query.all()
     client_list = User.query.filter_by(role='client').all()
     
-    # --- FIXED & UPDATED: Build structural mappings for dependent filtering ---
+    # Catalog compilation logic (including our string correction step)
     catalog_map = {}
     for p in catalog_products:
         if p.sizes_raw:
@@ -66,23 +66,17 @@ def index():
             for f in p.sizes_raw.split(','):
                 clean_f = f.strip()
                 if ":" in clean_f:
-                    clean_f = clean_f.split(":")[0].strip() # Fixed index and strip error
+                    clean_f = clean_f.split(":")[0].strip()
                 if clean_f:
                     formats.append(clean_f)
             catalog_map[p.name] = formats
         else:
             catalog_map[p.name] = []
-    
+
+    # Financial card calculations (remains global / unfiltered)
     total_revenue = 0.0
     paid_revenue = 0.0
     unpaid_revenue = 0.0
-    
-    product_summary = {}
-    grand_total_qty = 0
-    grand_total_kg = 0.0
-    grand_total_revenue = 0.0
-    
-    # Process financial metric card totals globally
     all_unfiltered_orders = Order.query.all()
     for o in all_unfiltered_orders:
         if o.status == 'Annullato':
@@ -93,11 +87,18 @@ def index():
         else:
             unpaid_revenue += o.total
 
-    # Secondary loop for rendering dynamic items matching selection queries
+    # Secondary calculation structures
+    product_summary = {}
+    grand_total_qty = 0
+    grand_total_kg = 0.0
+    grand_total_revenue = 0.0
+
+    # Secondary loop for rendering dynamic metrics items matching filters
     for o in admin_orders:
         if o.status == 'Annullato':
             continue
             
+        # 1. Evaluate Date Range criteria constraints
         order_date_valid = True
         if filter_start_date or filter_end_date:
             try:
@@ -108,10 +109,21 @@ def index():
                     order_date_valid = False
             except Exception:
                 pass
-
         if not order_date_valid:
             continue
 
+        # 2. NEW: Evaluate Analytics Client Dropdown constraint
+        if analytics_client_id:
+            if analytics_client_id == 'banco' and o.user_id is not None:
+                continue
+            elif analytics_client_id != 'banco' and o.user_id != int(analytics_client_id):
+                continue
+
+        # 3. NEW: Evaluate Analytics Payment Status Dropdown constraint
+        if analytics_payment_status and o.payment_status != analytics_payment_status:
+            continue
+
+        # Parse valid order entries matching requirements
         if o.items:
             for item in o.items.split(','):
                 item = item.strip()
@@ -122,8 +134,6 @@ def index():
                     full_name = full_name.strip()
                     
                     prod_matched = False
-                    fmt_matched = False
-                    
                     matched_prod_obj = None
                     for p in catalog_products:
                         if p.name.lower() in full_name.lower():
@@ -131,11 +141,8 @@ def index():
                             break
                     
                     p_name = matched_prod_obj.name if matched_prod_obj else full_name
-                    
                     if not filter_product or filter_product.lower() in p_name.lower():
                         prod_matched = True
-                    if not filter_format or filter_format.lower() in full_name.lower():
-                        fmt_matched = True
                         
                     if prod_matched:
                         computed_weight = parse_format_weight_kg(full_name, qty)
@@ -173,13 +180,17 @@ def index():
         start_date=filter_start_date,
         end_date=filter_end_date,
         product_name=filter_product,
-        format_name=filter_format,
+        format_name="",
+        # Pass new variables to retain dropdown choices on page render
+        analytics_client_id=analytics_client_id,
+        analytics_payment_status=analytics_payment_status,
         catalog_map=catalog_map,
         current_status=filter_status,      
         current_client_id=filter_client_id,
         current_date_from=filter_date_from, 
         current_date_to=filter_date_to
     )
+
 
 
 
