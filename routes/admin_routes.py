@@ -317,18 +317,32 @@ def delete_product(product_id):
         flash(f"Errore: {str(e)}", "danger")
     return redirect(url_for('admin.index', active_tab='catalog'))
 
-@admin_bp.route('/database/reset', methods=['POST'])
+@admin_bp.route('/database/reset_orders', methods=['POST'])
 @admin_required
-def reset_database():
+def reset_orders():
     try:
+        # Delete only order records
         Order.query.delete()
-        User.query.filter_by(role='client').delete()
         db.session.commit()
-        flash("Database resettato con successo!", "success")
+        flash("Storico ordini azzerato con successo!", "success")
     except Exception as e:
         db.session.rollback()
-        flash(f"Errore durante il reset del database: {str(e)}", "danger")
+        flash(f"Errore durante lo svuotamento degli ordini: {str(e)}", "danger")
     return redirect(url_for('admin.index', active_tab='analytics'))
+
+@admin_bp.route('/database/reset_clients', methods=['POST'])
+@admin_required
+def reset_clients():
+    try:
+        # Delete only client profiles
+        User.query.filter_by(role='client').delete()
+        db.session.commit()
+        flash("Anagrafica clienti svuotata con successo!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Errore durante l'eliminazione dei clienti: {str(e)}", "danger")
+    return redirect(url_for('admin.index', active_tab='analytics'))
+
 
 @admin_bp.route('/profile/admin/password', methods=['POST'])
 @admin_required
