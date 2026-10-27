@@ -31,6 +31,7 @@ def index():
     filter_start_date = request.args.get('start_date', '')
     filter_end_date = request.args.get('end_date', '')
     filter_product = request.args.get('product_name', '')
+    filter_format = ""
     
     # Base query for orders
     order_query = Order.query
