@@ -1,63 +1,56 @@
 {% extends 'layout.html' %} 
 {% block content %}
 
-<!-- Header User Data Banner -->
+<!-- Header User Strip Section -->
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #ffffff; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
-    <div style="font-size: 13px;">
-        👤 User: <strong>{{ session['user_name'] }}</strong>
-        {% if is_admin or session.get('user_role') == 'admin' %}
-            <span style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-left: 6px;">ADMIN PROFILE</span>
-        {% endif %}
-    </div>
-    <div><a href="/logout" style="color: #ef4444; font-weight: 600; font-size: 12px;">🚪 Esci</a></div>
+    <div style="font-size: 13px;">👤 User: <strong>{{ session['user_name'] }}</strong></div>
+    <div><a href="{{ url_for('client_bp.logout') }}" style="color: #ef4444; font-weight: 600; font-size: 12px;">🚪 Esci</a></div>
 </div>
 
-<!-- 🌟 FIXED: ONE SINGLE MASTER FORM THAT WRAPS THE ENTIRE WORKING CANVAS -->
-<form method="POST" action="" id="mozzapp-master-form">
-    
-    <!-- Hidden form transport triggers for actions -->
-    <input type="hidden" name="repeat_order_id" id="hidden-repeat-id" value="">
-    <input type="hidden" name="cancel_order_id" id="hidden-cancel-id" value="">
+<!-- Asymmetrical Two Column Matrix Section Split -->
+<div style="display: flex; gap: 16px; align-items: start; width: 100%;">
 
-    <div style="display: flex; gap: 16px; align-items: start; width: 100%;">
-
-        <!-- LEFT COLUMN: Product Counter Selector Form (35% Width Space) -->
-        <div style="width: 35%; flex-shrink: 0;">
+    <!-- LEFT COLUMN: Product Item Picker Form Panel (35% Width) -->
+    <div style="width: 35%; flex-shrink: 0;">
+        <form method="POST" action="{{ url_for('client_bp.index') }}" id="order-creation-form">
             
-            <!-- 2. FIXED: Dropdown equipped with accurate name properties and auto-submission script runner -->
-            {% if is_admin or session.get('user_role') == 'admin' %}
+            <!-- 🌟 FIXED 1: Combined dropdown that handles both history filtering and form assignment variables -->
+            {% if is_admin %}
             <div class="card" style="margin-bottom: 10px;">
                 <label style="font-weight: 600; display: block; margin-bottom: 6px; color: #0284c7;">A nome di quale Cliente stiamo ordinando?</label>
-                <select name="client_id" id="client-selector-dropdown" onchange="submitForClientChange()" style="width: 100%; padding: 4px; font-size: 12px; font-weight: 500;">
-                    <option value="">-- Vendita Diretta al Banco / Ordine Interno --</option>
+                <!-- This field passes the selected client ID during order submission -->
+                <input type="hidden" name="admin_target_client_id" id="hidden-target-client-id" value="{{ selected_client_id }}">
+                
+                <select id="admin-client-history-filter" onchange="syncClientSelection(this.value)" style="width: 100%; padding: 4px; font-size: 12px;">
+                    <option value="0" {% if selected_client_id == 0 %}selected{% endif %}>-- Vendita Diretta al Banco / Ordine Interno --</option>
                     {% for c in all_clients %}
-                    <option value="{{ c.id }}" {% if selected_client_id == c.id or session.get('selected_client_id') == c.id|string or request.form.get('client_id') == c.id|string %}selected{% endif %}>{{ c.name }} (📞 {{ c.phone }})</option>
+                    <option value="{{ c.id }}" {% if selected_client_id == c.id %}selected{% endif %}>{{ c.name }} (📞 {{ c.phone }})</option>
                     {% endfor %}
                 </select>
             </div>
             {% endif %}
 
             <div class="card">
-                <h3 style="color: #0284c7; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">🛒 Nuovo Ordine Prodotti</h3>
+                <h3 style="color: #0284c7; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">🛒 Nuovo Ordine Caseificio</h3>
                 
                 {% if products %}
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     {% for prod in products %}
                     <div style="padding: 6px 8px; border: 1px solid #f1f5f9; border-radius: 4px; background: #f8fafc;">
-                        <strong style="display: block; margin-bottom: 4px; color: #0f172a;">{{ prod.name }}</strong>
+                        <strong style="display: block; margin-bottom: 4px; color: #0f172a; font-size: 12px;">{{ prod.name }}</strong>
                         
                         {% if prod.parsed_formats %} 
                             {% for fmt in prod.parsed_formats %}
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                                 <span style="color: #475569; font-size: 12px;">{{ fmt.name }} (€ {{"%.2f"|format(fmt.price)}})</span>
-                                {% set key = prod.id ~ '_' ~ fmt.name %}
-                                <input type="number" name="qty_{{ key }}" value="{{ prefilled_items.get(key, 0) if prefilled_items else 0 }}" min="0" style="width: 55px; text-align: center; padding: 2px;">
+                                {% set lookup_key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
+                                <input type="number" name="qty_{{ prod.id }}_{{ fmt.name }}" value="{{ prefilled_items.get(lookup_key, 0) }}" min="0" style="width: 55px; text-align: center; padding: 2px;">
                             </div>
                             {% endfor %} 
                         {% else %}
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <span style="color: #475569; font-size: 12px;">Standard (€ {{"%.2f"|format(prod.price_per_kg)}}/Kg)</span>
-                                <input type="number" name="qty_{{ prod.id }}" value="{{ prefilled_items.get(prod.id|string, 0) if prefilled_items else 0 }}" min="0" style="width: 55px; text-align: center; padding: 2px;">
+                                <input type="number" name="qty_{{ prod.id }}_default" value="{{ prefilled_items.get(prod.name, 0) }}" min="0" style="width: 55px; text-align: center; padding: 2px;">
                             </div>
                         {% endif %}
                     </div>
@@ -70,98 +63,66 @@
                 </div>
                 
                 <div style="display: flex; gap: 8px; margin-top: 10px;">
-                    <button type="submit" name="action" value="clear" style="background: #e2e8f0; color: #334155; flex: 1;">🗑 Svuota</button>
-                    <button type="submit" name="action" value="submit" style="background: #10b981; color: white; border: none; flex: 2; font-weight: 700;">Invia Ordine</button>
+                    <a href="{{ url_for('client_bp.index') }}" class="btn" style="background: #e2e8f0; color: #334155; flex: 1; text-align: center; display: inline-block; padding-top: 4px;">🗑 Svuota</a>
+                    <button type="submit" style="background: #10b981; color: white; border: none; flex: 2; font-weight: 700;">Invia Ordine</button>
                 </div>
             </div>
-        </div>
-
-        <!-- RIGHT COLUMN: Order History Logging Matrix (65% Width Space Allocation) -->
-        <div class="card" style="width: 65%; flex-grow: 1;">
-            <h3 style="color: #0284c7; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
-                📋 {% if is_admin or session.get('user_role') == 'admin' %} Storico Ordini Registrati {% else %} Storico Dei Tuoi Ordini {% endif %}
-            </h3>
-
-            {% if orders %}
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-                {% for order in orders %}
-                <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; background: #ffffff;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; margin-bottom: 6px;">
-                        <div>
-                            <span style="font-weight: 700; color: #0f172a;">ID Ordine: #{{ order.id }}</span>
-                            <span style="color: #64748b; margin-left: 6px;">({{ order.date }})</span>
-                        </div>
-                        <div style="display: flex; gap: 6px; align-items: center;">
-                            <span style="padding: 2px 6px; background: #f1f5f9; border-radius: 4px; font-size: 11px;">📦 {{ order.status }}</span>
-                            <span style="padding: 2px 6px; background: #e0f2fe; border-radius: 4px; font-size: 11px; color: #0369a1;">💰 {{ order.payment_status }}</span>
-                        </div>
-                    </div>
-                    <div style="color: #334155; font-size: 13px; padding: 4px 0; font-family: monospace;">{{ order.items }}</div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 6px; margin-top: 6px;">
-                        <div style="font-weight: 700; font-size: 13px; color: #0f172a;">
-                            Totale: <span style="color: #10b981;">€ {{ "%.2f"|format(order.total) }}</span>
-                        </div>
-                        <div style="display: flex; gap: 6px;">
-                            
-                            <!-- 1. FIXED: Submit buttons manipulate hidden inputs and trigger the single form submit block natively -->
-                            <button type="button" onclick="triggerRepeatOrder('{{ order.id }}')" class="btn" style="padding: 3px 8px; font-size: 11px; margin: 0; background: #f8fafc;">🔄 Ripeti</button>
-                            
-                            {% if order.status == 'In Ricezione' %}
-                            <button type="button" onclick="triggerCancelOrder('{{ order.id }}')" class="btn" style="background: #fee2e2; color: #ef4444; border-color: #fca5a5; padding: 3px 8px; font-size: 11px; margin: 0;">❌ Annulla</button>
-                            {% endif %}
-                            
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div style="color: #64748b; font-style: italic; padding: 12px 0; text-align: center;">Nessun ordine presente nello storico.</div>
-            {% endif %}
-        </div>
+        </form>
     </div>
-</form>
 
-<!-- 🌟 FIXED: DYNAMIC SUBMISSION SCRIPTS ENFORCING NATIVE BACKEND PROPERTY RULES -->
+    <!-- RIGHT COLUMN: Interactive Order History Log Sheets (65% Width) -->
+    <div class="card" style="width: 65%; flex-grow: 1;">
+        <h3 style="color: #0284c7; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
+            📋 {% if is_admin %} Storico Ordini Filtrato {% else %} Storico Dei Tuoi Ordini {% endif %}
+        </h3>
+
+        {% if orders %}
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            {% for order in orders %}
+            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; background: #ffffff;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; margin-bottom: 6px;">
+                    <div>
+                        <span style="font-weight: 700; color: #0f172a; font-size: 12px;">ID Ordine: {{ order.id }}</span>
+                        <span style="color: #64748b; margin-left: 6px;">({{ order.date }})</span>
+                    </div>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <span style="padding: 2px 6px; background: #f1f5f9; border-radius: 4px; font-weight: 500; font-size: 11px;">📦 {{ order.status }}</span>
+                        <span style="padding: 2px 6px; background: #e0f2fe; border-radius: 4px; font-weight: 500; font-size: 11px; color: #0369a1;">💰 {{ order.payment_status }}</span>
+                    </div>
+                </div>
+                <div style="color: #334155; font-size: 12px; padding: 4px 0; font-family: monospace;">{{ order.items }}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 6px; margin-top: 6px;">
+                    <div style="font-weight: 700; font-size: 12px; color: #0f172a;">
+                        Totale: <span style="color: #10b981;">€ {{ "%.2f"|format(order.total) }}</span>
+                    </div>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        
+                        <!-- 🌟 FIXED 2: Ripeti button appends the ?reorder= ID to populate values on reload -->
+                        <a href="{{ url_for('client_bp.index') }}?reorder={{ order.id }}&selected_client_id={{ selected_client_id }}" class="btn" style="padding: 3px 8px; font-size: 11px; background: #f8fafc; border: 1px solid #cbd5e1; display: inline-block;">🔄 Ripeti</a>
+                        
+                        <!-- 🌟 FIXED 3: Annulla uses a safe POST form that reaches your exact subpath endpoint configuration -->
+                        {% if order.status == 'In Ricezione' %}
+                        <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="display: inline; margin: 0; padding: 0;">
+                            <button type="submit" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 3px 8px; font-size: 11px; margin: 0;">❌ Annulla</button>
+                        </form>
+                        {% endif %}
+                        
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="color: #64748b; font-style: italic; padding: 12px 0; text-align: center;">Nessun ordine presente nello storico per questa selezione.</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Dynamic History Sync Engine Script Wrapper -->
 <script>
-    const form = document.getElementById('mozzapp-master-form');
-
-    // 1. Forces the Ripeti action to load variables cleanly into the main POST payload
-    function triggerRepeatOrder(orderId) {
-        document.getElementById('hidden-repeat-id').value = orderId;
-        
-        // Create an explicit button element dynamically to pass the action value
-        const actionInput = document.createElement('input');
-        actionInput.type = 'hidden';
-        actionInput.name = 'action';
-        actionInput.value = 'repeat';
-        form.appendChild(actionInput);
-        
-        form.submit();
-    }
-
-    // Forces the Annulla action to execute via main POST context
-    function triggerCancelOrder(orderId) {
-        document.getElementById('hidden-cancel-id').value = orderId;
-        
-        const actionInput = document.createElement('input');
-        actionInput.type = 'hidden';
-        actionInput.name = 'action';
-        actionInput.value = 'cancel';
-        form.appendChild(actionInput);
-        
-        form.submit();
-    }
-
-    // 2. Notifies the backend cleanly when changing a client dropdown item
-    function submitForClientChange() {
-        const actionInput = document.createElement('input');
-        actionInput.type = 'hidden';
-        actionInput.name = 'action';
-        actionInput.value = 'client_change';
-        form.appendChild(actionInput);
-        
-        form.submit();
+    function syncClientSelection(val) {
+        // Appends the selection state directly to filter your active log tables list view
+        window.location.href = "{{ url_for('client_bp.index') }}?selected_client_id=" + val;
     }
 </script>
 
