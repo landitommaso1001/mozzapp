@@ -31,8 +31,7 @@ def index():
     filter_start_date = request.args.get('start_date', '')
     filter_end_date = request.args.get('end_date', '')
     filter_product = request.args.get('product_name', '')
-    filter_format = request.args.get('format_name', '')
-
+    
     # Base query for orders
     order_query = Order.query
 
@@ -53,10 +52,12 @@ def index():
         else:
             order_query = order_query.filter_by(user_id=int(filter_client_id))
 
+    # Base configuration fetches
     admin_orders = order_query.order_by(Order.serial_id.desc()).all()
     catalog_products = Product.query.all()
     client_list = User.query.filter_by(role='client').all()
     
+    # --- FIXED & UPDATED: Build structural mappings for dependent filtering ---
     catalog_map = {}
     for p in catalog_products:
         if p.sizes_raw:
@@ -64,13 +65,13 @@ def index():
             for f in p.sizes_raw.split(','):
                 clean_f = f.strip()
                 if ":" in clean_f:
-                    clean_f = clean_f.split(":").strip()
+                    clean_f = clean_f.split(":")[0].strip() # Fixed index and strip error
                 if clean_f:
                     formats.append(clean_f)
             catalog_map[p.name] = formats
         else:
             catalog_map[p.name] = []
-
+    
     total_revenue = 0.0
     paid_revenue = 0.0
     unpaid_revenue = 0.0
