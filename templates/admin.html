@@ -27,17 +27,18 @@
             <a href="{{ url_for('admin.index', active_tab='orders', status='Annullato', client_id=current_client_id) }}" style="padding: 6px 12px; border-radius: 4px; font-weight: 600; font-size: 12px; {% if current_status == 'Annullato' %}background: #0f172a; color: white;{% else %}background: white; color: #475569; border: 1px solid #cbd5e1;{% endif %}">❌ Annullati</a>
         </div>
 
-        <!-- Quick Client Context Switcher Dropdown Toolbar Layer -->
-        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; background: white; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
-            <label style="font-weight: 600; font-size: 12px; color: #334155;">👤 Filtra per Cliente:</label>
-            <select onchange="location.href=this.value;" style="padding: 4px 8px; font-size: 12px;">
-                <option value="{{ url_for('admin.index', active_tab='orders', status=current_status) }}">-- Tutti i Clienti / Tutto il Sistema --</option>
-                <option value="{{ url_for('admin.index', active_tab='orders', status=current_status, client_id='banco') }}" {% if current_client_id == 'banco' %}selected{% endif %}>Vendita Diretta / Banco</option>
-                {% for c in clients %}
-                <option value="{{ url_for('admin.index', active_tab='orders', status=current_status, client_id=c.id) }}" {% if current_client_id == str(c.id) or current_client_id == c.id %}selected{% endif %}>{{ c.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
+<!-- Quick Client Context Switcher Dropdown Toolbar Layer -->
+<div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; background: white; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
+    <label style="font-weight: 600; font-size: 12px; color: #334155;">👤 Filtra per Cliente:</label>
+    <select onchange="location.href=this.value;" style="padding: 4px 8px; font-size: 12px;">
+        <option value="{{ url_for('admin.index', active_tab='orders', status=current_status) }}">-- Tutti i Clienti / Tutto il Sistema --</option>
+        <option value="{{ url_for('admin.index', active_tab='orders', status=current_status, client_id='banco') }}" {% if current_client_id == 'banco' %}selected{% endif %}>Vendita Diretta / Banco</option>
+        {% for c in clients %}
+        <!-- 🌟 FIXED: Replaced str(c.id) with native Jinja c.id|string filter -->
+        <option value="{{ url_for('admin.index', active_tab='orders', status=current_status, client_id=c.id) }}" {% if current_client_id|string == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+    </select>
+</div>
 
         <!-- Highly Compact Actionable Matrix Table Layout Sheet -->
         {% if orders %}
