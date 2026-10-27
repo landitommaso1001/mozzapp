@@ -81,6 +81,7 @@ def logout():
     session.clear()
     flash("Sessione chiusa correttamente.", "success")
     return redirect(url_for('client_bp.login'))
+
 @client_bp.route('/', methods=['GET', 'POST'])
 def index():
     if 'user_id' not in session:
@@ -88,6 +89,12 @@ def index():
         
     user_id = session['user_id']
     is_admin = (session.get('user_role') == 'admin')
+    
+    # 🌟 FIXED: Safe initialization of selected_client_id at the top level
+    # This prevents UnboundLocalError during POST form parsing
+    raw_selected_id = request.args.get('selected_client_id', '0')
+    selected_client_id = int(raw_selected_id) if raw_selected_id.isdigit() else 0
+    
     catalog_products = Product.query.filter_by(available=True).all()
     all_clients = User.query.filter_by(role='client').all() if is_admin else []
 
@@ -103,12 +110,16 @@ def index():
                 if target_user:
                     order_user_id = target_user.id
                     order_client_name = f"{target_user.name} ({target_user.phone})"
+                    # Keep filter synced on submission state
+                    selected_client_id = target_user.id
                 else:
                     order_user_id = None
                     order_client_name = "Vendita Diretta / Banco"
+                    selected_client_id = 0
             else:
                 order_user_id = None
                 order_client_name = "Vendita Diretta / Banco"
+                selected_client_id = 0
         else:
             order_user_id = user_id
             order_client_name = session['user_name']
@@ -134,6 +145,8 @@ def index():
         
         if not item_strings:
             flash("Seleziona almeno un prodotto prima di inviare l'ordine.", "error")
+            if is_admin:
+                return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
             return redirect(url_for('client_bp.index'))
             
         new_order = Order(
@@ -151,10 +164,10 @@ def index():
         db.session.commit()
         flash(f"Ordine inoltrato con successo per '{order_client_name}'!", 'success')
         
+        # 🌟 FIXED: Keeps Admin locked on the current client view template interface form
         if is_admin:
-           return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
+            return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
         return redirect(url_for('client_bp.index'))
-
 
     # Reorder functionality parser
     prefilled_items = {}
@@ -179,13 +192,10 @@ def index():
                 if f_name: parsed_formats.append({'name': f_name, 'price': f_price})
         enriched_products.append({'id': product.id, 'name': product.name, 'price_per_kg': product.price_per_kg, 'parsed_formats': parsed_formats})
 
-    # 🌟 NEW LOGIC: Dynamic Filter context processing for Admin
-    selected_client_id = request.args.get('selected_client_id', '0')
-    
     if is_admin:
-        if selected_client_id and selected_client_id.isdigit() and int(selected_client_id) > 0:
+        if selected_client_id > 0:
             # Filter history strictly to the selected user row match
-            my_orders = Order.query.filter_by(user_id=int(selected_client_id)).order_by(Order.serial_id.desc()).all()
+            my_orders = Order.query.filter_by(user_id=selected_client_id).order_by(Order.serial_id.desc()).all()
         else:
             # Show internal/direct sales orders (where user_id is null or 0)
             my_orders = Order.query.filter(Order.user_id == None).order_by(Order.serial_id.desc()).all()
@@ -200,7 +210,7 @@ def index():
         prefilled_items=prefilled_items,
         is_admin=is_admin,
         all_clients=all_clients,
-        selected_client_id=int(selected_client_id)
+        selected_client_id=selected_client_id
     )
 
 @client_bp.route('/order/cancel/<path:order_id>', methods=['POST'])
@@ -219,9 +229,7 @@ def cancel_order(order_id):
         flash(f"Ordine {order_id} annullato.", "success")
     else:
         flash("Impossibile annullare l'ordine.", "error")
-        
-    if is_admin:
-        selected_client = request.args.get('selected_client_id', '0')
-        return redirect(url_for('client_bp.index', selected_client_id=selected_client))
-    return redirect(url_for('client_bp.index'))
-
+        if is_admin:
+           selected_client = request.args.get('selected_client_id', '0')
+           return redirect(url_for('client_bp.index', selected_client_id=selected_client))
+           return redirect(url_for('client_bp.index'))
