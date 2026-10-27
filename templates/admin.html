@@ -250,13 +250,31 @@
             </tbody>
         </table>
 
-        <div style="background: #fff5f5; border: 1px solid #feb2b2; padding: 20px; border-radius: 6px; margin-bottom: 25px;">
-            <h3 style="margin-top: 0; color: #c53030;">⚠ Zona Pericolo: Manutenzione Sistema</h3>
-            <p style="margin-bottom: 15px; color: #742a2a; font-size: 0.95em;">L'azione sottostante è irreversibile. Verranno eliminati permanentemente tutti gli ordini effettuati e i clienti.</p>
-            <form action="{{ url_for('admin.reset_database') }}" method="POST" onsubmit="return confirm('Sei assolutamente sicuro di resettare il database?');">
-                <button type="submit" style="background: #c53030; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer;">🗑 Resetta Database ed Azzera Storici</button>
+<div style="background: #fff5f5; border: 1px solid #feb2b2; padding: 20px; border-radius: 6px; margin-bottom: 25px;">
+    <h3 style="margin-top: 0; color: #c53030;">⚠️ Zona Pericolo: Manutenzione Sistema</h3>
+    <p style="margin-bottom: 15px; color: #742a2a; font-size: 0.95em;">Le seguenti azioni sono irreversibili. Scegli attentamente quale archivio azzerare.</p>
+    
+    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+        <!-- Option A: Order Purging Form -->
+        <div style="background: white; border: 1px solid #fee2e2; padding: 12px; border-radius: 6px; flex: 1; min-width: 250px;">
+            <strong style="color: #991b1b; display: block; margin-bottom: 4px;">📦 Svuota Solo Storico Ordini</strong>
+            <span style="font-size: 11px; color: #64748b; display: block; margin-bottom: 10px;">Elimina permanentemente tutte le transazioni archiviate. Mantiene i profili dei clienti intatti.</span>
+            <form action="{{ url_for('admin.reset_orders') }}" method="POST" onsubmit="return confirm('Sei assolutamente sicuro di voler CANCELLARE TUTTI GLI ORDINI dallo storico?');">
+                <button type="submit" style="background: #e11d48; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; width: 100%;">🗑 Azzera Solo Ordini</button>
             </form>
         </div>
+
+        <!-- Option B: Client Purging Form -->
+        <div style="background: white; border: 1px solid #fee2e2; padding: 12px; border-radius: 6px; flex: 1; min-width: 250px;">
+            <strong style="color: #991b1b; display: block; margin-bottom: 4px;">👥 Svuota Solo Elenco Clienti</strong>
+            <span style="font-size: 11px; color: #64748b; display: block; margin-bottom: 10px;">Elimina tutti i profili d'accesso dei clienti registrati. Gli ordini esistenti rimarranno anonimi.</span>
+            <form action="{{ url_for('admin.reset_clients') }}" method="POST" onsubmit="return confirm('Sei assolutamente sicuro di voler ELIMINARE TUTTI I PROFILI CLIENTE dal database?');">
+                <button type="submit" style="background: #b91c1c; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; width: 100%;">🗑 Rimuovi Tutti i Clienti</button>
+            </form>
+        </div>
+    </div>
+</div>
+
     </div>
     {% endif %}
     <!-- USER & DIRECTORY PRIVILEGES VIEW -->
