@@ -181,103 +181,12 @@ def index():
 
 
 
-@admin_bp.route('/client/create', methods=['POST'])
-@admin_required
-def create_client():
-    name = request.form.get('name')
-    phone = request.form.get('phone')
-    password = request.form.get('password')
-    
-    if User.query.filter_by(phone=phone).first():
-        flash("Errore: Questo numero di telefono appartiene già ad un utente registrato.", "danger")
-        return redirect(url_for('admin.index', active_tab='users_management'))
-        
-    new_client = User(name=name, phone=phone, role='client')
-    new_client.set_password(password)
-    db.session.add(new_client)
-    db.session.commit()
-    flash(f"Cliente '{name}' registrato con successo.", "success")
-    return redirect(url_for('admin.index', active_tab='users_management'))
-def parse_format_weight_kg(item_string, qty):
-    lower_str = item_string.lower()
-    if 'g' in lower_str or 'gr' in lower_str:
-        digits = "".join([c for c in lower_str if c.isdigit()])
-        if digits:
-            grams = float(digits)
-            if grams >= 100 and grams <= 5000:
-                return (grams / 1000.0) * qty
-    if 'piccolo' in lower_str or 'vaschetta' in lower_str:
-        return 0.25 * qty
-    elif 'grande' in lower_str:
-        return 1.0 * qty
-    return 1.0 * qty
-
-def parse_admin_format_price(full_item_name, product_obj):
-    if not product_obj or not product_obj.sizes_raw:
-        return product_obj.price_per_kg if product_obj else 0.0
-    for fmt in product_obj.sizes_raw.split(','):
-        clean_fmt = fmt.strip()
-        if not clean_fmt: continue
-        if ":" in clean_fmt:
-            try:
-                fmt_label, raw_price = clean_fmt.split(":")
-                if fmt_label.strip().lower() in full_item_name.lower(): return float(raw_price)
-            except ValueError: continue
-        else:
-            if clean_fmt.lower() in full_item_name.lower():
-                weight_str = "".join([c for c in clean_fmt if c.isdigit()])
-                if weight_str and ('g' in clean_fmt.lower() or 'gr' in clean_fmt.lower()):
-                    grams = float(weight_str)
-                    return (grams / 1000.0) * product_obj.price_per_kg
-    return product_obj.price_per_kg
-
-@admin_bp.route('/product/save_all', methods=['POST'])
-@admin_required
-def save_all_products():
-    try:
-        product_ids = request.form.getlist('product_id[]')
-        names = request.form.getlist('name[]')
-        prices = request.form.getlist('price[]')
-        formats_list = request.form.getlist('formats[]')
-        
-        for i in range(len(product_ids)):
-            p_id = int(product_ids[i])
-            product = Product.query.get(p_id)
-            if product:
-                product.name = names[i].strip()
-                product.price_per_kg = float(prices[i]) if prices[i] else 0.0
-                product.sizes_raw = formats_list[i].strip()
-                
-        db.session.commit()
-        flash("Tutti i prodotti del catalogo sono stati aggiornati con successo!", "success")
-    except Exception as e:
-        db.session.rollback()
-        flash(f"Errore durante il salvataggio collettivo: {str(e)}", "danger")
-    return redirect(url_for('admin.index', active_tab='catalog'))
-
-@admin_bp.route('/product/add', methods=['POST'])
-@admin_required
-def add_product():
-    try:
-        name = request.form.get('name')
-        price = float(request.form.get('price', 0.0))
-        formats = request.form.get('formats', '')
-        new_product = Product(name=name, price_per_kg=price, sizes_raw=formats, available=True)
-        db.session.add(new_product)
-        db.session.commit()
-        flash(f"Prodotto '{name}' aggiunto!", "success")
-    except Exception as e:
-        db.session.rollback()
-        flash(f"Errore: {str(e)}", "danger")
-    return redirect(url_for('admin.index', active_tab='catalog'))
-
 @admin_bp.route('/order/update_status', methods=['POST'])
 @admin_required
 def update_order_status():
     order_id = request.args.get('order_id')
     new_status = request.args.get('new_status')
     
-    # 🌟 FIXED: Safely capture query states at runtime to avoid UnboundLocalError
     status = request.args.get('status', '')
     client_id = request.args.get('client_id', '')
     date_from = request.args.get('date_from', '')
@@ -301,7 +210,6 @@ def update_order_status():
 def mark_order_paid():
     order_id = request.args.get('order_id')
     
-    # 🌟 FIXED: Safely capture query states at runtime to avoid UnboundLocalError
     status = request.args.get('status', '')
     client_id = request.args.get('client_id', '')
     date_from = request.args.get('date_from', '')
@@ -318,14 +226,11 @@ def mark_order_paid():
         
     return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=date_from, date_to=date_to))
 
-
-
 @admin_bp.route('/order/cancel', methods=['POST'])
 @admin_required
 def cancel_order():
     order_id = request.args.get('order_id')
     
-    # 🌟 FIXED: Safely capture query states at runtime to avoid UnboundLocalError
     status = request.args.get('status', '')
     client_id = request.args.get('client_id', '')
     date_from = request.args.get('date_from', '')
@@ -334,7 +239,6 @@ def cancel_order():
     order = Order.query.filter_by(id=order_id).first_or_404()
     try:
         order.status = 'Annullato'
-        # 🌟 FIXED: Syncs values perfectly to prevent "Annullato + In Attesa" contradiction
         order.payment_status = 'Annullato'
         db.session.commit()
         flash(f"Ordine #{order_id} annullato.", "warning")
@@ -344,15 +248,61 @@ def cancel_order():
         
     return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=date_from, date_to=date_to))
 
+
+
+@admin_bp.route('/client/create', methods=['POST'])
+@admin_required
+def create_client():
+    name = request.form.get('name')
+    phone = request.form.get('phone')
+    password = request.form.get('password')
+    if User.query.filter_by(phone=phone).first():
+        flash("Errore: Questo numero di telefono appartiene già ad un utente registrato.", "danger")
+        return redirect(url_for('admin.index', active_tab='users_management'))
+    new_client = User(name=name, phone=phone, role='client')
+    new_client.set_password(password)
+    db.session.add(new_client)
+    db.session.commit()
+    flash(f"Cliente '{name}' registrato con successo.", "success")
+    return redirect(url_for('admin.index', active_tab='users_management'))
+
+def parse_format_weight_kg(item_string, qty):
+    lower_str = item_string.lower()
+    if 'g' in lower_str or 'gr' in lower_str:
+        digits = "".join([c for c in lower_str if c.isdigit()])
+        if digits:
+            grams = float(digits)
+            if grams >= 100 and grams <= 5000: return (grams / 1000.0) * qty
+    if 'piccolo' in lower_str or 'vaschetta' in lower_str: return 0.25 * qty
+    elif 'grande' in lower_str: return 1.0 * qty
+    return 1.0 * qty
+
+def parse_admin_format_price(full_item_name, product_obj):
+    if not product_obj or not product_obj.sizes_raw: return product_obj.price_per_kg if product_obj else 0.0
+    for fmt in product_obj.sizes_raw.split(','):
+        clean_fmt = fmt.strip()
+        if not clean_fmt: continue
+        if ":" in clean_fmt:
+            try:
+                fmt_label, raw_price = clean_fmt.split(":")
+                if fmt_label.strip().lower() in full_item_name.lower(): return float(raw_price)
+            except ValueError: continue
+        else:
+            if clean_fmt.lower() in full_item_name.lower():
+                weight_str = "".join([c for c in clean_fmt if c.isdigit()])
+                if weight_str and ('g' in clean_fmt.lower() or 'gr' in clean_fmt.lower()):
+                    grams = float(weight_str)
+                    return (grams / 1000.0) * product_obj.price_per_kg
+    return product_obj.price_per_kg
+
 @admin_bp.route('/product/save_all', methods=['POST'])
 @admin_required
 def save_all_products():
     try:
-        product_ids = request.form.getlist('product_id[]')
-        names = request.form.getlist('name[]')
-        prices = request.form.getlist('price[]')
-        formats_list = request.form.getlist('formats[]')
-        
+        product_ids = request.form.getlist('product_id')
+        names = request.form.getlist('name')
+        prices = request.form.getlist('price')
+        formats_list = request.form.getlist('formats')
         for i in range(len(product_ids)):
             p_id = int(product_ids[i])
             product = Product.query.get(p_id)
@@ -360,7 +310,6 @@ def save_all_products():
                 product.name = names[i].strip()
                 product.price_per_kg = float(prices[i]) if prices[i] else 0.0
                 product.sizes_raw = formats_list[i].strip()
-                
         db.session.commit()
         flash("Tutti i prodotti del catalogo sono stati aggiornati con successo!", "success")
     except Exception as e:
@@ -421,21 +370,20 @@ def reset_clients():
         flash(f"Errore durante l'eliminazione dei clienti: {str(e)}", "danger")
     return redirect(url_for('admin.index', active_tab='reset_data'))
 
+
+
 @admin_bp.route('/profile/admin/password', methods=['POST'])
 @admin_required
 def change_admin_password():
     from flask import current_app
     old_password = request.form.get('old_password')
     new_password = request.form.get('new_password')
-    
     if old_password != current_app.config.get('ADMIN_PASSWORD'):
         flash("Errore: La password attuale non è corretta.", "danger")
         return redirect(url_for('admin.index', active_tab='users_management'))
-        
     if not new_password or len(new_password.strip()) < 6:
         flash("Errore: La nuova password deve contenere almeno 6 caratteri.", "danger")
         return redirect(url_for('admin.index', active_tab='users_management'))
-        
     current_app.config['ADMIN_PASSWORD'] = new_password.strip()
     flash("Password Amministratore aggiornata con successo per questa sessione!", "success")
     return redirect(url_for('admin.index', active_tab='users_management'))
@@ -446,8 +394,7 @@ def delete_client(client_id):
     client = User.query.filter_by(id=client_id, role='client').first_or_404()
     try:
         associated_orders = Order.query.filter_by(user_id=client.id).all()
-        for o in associated_orders:
-            o.user_id = None
+        for o in associated_orders: o.user_id = None
         db.session.delete(client)
         db.session.commit()
         flash(f"Profilo cliente '{client.name}' eliminato.", "warning")
@@ -463,18 +410,15 @@ def update_client(client_id):
     new_name = request.form.get('name')
     new_phone = request.form.get('phone')
     new_password = request.form.get('password')
-    
     try:
-        if new_name and new_name.strip():
+        if new_name and new_name.strip(): 
             client.name = new_name.strip()
-            
         if new_phone and new_phone.strip() != client.phone:
             existing = User.query.filter_by(phone=new_phone.strip()).first()
             if existing:
                 flash(f"Errore: Il numero {new_phone} appartiene già ad un altro cliente.", "danger")
                 return redirect(url_for('admin.index', active_tab='users_management'))
             client.phone = new_phone.strip()
-            
         if new_password and new_password.strip():
             clean_pass = new_password.strip()
             if len(clean_pass) >= 4:
@@ -485,12 +429,9 @@ def update_client(client_id):
             else:
                 flash(f"Modifica Fallita: Almeno 4 caratteri richiesta.", "danger")
                 return redirect(url_for('admin.index', active_tab='users_management'))
-            
         db.session.commit()
         flash(f"Dati anagrafici di '{client.name}' salvati correttamente.", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Errore: {str(e)}", "danger")
-        
     return redirect(url_for('admin.index', active_tab='users_management'))
-
