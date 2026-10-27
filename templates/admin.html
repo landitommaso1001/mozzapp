@@ -228,29 +228,44 @@
 
         <div style="background: #f9f9f9; padding: 15px; border-radius: 6px; border: 1px solid #ddd; margin-bottom: 25px;">
             <h4 style="margin-top: 0; margin-bottom: 10px;">🔍 Filtra Resoconto Vendite & Produzione</h4>
-            <form action="{{ url_for('admin.index') }}" method="GET" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
-                <input type="hidden" name="active_tab" value="analytics">
-                <div>
-                    <label style="display: block; font-size: 0.85em;">Da data:</label>
-                    <input type="date" name="start_date" value="{{ start_date }}" style="padding: 6px;">
-                </div>
-                <div>
-                    <label style="display: block; font-size: 0.85em;">A data:</label>
-                    <input type="date" name="end_date" value="{{ end_date }}" style="padding: 6px;">
-                </div>
-                <div>
-                    <label style="display: block; font-size: 0.85em;">Prodotto:</label>
-                    <select name="product_name" style="padding: 6px;">
-                        <option value="">-- Tutti i Prodotti --</option>
-                        {% for p in products %}
-                            <option value="{{ p.name }}" {% if product_name == p.name %}selected{% endif %}>{{ p.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <button type="submit" style="background: #0275d8; color: white; border: none; padding: 7px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">Filtra</button>
-                    <a href="{{ url_for('admin.index', active_tab='analytics') }}" style="background: #ccc; color: #333; text-decoration: none; padding: 7px 15px; border-radius: 4px; font-weight: bold; margin-left: 5px; font-size: 0.9em;">Resetta</a>
-                </div>
+            <form method="GET" action="{{ url_for('admin.index') }}">
+    <input type="hidden" name="active_tab" value="analytics">
+
+    <label for="start_date">Da data:</label>
+    <input type="date" name="start_date" id="start_date" value="{{ start_date }}">
+
+    <label for="end_date">A data:</label>
+    <input type="date" name="end_date" id="end_date" value="{{ end_date }}">
+
+    <!-- Filter by Product -->
+    <label for="product_name">Prodotto:</label>
+    <select name="product_name" id="product_name">
+        <option value="">-- Tutti i Prodotti --</option>
+        {% for p in products %}
+            <option value="{{ p.name }}" {% if product_name == p.name %}selected{% endif %}>{{ p.name }}</option>
+        {% endfor %}
+    </select>
+
+    <!-- NEW: Filter by Client inside Analytics -->
+    <label for="analytics_client_id">Cliente:</label>
+    <select name="analytics_client_id" id="analytics_client_id">
+        <option value="">-- Tutti i Clienti --</option>
+        <option value="banco" {% if analytics_client_id == 'banco' %}selected{% endif %}>Vendita Diretta / Banco</option>
+        {% for c in clients %}
+            <option value="{{ c.id }}" {% if analytics_client_id == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+    </select>
+
+    <!-- NEW: Filter by Payment Status inside Analytics -->
+    <label for="analytics_payment_status">Stato Pagamento:</label>
+    <select name="analytics_payment_status" id="analytics_payment_status">
+        <option value="">-- Tutti gli Stati --</option>
+        <option value="Da Saldare" {% if analytics_payment_status == 'Da Saldare' %}selected{% endif %}>Da Saldare</option>
+        <option value="Pagato" {% if analytics_payment_status == 'Pagato' %}selected{% endif %}>Pagato</option>
+    </select>
+
+    <button type="submit">Filtra</button>
+    <a href="{{ url_for('admin.index', active_tab='analytics') }}">Resetta</a>
             </form>
         </div>
 
