@@ -156,7 +156,7 @@ def index():
             items=", ".join(item_strings),
             total=calculated_total,
             status='In Ricezione',
-            payment_status='In Attesa',
+            payment_status='Da Saldare',
             time=""
         )
         db.session.add(new_order)

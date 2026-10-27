@@ -103,7 +103,7 @@
                         <td style="padding: 8px; color: #334155; font-size: 12px;">{{ o.client }}</td>
                         <td style="padding: 8px; font-size: 11px; color: #64748b;">
                             <div>📅 {{ o.date }}</div>
-                            {% if o.time %}<div style="color: #0284c7; font-weight: 600;">⏰ {{ o.time }}</div>{% else %}<div style="color: #94a3b8; font-style: italic;">In Attesa</div>{% endif %}
+                            {% if o.time %}<div style="color: #0284c7; font-weight: 600;">⏰ {{ o.time }}</div>{% else %}<div style="color: #94a3b8; font-style: italic;">Da Saldare</div>{% endif %}
                         </td>
                         <td style="padding: 8px; font-family: monospace; font-size: 11px; color: #0f172a; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ o.items }}">
                             {{ o.items }}

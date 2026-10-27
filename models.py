@@ -41,4 +41,4 @@ class Order(db.Model):
     total = db.Column(db.Float, default=0.0)
     time = db.Column(db.String(20), nullable=True)
     status = db.Column(db.String(20), default='In Ricezione')
-    payment_status = db.Column(db.String(20), default='In Attesa')
+    payment_status = db.Column(db.String(20), default='Da Saldare')
