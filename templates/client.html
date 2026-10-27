@@ -17,16 +17,18 @@
 
     <!-- LEFT COLUMN: Product Counter Selector Form (35% Width Space) -->
     <div style="width: 35%; flex-shrink: 0;">
-        <form method="POST" action="">
+        
+        <!-- Main Form Wrapper handles the creation of a new order -->
+        <form method="POST" action="" id="order-submission-form">
             
-            <!-- 1. FIXED: Dropdown directly updates the URL parameter context on click -->
+            <!-- 2. FIXED: Restored name="client_id" and auto-submit hook to update session variables in python -->
             {% if is_admin or session.get('user_role') == 'admin' %}
             <div class="card" style="margin-bottom: 10px;">
                 <label style="font-weight: 600; display: block; margin-bottom: 6px; color: #0284c7;">A nome di quale Cliente stiamo ordinando?</label>
-                <select id="admin-client-dropdown" style="width: 100%; padding: 4px; font-size: 12px; font-weight: 500;">
+                <select name="client_id" id="client-selector-dropdown" onchange="this.form.submit()" style="width: 100%; padding: 4px; font-size: 12px; font-weight: 500;">
                     <option value="">-- Vendita Diretta al Banco / Ordine Interno --</option>
                     {% for c in all_clients %}
-                    <option value="{{ c.id }}" {% if request.args.get('client_id') == c.id|string or selected_client_id == c.id %}selected{% endif %}>{{ c.name }} (📞 {{ c.phone }})</option>
+                    <option value="{{ c.id }}" {% if selected_client_id == c.id or session.get('selected_client_id') == c.id|string %}selected{% endif %}>{{ c.name }} (📞 {{ c.phone }})</option>
                     {% endfor %}
                 </select>
             </div>
@@ -99,11 +101,17 @@
                     </div>
                     <div style="display: flex; gap: 6px;">
                         
-                        <!-- 2. FIXED: Links point directly to the native repeat query logic parameter framework -->
-                        <a href="/?action=repeat&order_id={{ order.id }}" class="btn" style="padding: 3px 8px; font-size: 11px; margin: 0; background: #f8fafc;">🔄 Ripeti</a>
+                        <!-- 1. FIXED: Submits repeat token explicitly via POST parameters straight back to current path view -->
+                        <form method="POST" action="" style="display: inline; margin: 0; padding: 0;">
+                            <input type="hidden" name="repeat_order_id" value="{{ order.id }}">
+                            <button type="submit" name="action" value="repeat" class="btn" style="padding: 3px 8px; font-size: 11px; margin: 0; background: #f8fafc;">🔄 Ripeti</button>
+                        </form>
                         
                         {% if order.status == 'In Ricezione' %}
-                        <a href="/?action=cancel&order_id={{ order.id }}" class="btn" style="background: #fee2e2; color: #ef4444; border-color: #fca5a5; padding: 3px 8px; font-size: 11px; margin: 0;">❌ Annulla</a>
+                        <form method="POST" action="" style="display: inline; margin: 0; padding: 0;">
+                            <input type="hidden" name="cancel_order_id" value="{{ order.id }}">
+                            <button type="submit" name="action" value="cancel" class="btn" style="background: #fee2e2; color: #ef4444; border-color: #fca5a5; padding: 3px 8px; font-size: 11px; margin: 0;">❌ Annulla</button>
+                        </form>
                         {% endif %}
                         
                     </div>
@@ -116,23 +124,5 @@
         {% endif %}
     </div>
 </div>
-
-<!-- Auto-Routing Selector Script Engine -->
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const dropdown = document.getElementById("admin-client-dropdown");
-        if (dropdown) {
-            dropdown.addEventListener("change", function() {
-                const clientId = dropdown.value;
-                // Dynamically append the parameter parameters to route updates smoothly
-                if (clientId) {
-                    window.location.href = "/?view=client&client_id=" + clientId;
-                } else {
-                    window.location.href = "/?view=client";
-                }
-            });
-        }
-    });
-</script>
 
 {% endblock %}

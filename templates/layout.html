@@ -69,18 +69,19 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="brand-title">🧀 Caseificio Vicedomini</div>
-        <nav>
-            <ul>
-                <!-- 2 & 3. FIXED: Targets blueprint endpoint roots to prevent cookie dropouts and login flips -->
-                <li><a href="/">🛒 Vista Cliente</a></li>
-                {% if session.get('user_role') == 'admin' or is_admin %}
-                <li><a href="/admin/" style="background: #e2e8f0; border-radius: 4px; padding: 4px 8px; font-weight: 700; color: #0284c7;">🏭 Vista Admin</a></li>
-                {% endif %}
-            </ul>
-        </nav>
-    </header>
+<header>
+    <div class="brand-title">🧀 Caseificio Vicedomini</div>
+    <nav>
+        <ul>
+            <!-- Cleans up route redirections back to native blueprint frameworks -->
+            <li><a href="/?view=client">🛒 Vista Cliente</a></li>
+            {% if session.get('user_role') == 'admin' or is_admin %}
+            <li><a href="/admin/?active_tab=orders">🏭 Vista Admin</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+</header>
+
     <main>
         {% block content %}{% endblock %}
     </main>
