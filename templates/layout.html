@@ -67,6 +67,19 @@
         button, .btn { font-size: 12px !important; font-weight: 600 !important; padding: 4px 10px !important; border-radius: 4px !important; cursor: pointer; border: 1px solid var(--border-hairline) !important; background: var(--bg-neutral); color: var(--text-dark); }
         button:hover { background: #e2e8f0; }
     </style>
+
+<head>
+   
+    <!-- 🍏 iOS Native Mobile App Wrapper Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MozzApp">
+    
+    <!-- App Icon for iPhone Home Screen -->
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+</head>
+
+
 </head>
 <body>
 <header>
@@ -86,4 +99,6 @@
         {% block content %}{% endblock %}
     </main>
 </body>
+
+
 </html>
