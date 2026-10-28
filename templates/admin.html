@@ -106,7 +106,8 @@
                             {% if o.time %}<div style="color: #0284c7; font-weight: 600;">⏰ {{ o.time }}</div>{% else %}<div style="color: #94a3b8; font-style: italic;">Da Saldare</div>{% endif %}
                         </td>
                         <td style="padding: 8px; font-family: monospace; font-size: 11px; color: #0f172a; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ o.items }}">
-                            {{ o.items }}
+                            <td class="items-cell-mobile">{{ o.items }}</td>
+                            € {{ "%.2f"|format(o.total) }} 📦 {{ o.status }} 💰 {{ o.payment_status }} {% if o.status == 'In Ricezione' %}✓ Approva
                         </td>
                         <td style="padding: 8px; text-align: right; font-weight: 700; color: #10b981; font-size: 12px;">€ {{ "%.2f"|format(o.total) }}</td>
                         <td style="padding: 8px; vertical-align: middle;">

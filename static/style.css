@@ -227,4 +227,18 @@ button:hover { background: #e2e8f0; }
     .mobile-view-tabs { display: flex !important; }
     .client-split-section { display: none; }
     .client-split-section.active-section { display: block !important; }
+
+    /* 📋 CRITICAL HOTFIX: Force the newly designated items-cell-mobile to wrap unconditionally */
+    main table td.items-cell-mobile,
+    table td.items-cell-mobile,
+    .table-responsive table td.items-cell-mobile {
+        white-space: normal !important; /* Force text to wrap instead of trailing off-screen */
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
+        min-width: 200px !important;    /* Gives your text column plenty of space to breathe */
+        max-width: 260px !important;
+    }
+
+
 }
