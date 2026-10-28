@@ -2,10 +2,10 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <!-- 📱 CRITICAL: Forces iOS to fit text and layout to the actual screen width -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Fixed Viewport Scaling rules -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     
-    <!-- 🍏 iOS Native Mobile Immersive App Wrapper Configurations -->
+    <!-- iOS Native App configuration tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="MozzApp">
@@ -13,8 +13,8 @@
 
     <title>Caseificio Vicedomini</title>
 
-    <!-- 🔗 Links your external style sheet file (Appended with ?v=3 to force cache reload on iPhone) -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=3">
+    <!-- Appended cache-busting parameter version to force instantaneous asset updates -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=4">
 </head>
 <body>
 
