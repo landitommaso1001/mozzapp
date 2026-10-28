@@ -1,102 +1,136 @@
-    <style>
-        :root {
-            --bg-clean: #ffffff;
-            --bg-neutral: #f8fafc;
-            --text-dark: #0f172a;
-            --text-muted: #64748b;
-            --ocean-blue: #0284c7;
-            --border-hairline: #e2e8f0;
-        }
+:root {
+    --bg-clean: #ffffff;
+    --bg-neutral: #f8fafc;
+    --text-dark: #0f172a;
+    --text-muted: #64748b;
+    --ocean-blue: #0284c7;
+    --border-hairline: #e2e8f0;
+}
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            background-color: var(--bg-neutral) !important;
-            color: var(--text-dark) !important;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
-            font-size: 13px !important;
-            line-height: 1.5;
-            padding: 12px 16px;
-        }
+body {
+    background-color: var(--bg-neutral) !important;
+    color: var(--text-dark) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-size: 13px !important;
+    line-height: 1.5;
+    padding: 12px 16px;
+}
 
-        a { color: var(--ocean-blue); text-decoration: none; font-weight: 500; }
-        a:hover { text-decoration: underline; }
+a { color: var(--ocean-blue); text-decoration: none; font-weight: 500; }
+a:hover { text-decoration: underline; }
 
-        header {
-            background: var(--bg-clean);
-            border: 1px solid var(--border-hairline);
-            border-radius: 6px;
-            padding: 10px 16px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-        }
+header {
+    background: var(--bg-clean);
+    border: 1px solid var(--border-hairline);
+    border-radius: 6px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
 
-        .brand-title { font-size: 14px; font-weight: 700; }
-        nav ul { list-style: none; display: flex; gap: 14px; }
-        nav ul li a { font-size: 12px; font-weight: 600; text-transform: uppercase; padding: 4px 8px; }
+.brand-title { font-size: 14px; font-weight: 700; }
+nav ul { list-style: none; display: flex; gap: 14px; }
+nav ul li a { font-size: 12px; font-weight: 600; text-transform: uppercase; padding: 4px 8px; }
 
-        main { max-width: 100%; margin: 0 auto; }
+main { max-width: 100%; margin: 0 auto; }
 
-        .card {
-            background: var(--bg-clean) !important;
-            border: 1px solid var(--border-hairline) !important;
-            border-radius: 6px !important;
-            padding: 12px 16px !important;
-            margin-bottom: 12px !important;
-        }
+.card {
+    background: var(--bg-clean) !important;
+    border: 1px solid var(--border-hairline) !important;
+    border-radius: 6px !important;
+    padding: 12px 16px !important;
+    margin-bottom: 12px !important;
+}
 
-        table { width: 100% !important; border-collapse: collapse !important; margin: 8px 0 !important; background: var(--bg-clean) !important; }
-        table th, table td { padding: 6px 10px !important; border-bottom: 1px solid var(--border-hairline) !important; font-size: 13px !important; }
-        table th { background-color: var(--bg-neutral) !important; color: var(--text-muted) !important; font-weight: 600; text-transform: uppercase; font-size: 11px !important; }
+table { width: 100% !important; border-collapse: collapse !important; margin: 8px 0 !important; background: var(--bg-clean) !important; }
+table th, table td { padding: 6px 10px !important; border-bottom: 1px solid var(--border-hairline) !important; font-size: 13px !important; }
+table th { background-color: var(--bg-neutral) !important; color: var(--text-muted) !important; font-weight: 600; text-transform: uppercase; font-size: 11px !important; }
 
-        input, select { background-color: var(--bg-clean) !important; border: 1px solid var(--border-hairline) !important; color: var(--text-dark) !important; font-size: 12px !important; padding: 4px 8px !important; border-radius: 4px !important; }
-        button, .btn { font-size: 12px !important; font-weight: 600 !important; padding: 4px 10px !important; border-radius: 4px !important; cursor: pointer; border: 1px solid var(--border-hairline) !important; background: var(--bg-neutral); color: var(--text-dark); }
-        button:hover { background: #e2e8f0; }
+input, select { background-color: var(--bg-clean) !important; border: 1px solid var(--border-hairline) !important; color: var(--text-dark) !important; font-size: 12px !important; padding: 4px 8px !important; border-radius: 4px !important; }
+button, .btn { font-size: 12px !important; font-weight: 600 !important; padding: 4px 10px !important; border-radius: 4px !important; cursor: pointer; border: 1px solid var(--border-hairline) !important; background: var(--bg-neutral); color: var(--text-dark); }
+button:hover { background: #e2e8f0; }
 
-
-/* 📱 Mobile UI adjustments for smartphones */
+/* ==========================================================================
+   📱 MOBILE UI ENGINE BREAKPOINTS (Triggered automatically on vertical viewports)
+   ========================================================================== */
 @media (max-width: 768px) {
-    /* Stack filtering inputs vertically instead of squeezing them side-by-side */
+    header {
+        flex-direction: column !important;
+        gap: 12px !important;
+        text-align: center !important;
+        padding: 14px !important;
+    }
+
+    nav ul {
+        flex-direction: row !important;
+        justify-content: center !important;
+        gap: 8px !important;
+    }
+
+    nav ul li a {
+        font-size: 11px !important;
+        padding: 6px 10px !important;
+        background: var(--bg-neutral) !important;
+        border-radius: 4px !important;
+        border: 1px solid var(--border-hairline) !important;
+    }
+
+    /* Stack filter dropdown blocks and pickers into vertical list cards */
     form {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        width: 100%;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        width: 100% !important;
     }
     
     label {
-        margin-bottom: -4px;
-        font-weight: bold;
+        margin-bottom: -6px !important;
+        font-weight: 600 !important;
+        font-size: 12px !important;
+        color: var(--text-muted) !important;
     }
     
-    /* Optimize buttons and dropdown selectors for touch interaction */
-    input, select, button {
+    /* Enlarge touch input frameworks so they operate elegantly under mobile thumbs */
+    input, select, button, .btn {
         width: 100% !important;
-        box-sizing: border-box;
-        padding: 14px !important; /* Large, easy-to-tap hit targets for thumbs */
-        font-size: 16px !important; /* CRITICAL: Prevents iOS Safari from auto-zooming page text fields */
+        box-sizing: border-box !important;
+        padding: 12px 14px !important; 
+        font-size: 16px !important; /* CRITICAL: Stops iOS Safari from auto-zooming screen elements */
         margin: 0 !important;
+        height: 46px !important; /* Standard native mobile thumb block height */
     }
 
-    /* Wrap wide data tables in a swipeable box so they don't break your layout */
+    button, .btn {
+        background: var(--ocean-blue) !important;
+        color: white !important;
+        border: none !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Build fluid swipe zones for analytical grids */
     table {
-        display: block;
-        width: 100%;
-        overflow-x: auto;
-        white-space: nowrap;
-        -webkit-overflow-scrolling: touch;
+        display: block !important;
+        width: 100% !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        -webkit-overflow-scrolling: touch !important; /* Smooth elastic swipe on iOS devices */
     }
     
-    /* Make tab navigation bar links stack neatly or wrap cleanly */
-    .tabs, nav {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
+    table th, table td {
+        padding: 10px 12px !important; /* Slightly more space for easy reading */
+    }
+    
+    .tabs {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        width: 100% !important;
     }
 }
-
-
-    </style>
