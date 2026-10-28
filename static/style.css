@@ -64,7 +64,7 @@ input, select { background-color: var(--bg-clean) !important; border: 1px solid 
 button, .btn { font-size: 12px !important; font-weight: 600 !important; padding: 4px 10px !important; border-radius: 4px !important; cursor: pointer; border: 1px solid var(--border-hairline) !important; background: var(--bg-neutral); color: var(--text-dark); }
 button:hover { background: #e2e8f0; }
 
-/* 📱 NEW: Mobile Sub-Tabs Navigation for Client View Split */
+/* Mobile Sub-Tabs Navigation for Client View Split */
 .mobile-view-tabs {
     display: none;
     width: 100%;
@@ -93,15 +93,10 @@ button:hover { background: #e2e8f0; }
 }
 
 /* ==========================================================================
-   📱 MOBILE SMARTPHONE ENGINE BREAKPOINTS
+   📱 HIGH-PRECISION MOBILE LAYOUT SYSTEM
    ========================================================================== */
-
 @media (max-width: 768px) {
-    body { 
-        padding: 8px 8px !important; 
-        max-width: 100vw !important;
-        overflow-x: hidden !important;
-    }
+    body { padding: 8px 8px !important; }
 
     header {
         flex-direction: column !important;
@@ -113,99 +108,123 @@ button:hover { background: #e2e8f0; }
     nav ul { flex-direction: row !important; justify-content: center !important; gap: 8px !important; }
     nav ul li a { font-size: 11px !important; padding: 6px 10px !important; }
 
-    /* 🌟 FIX 1: Force Top Admin Tabs/Buttons to wrap into clean clickable tiles */
     .tabs, .tab-container, .admin-actions, .button-row, nav {
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: wrap !important; /* Allows wrapping onto multiple rows */
+        flex-wrap: wrap !important;
         gap: 6px !important;
         width: 100% !important;
     }
 
-    /* Target the exact sub-navigation tab links inside your Admin layout view */
     .tabs a, .tabs button, .tab-container a, .admin-actions button {
-        flex: 1 1 calc(50% - 6px) !important; /* Places exactly 2 uniform buttons per row */
+        flex: 1 1 calc(50% - 6px) !important;
         min-width: 110px !important;
         padding: 10px 4px !important;
         font-size: 12px !important;
         text-align: center !important;
-        box-sizing: border-box !important;
-        height: auto !important;
     }
 
     form {
         display: flex !important;
         flex-direction: column !important;
-        gap: 12px !important;
+        gap: 10px !important;
         width: 100% !important;
-    }
-    
-    label {
-        margin-bottom: -6px !important;
-        font-size: 12px !important;
     }
     
     input, select, button, .btn {
         width: 100% !important;
         box-sizing: border-box !important;
-        padding: 12px 14px !important; 
+        padding: 10px 12px !important; 
         font-size: 16px !important; 
         margin: 0 !important;
-        height: 46px !important; 
+        height: 42px !important; /* Slightly lower height for cleaner spacing */
     }
 
-    /* 🌟 FIX 2: Isolate Admin Data Tables into fluid independent touch-swipe boxes */
-    /* This overrides the global table behavior for the heavy admin data sheets */
-    table {
-        display: table !important; /* Reset layout engine */
-        width: 100% !important;
-    }
-
-    /* Force tables inside main containers or sheets to allow horizontal sweeping */
+    /* 🌟 FIXED: Isolate general horizontal swipe layout for admin tables */
     main table, .card table, .table-responsive {
         display: block !important;
         max-width: 100% !important;
-        overflow-x: auto !important; /* Adds touch-scrolling */
-        white-space: nowrap !important; /* Keeps table cells inline */
-        -webkit-overflow-scrolling: touch !important; /* Elastic smooth momentum on iOS */
+        overflow-x: auto !important;
+        white-space: nowrap !important; /* Forces row data horizontally */
+        -webkit-overflow-scrolling: touch !important;
     }
 
-    main table th, main table td, .card table td {
+    main table th, main table td {
         display: table-cell !important;
         width: auto !important;
-        padding: 10px 12px !important;
+        padding: 8px 10px !important;
     }
 
-    /* Custom scroll indicator tracker bar */
-    main table::-webkit-scrollbar, .table-responsive::-webkit-scrollbar {
-        height: 5px;
-    }
-    main table::-webkit-scrollbar-thumb, .table-responsive::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 10px;
+    /* 🌟 FIXED WRAPPING CRITERIA: Target description fields to wrap text over multiple lines */
+    /* Checks typical data columns containing itemized text arrays */
+    main table td:nth-child(3), 
+    main table td:nth-child(5),
+    .table-responsive table td:nth-child(3),
+    table td[style*="normal"] {
+        white-space: normal !important; /* OVERRIDES THE NOWRAP FOR DESCRIPTIONS */
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        min-width: 220px !important; /* Guarantees comfortable space to read items */
+        max-width: 280px !important;
     }
 
-    /* Client view specific sub-tab elements */
+    /* 🌟 FIXED CLIENT CARD VIEW: Compact stacked blocks layout */
+    .order-table, .order-table tbody, .order-table tr, .order-table td {
+        display: block !important;
+        width: 100% !important;
+    }
+    .order-table th { display: none !important; }
+    
+    /* Sleek, super compact product blocks */
+    .order-table tr {
+        background: var(--bg-clean) !important;
+        border: 1px solid var(--border-hairline) !important;
+        border-radius: 6px !important;
+        padding: 8px 12px !important; /* Compact padding */
+        margin-bottom: 8px !important; /* Tighter layout gap */
+    }
+    
+    .order-table td {
+        border-bottom: none !important;
+        padding: 2px 0 !important; /* Minimized inner row heights */
+    }
+    
+    .order-table td:first-child {
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        border-bottom: 1px solid var(--border-hairline) !important;
+        padding-bottom: 4px !important;
+        margin-bottom: 4px !important;
+    }
+
+    /* Compact helpers for order values */
+    .order-table td:nth-child(2):before {
+        content: "Prezzo: " !important;
+        color: var(--text-muted) !important;
+        font-size: 12px;
+    }
+    
+    .order-table td:last-child {
+        display: flex !important;
+        align-items: center;
+        gap: 10px;
+        margin-top: 6px;
+    }
+    
+    .order-table td:last-child:before {
+        content: "Qta:" !important;
+        font-size: 12px !important;
+        color: var(--text-muted) !important;
+        font-weight: 600 !important;
+    }
+    
+    .order-table td:last-child input {
+        height: 36px !important; /* Short numeric box for thumbs */
+        padding: 6px 10px !important;
+    }
+
+    /* View states elements */
     .mobile-view-tabs { display: flex !important; }
     .client-split-section { display: none; }
     .client-split-section.active-section { display: block !important; }
-
-    .order-table, .order-table tbody, .order-table tr, .order-table td { display: block !important; width: 100% !important; }
-    .order-table th { display: none !important; }
-    .order-table tr { background: var(--bg-clean) !important; border: 1px solid var(--border-hairline) !important; border-radius: 8px !important; padding: 14px !important; margin-bottom: 12px !important; }
-    .order-table td { border-bottom: none !important; padding: 4px 0 !important; }
-    .order-table td:first-child { font-weight: 700 !important; font-size: 15px !important; border-bottom: 1px solid var(--border-hairline) !important; padding-bottom: 6px !important; margin-bottom: 6px !important; }
-
-    /* 📋 Force Long Order Items Descriptions to Wrap onto New Lines on Mobile */
-    main table td:nth-child(3), 
-    .history-table-container table td:nth-child(3),
-    table td.order-items-column {
-        white-space: normal !important; /* Overrides the nowrap restriction */
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        min-width: 180px !important;    /* Guarantees space to read text legibly */
-        max-width: 250px !important;    /* Prevents pushing other columns off-screen */
-    }
-
 }
-
