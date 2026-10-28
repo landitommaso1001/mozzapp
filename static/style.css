@@ -16,6 +16,9 @@ body {
     font-size: 13px !important;
     line-height: 1.5;
     padding: 12px 16px;
+    /* CRITICAL SAFETY LOCKS: Prevents content from overflowing past the screen */
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
 }
 
 a { color: var(--ocean-blue); text-decoration: none; font-weight: 500; }
@@ -31,13 +34,15 @@ header {
     align-items: center;
     justify-content: space-between;
     box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    max-width: 100%;
 }
 
 .brand-title { font-size: 14px; font-weight: 700; }
 nav ul { list-style: none; display: flex; gap: 14px; }
 nav ul li a { font-size: 12px; font-weight: 600; text-transform: uppercase; padding: 4px 8px; }
 
-main { max-width: 100%; margin: 0 auto; }
+main { width: 100%; max-width: 100%; margin: 0 auto; clear: both; }
+.container { width: 100%; max-width: 100%; }
 
 .card {
     background: var(--bg-clean) !important;
@@ -45,9 +50,16 @@ main { max-width: 100%; margin: 0 auto; }
     border-radius: 6px !important;
     padding: 12px 16px !important;
     margin-bottom: 12px !important;
+    max-width: 100% !important;
 }
 
-table { width: 100% !important; border-collapse: collapse !important; margin: 8px 0 !important; background: var(--bg-clean) !important; }
+/* Base structural table layout values */
+table { 
+    width: 100% !important; 
+    border-collapse: collapse !important; 
+    margin: 8px 0 !important; 
+    background: var(--bg-clean) !important; 
+}
 table th, table td { padding: 6px 10px !important; border-bottom: 1px solid var(--border-hairline) !important; font-size: 13px !important; }
 table th { background-color: var(--bg-neutral) !important; color: var(--text-muted) !important; font-weight: 600; text-transform: uppercase; font-size: 11px !important; }
 
@@ -56,9 +68,13 @@ button, .btn { font-size: 12px !important; font-weight: 600 !important; padding:
 button:hover { background: #e2e8f0; }
 
 /* ==========================================================================
-   📱 MOBILE UI ENGINE BREAKPOINTS (Triggered automatically on vertical viewports)
+   📱 RESPONSIVE SMARTPHONE MEDIA QUERIES
    ========================================================================== */
 @media (max-width: 768px) {
+    body {
+        padding: 8px 8px !important;
+    }
+
     header {
         flex-direction: column !important;
         gap: 12px !important;
@@ -75,12 +91,9 @@ button:hover { background: #e2e8f0; }
     nav ul li a {
         font-size: 11px !important;
         padding: 6px 10px !important;
-        background: var(--bg-neutral) !important;
-        border-radius: 4px !important;
-        border: 1px solid var(--border-hairline) !important;
     }
 
-    /* Stack filter dropdown blocks and pickers into vertical list cards */
+    /* Stacks filter options smoothly into clean lists */
     form {
         display: flex !important;
         flex-direction: column !important;
@@ -90,41 +103,31 @@ button:hover { background: #e2e8f0; }
     
     label {
         margin-bottom: -6px !important;
-        font-weight: 600 !important;
         font-size: 12px !important;
-        color: var(--text-muted) !important;
     }
     
-    /* Enlarge touch input frameworks so they operate elegantly under mobile thumbs */
     input, select, button, .btn {
         width: 100% !important;
         box-sizing: border-box !important;
         padding: 12px 14px !important; 
-        font-size: 16px !important; /* CRITICAL: Stops iOS Safari from auto-zooming screen elements */
+        font-size: 16px !important; 
         margin: 0 !important;
-        height: 46px !important; /* Standard native mobile thumb block height */
+        height: 46px !important; 
     }
 
-    button, .btn {
-        background: var(--ocean-blue) !important;
-        color: white !important;
-        border: none !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-
-    /* Build fluid swipe zones for analytical grids */
+    /* THE CORRECTION: Isolates width constraints into a separate scroll wrapper rule */
     table {
-        display: block !important;
+        display: table !important; /* Reset back to default table behavior */
         width: 100% !important;
+    }
+
+    /* Apply the horizontal swipe capability cleanly to container classes or tables natively */
+    .table-responsive, table {
+        display: block !important;
+        max-width: 100% !important;
         overflow-x: auto !important;
         white-space: nowrap !important;
-        -webkit-overflow-scrolling: touch !important; /* Smooth elastic swipe on iOS devices */
-    }
-    
-    table th, table td {
-        padding: 10px 12px !important; /* Slightly more space for easy reading */
+        -webkit-overflow-scrolling: touch !important; 
     }
     
     .tabs {
