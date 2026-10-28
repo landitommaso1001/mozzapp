@@ -4,6 +4,9 @@ from extensions import db
 from models import Product, Order, User
 from routes.client_routes import client_bp
 from routes.admin_routes import admin_bp
+from datetime import timedelta
+
+
 
 app = Flask(__name__)
 
@@ -16,6 +19,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['ADMIN_PHONE'] = os.environ.get("ADMIN_PHONE", "1234567890")
 app.config['ADMIN_PASSWORD'] = os.environ.get("ADMIN_PASSWORD", "1234567890") 
 app.config['ADMIN_NAME'] = "admin"
+
+# Add this inside your app configuration block
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
 # Initialize SQLAlchemy with our Flask App context layer
 db.init_app(app)
