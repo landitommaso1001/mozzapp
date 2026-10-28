@@ -64,8 +64,36 @@ input, select { background-color: var(--bg-clean) !important; border: 1px solid 
 button, .btn { font-size: 12px !important; font-weight: 600 !important; padding: 4px 10px !important; border-radius: 4px !important; cursor: pointer; border: 1px solid var(--border-hairline) !important; background: var(--bg-neutral); color: var(--text-dark); }
 button:hover { background: #e2e8f0; }
 
+/* 📱 NEW: Mobile Sub-Tabs Navigation for Client View Split */
+.mobile-view-tabs {
+    display: none;
+    width: 100%;
+    background: var(--bg-clean);
+    border: 1px solid var(--border-hairline);
+    border-radius: 6px;
+    margin-bottom: 16px;
+    padding: 4px;
+}
+.mobile-tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    background: transparent;
+    border: none !important;
+    border-radius: 4px;
+    color: var(--text-muted);
+    cursor: pointer;
+    height: auto !important;
+}
+.mobile-tab-btn.active {
+    background: var(--ocean-blue) !important;
+    color: white !important;
+}
+
 /* ==========================================================================
-   📱 MOBILE LAYOUT REORGANIZATION BREAKPOINTS
+   📱 MOBILE SMARTPHONE ENGINE BREAKPOINTS
    ========================================================================== */
 @media (max-width: 768px) {
     body { padding: 8px 8px !important; }
@@ -80,89 +108,86 @@ button:hover { background: #e2e8f0; }
     nav ul { flex-direction: row !important; justify-content: center !important; gap: 8px !important; }
     nav ul li a { font-size: 11px !important; padding: 6px 10px !important; }
 
-    form {
+    /* 🌟 FIXED: Make Admin/Top Layer buttons wrap beautifully instead of breaking */
+    .tabs, .tab-container, .admin-actions, .button-row, form {
         display: flex !important;
-        flex-direction: column !important;
-        gap: 14px !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important; /* Forces buttons to wrap down smoothly if they exceed screen width */
+        gap: 8px !important;
         width: 100% !important;
     }
-    
-    /* ⚡ TRANSFORM ORDERS TABLE INTO CARD TILES: Solves the cramped order layout */
-    /* If your products are in a table, this strips the rows and turns them into vertical blocks */
-    table, tbody, tr, td {
+
+    form {
+        flex-direction: column !important; /* Filters still stack vertically */
+    }
+
+    /* Enforce block layout targets for specific macro actions */
+    .tabs a, .tabs button, .admin-actions button, .admin-actions .btn {
+        flex: 1 1 calc(50% - 8px) !important; /* Neatly arranges top buttons into 2 side-by-side squares on mobile */
+        min-width: 120px !important;
+        text-align: center;
+    }
+
+    /* Activate our new Sub-Tab container links on mobile viewports */
+    .mobile-view-tabs {
+        display: flex !important;
+    }
+
+    /* Default behavior: Hide one split container block dynamically on mobile */
+    .client-split-section {
+        display: none;
+    }
+    .client-split-section.active-section {
+        display: block !important;
+    }
+
+    /* Convert wide order creation listings into stacked cards */
+    .order-table, .order-table tbody, .order-table tr, .order-table td {
         display: block !important;
         width: 100% !important;
-        box-sizing: border-box;
     }
-    
-    /* Hide the web browser header layout matrix text on mobile screens */
-    table th { display: none !important; }
-
-    /* Each product item row becomes a clean standalone floating tile card */
-    table tr {
+    .order-table th { display: none !important; }
+    .order-table tr {
         background: var(--bg-clean) !important;
         border: 1px solid var(--border-hairline) !important;
         border-radius: 8px !important;
         padding: 14px !important;
         margin-bottom: 12px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.01) !important;
     }
-
-    /* Give each data line clear spacing inside the item card layout */
-    table td {
+    .order-table td {
         border-bottom: none !important;
         padding: 4px 0 !important;
-        text-align: left !important;
-        font-size: 14px !important;
     }
-
-    /* Emphasize the Product Title at the top of the mobile card */
-    table td:first-child {
+    .order-table td:first-child {
         font-weight: 700 !important;
-        font-size: 16px !important;
-        color: var(--text-dark) !important;
+        font-size: 15px !important;
         border-bottom: 1px solid var(--border-hairline) !important;
-        padding-bottom: 8px !important;
+        padding-bottom: 6px !important;
         margin-bottom: 6px !important;
     }
 
-    /* Style the price data entry label line layout */
-    table td:nth-child(2):before {
-        content: "Prezzo: " !important;
-        color: var(--text-muted) !important;
-        font-weight: 500 !important;
-    }
-
-    /* Style the input form label wrapper text descriptor dynamically */
-    table td:last-child:before {
-        content: "Quantità da ordinare:" !important;
-        display: block !important;
-        font-size: 12px !important;
-        color: var(--text-muted) !important;
-        margin-bottom: 6px !important;
-        font-weight: 600 !important;
-    }
-
-    /* Max out touch targets to easily modify numeric inputs with phone thumbs */
+    /* Touch element heights for thumb access */
     input, select, button, .btn {
         width: 100% !important;
         box-sizing: border-box !important;
         padding: 12px 14px !important; 
         font-size: 16px !important; 
-        margin: 0 !important;
-        height: 48px !important; 
+        height: 46px !important; 
     }
 
-    /* Style primary operational CTA submit nodes */
-    button[type="submit"], .btn-primary {
-        background: var(--ocean-blue) !important;
-        color: white !important;
-        border: none !important;
-        font-size: 15px !important;
-        font-weight: 700 !important;
-        text-transform: uppercase !important;
-        border-radius: 6px !important;
-        box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2) !important;
-        margin-top: 10px !important;
+    /* Swipe box isolation for old order rows */
+    .history-table-container, .table-responsive {
+        display: block !important;
+        width: 100% !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    .history-table-container table {
+        display: table !important;
+    }
+    .history-table-container td, .history-table-container th {
+        display: table-cell !important;
+        width: auto !important;
     }
 }

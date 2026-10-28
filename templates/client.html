@@ -1,136 +1,168 @@
-{% extends 'layout.html' %} 
+{% extends "layout.html" %}
 {% block content %}
 
-<!-- Header User Strip Section -->
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #ffffff; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
-    <div style="font-size: 13px;">👤 User: <strong>{{ session['user_name'] }}</strong></div>
-    <div><a href="{{ url_for('client_bp.logout') }}" style="color: #ef4444; font-weight: 600; font-size: 12px;">🚪 Esci</a></div>
+<!-- 📱 Mobile Sub-Tabs Selector Navigation Header -->
+<div class="mobile-view-tabs">
+    <button class="mobile-tab-btn active" id="btn-order-form" onclick="switchClientTab('order-form')">🛒 Nuovo Ordine</button>
+    <button class="mobile-tab-btn" id="btn-order-history" onclick="switchClientTab('order-history')">📋 Storico Ordini</button>
 </div>
 
-<!-- Asymmetrical Two Column Matrix Section Split -->
-<div style="display: flex; gap: 16px; align-items: start; width: 100%;">
+<!-- ==========================================================================
+     SECTION 1: THE NEW ORDER PLACEMENT INTERFACE FORM
+     ========================================================================== -->
+<div id="section-order-form" class="client-split-section active-section">
+    <div class="card">
+        <h3 style="margin-bottom: 12px;">Invia un Nuovo Ordine</h3>
+        
+        <!-- Admin Context Target Selector Dropdown -->
+        {% if is_admin %}
+        <form method="GET" action="{{ url_for('client_bp.index') }}" style="margin-bottom: 16px; background: var(--bg-neutral); padding: 10px; border-radius: 6px;">
+            <label for="selected_client_id" style="display:block; margin-bottom:6px; font-weight:600;">Seleziona Cliente per Ordine Assistito:</label>
+            <select name="selected_client_id" id="selected_client_id" onchange="this.form.submit()">
+                <option value="0" {% if selected_client_id == 0 %}selected{% endif %}>Vendita Diretta / Banco</option>
+                {% for c in all_clients %}
+                    <option value="{{ c.id }}" {% if selected_client_id == c.id %}selected{% endif %}>{{ c.name }} ({{ c.phone }})</option>
+                {% endfor %}
+            </select>
+        </form>
+        {% endif %}
 
-    <!-- LEFT COLUMN: Product Item Picker Form Panel (35% Width) -->
-    <div style="width: 35%; flex-shrink: 0;">
-        <form method="POST" action="{{ url_for('client_bp.index') }}" id="order-creation-form">
-            
-            <!-- 🌟 FIXED 1: Combined dropdown that handles both history filtering and form assignment variables -->
+        <!-- Core Submission Order Form Execution Matrix -->
+        <form method="POST" action="{{ url_for('client_bp.index') }}">
             {% if is_admin %}
-            <div class="card" style="margin-bottom: 10px;">
-                <label style="font-weight: 600; display: block; margin-bottom: 6px; color: #0284c7;">A nome di quale Cliente stiamo ordinando?</label>
-                <!-- This field passes the selected client ID during order submission -->
-                <input type="hidden" name="admin_target_client_id" id="hidden-target-client-id" value="{{ selected_client_id }}">
-                
-                <select id="admin-client-history-filter" onchange="syncClientSelection(this.value)" style="width: 100%; padding: 4px; font-size: 12px;">
-                    <option value="0" {% if selected_client_id == 0 %}selected{% endif %}>-- Vendita Diretta al Banco / Ordine Interno --</option>
-                    {% for c in all_clients %}
-                    <option value="{{ c.id }}" {% if selected_client_id == c.id %}selected{% endif %}>{{ c.name }} (📞 {{ c.phone }})</option>
-                    {% endfor %}
-                </select>
-            </div>
+                <input type="hidden" name="admin_target_client_id" value="{{ selected_client_id }}">
             {% endif %}
 
-            <div class="card">
-                <h3 style="color: #0284c7; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">🛒 Nuovo Ordine Caseificio</h3>
-                
-                {% if products %}
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    {% for prod in products %}
-                    <div style="padding: 6px 8px; border: 1px solid #f1f5f9; border-radius: 4px; background: #f8fafc;">
-                        <strong style="display: block; margin-bottom: 4px; color: #0f172a; font-size: 12px;">{{ prod.name }}</strong>
-                        
-                        {% if prod.parsed_formats %} 
-                            {% for fmt in prod.parsed_formats %}
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                <span style="color: #475569; font-size: 12px;">{{ fmt.name }} (€ {{"%.2f"|format(fmt.price)}})</span>
-                                {% set lookup_key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
-                                <input type="number" name="qty_{{ prod.id }}_{{ fmt.name }}" value="{{ prefilled_items.get(lookup_key, 0) }}" min="0" style="width: 55px; text-align: center; padding: 2px;">
-                            </div>
-                            {% endfor %} 
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>Prodotto / Variante</th>
+                        <th>Prezzo base / kg</th>
+                        <th>Quantità</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                        {% if product.parsed_formats %}
+                            <!-- Item variation list for products matching catalog_map constraints -->
+                            {% for fmt in product.parsed_formats %}
+                            <tr>
+                                <td><strong>{{ product.name }}</strong> ({{ fmt.name }})</td>
+                                <td>€{{ "%.2f"|format(fmt.price) }} / conf</td>
+                                <td>
+                                    <input type="number" 
+                                           name="qty_{{ product.id }}_{{ fmt.name }}" 
+                                           placeholder="0" 
+                                           min="0" 
+                                           value="{{ prefilled_items.get(product.name ~ ' (' ~ fmt.name ~ ')') or '' }}">
+                                </td>
+                            </tr>
+                            {% endfor %}
                         {% else %}
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="color: #475569; font-size: 12px;">Standard (€ {{"%.2f"|format(prod.price_per_kg)}}/Kg)</span>
-                                <input type="number" name="qty_{{ prod.id }}_default" value="{{ prefilled_items.get(prod.name, 0) }}" min="0" style="width: 55px; text-align: center; padding: 2px;">
-                            </div>
+                            <!-- Standard baseline entry items format -->
+                            <tr>
+                                <td><strong>{{ product.name }}</strong></td>
+                                <td>€{{ "%.2f"|format(product.price_per_kg) }} / kg</td>
+                                <td>
+                                    <input type="number" 
+                                           name="qty_{{ product.id }}_default" 
+                                           placeholder="0" 
+                                           min="0" 
+                                           value="{{ prefilled_items.get(product.name) or '' }}">
+                                </td>
+                            </tr>
                         {% endif %}
-                    </div>
                     {% endfor %}
-                </div>
-                {% endif %}
+                </tbody>
+            </table>
 
-                <div style="font-weight: 700; font-size: 13px; margin: 12px 0 8px 0; text-align: right; color: #0f172a;">
-                    Totale: € 0.00
-                </div>
-                
-                <div style="display: flex; gap: 8px; margin-top: 10px;">
-                    <a href="{{ url_for('client_bp.index') }}" class="btn" style="background: #e2e8f0; color: #334155; flex: 1; text-align: center; display: inline-block; padding-top: 4px;">🗑 Svuota</a>
-                    <button type="submit" style="background: #10b981; color: white; border: none; flex: 2; font-weight: 700;">Invia Ordine</button>
-                </div>
-            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 12px; width: 100%;">Invia Ordine</button>
         </form>
-    </div>
-
-    <!-- RIGHT COLUMN: Interactive Order History Log Sheets (65% Width) -->
-    <div class="card" style="width: 65%; flex-grow: 1;">
-        <h3 style="color: #0284c7; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
-            📋 {% if is_admin %} Storico Ordini Filtrato {% else %} Storico Dei Tuoi Ordini {% endif %}
-        </h3>
-
-        {% if orders %}
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            {% for order in orders %}
-            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; background: #ffffff;">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; margin-bottom: 6px;">
-                    <div>
-                        <span style="font-weight: 700; color: #0f172a; font-size: 12px;">ID Ordine: {{ order.id }}</span>
-                        <span style="color: #64748b; margin-left: 6px;">({{ order.date }})</span>
-                        {% if order.time %}
-                             <span style="margin-left: 8px; padding: 2px 6px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 4px; font-weight: 600; font-size: 11px; color: #0284c7;">
-                            ⏰ Consegna: {{ order.time }}
-                             </span>
-                        {% endif %}
-                    </div>
-                    <div style="display: flex; gap: 6px; align-items: center;">
-                        <span style="padding: 2px 6px; background: #f1f5f9; border-radius: 4px; font-weight: 500; font-size: 11px;">📦 {{ order.status }}</span>
-                        <span style="padding: 2px 6px; background: #e0f2fe; border-radius: 4px; font-weight: 500; font-size: 11px; color: #0369a1;">💰 {{ order.payment_status }}</span>
-                    </div>
-                </div>
-                <div style="color: #334155; font-size: 12px; padding: 4px 0; font-family: monospace;">{{ order.items }}</div>
-                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 6px; margin-top: 6px;">
-                    <div style="font-weight: 700; font-size: 12px; color: #0f172a;">
-                        Totale: <span style="color: #10b981;">€ {{ "%.2f"|format(order.total) }}</span>
-                    </div>
-                    <div style="display: flex; gap: 6px; align-items: center;">
-                        
-                        <!-- 🌟 FIXED 2: Ripeti button appends the ?reorder= ID to populate values on reload -->
-                        <a href="{{ url_for('client_bp.index') }}?reorder={{ order.id }}&selected_client_id={{ selected_client_id }}" class="btn" style="padding: 3px 8px; font-size: 11px; background: #f8fafc; border: 1px solid #cbd5e1; display: inline-block;">🔄 Ripeti</a>
-                        
-                        
-{% if order.status == 'In Ricezione' %}
-<form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="display: inline; margin: 0; padding: 0;" onsubmit="return confirm('Sei sicuro di voler annullare questo ordine?');">
-    <!-- Pass selection parameters cleanly via hidden field instead of the URL string query -->
-    <input type="hidden" name="hidden_selected_client_id" value="{{ selected_client_id }}">
-    <button type="submit" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 3px 8px; font-size: 11px; margin: 0; cursor: pointer; border-radius: 4px;">❌ Annulla</button>
-</form>
-{% endif %}
-                       
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div style="color: #64748b; font-style: italic; padding: 12px 0; text-align: center;">Nessun ordine presente nello storico per questa selezione.</div>
-        {% endif %}
     </div>
 </div>
 
-<!-- Dynamic History Sync Engine Script Wrapper -->
+<!-- ==========================================================================
+     SECTION 2: CUSTOMER PAST ORDERS ARCHIVE HISTORY LEDGER
+     ========================================================================== -->
+<div id="section-order-history" class="client-split-section">
+    <div class="card">
+        <h3 style="margin-bottom: 12px;">Registro Storico Ordini Recenti</h3>
+        
+        <div class="history-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Ordine</th>
+                        <th>Data</th>
+                        <th>Dettagli Articoli</th>
+                        <th>Totale €</th>
+                        <th>Stato</th>
+                        <th>Pagamento</th>
+                        <th>Azioni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td><strong>{{ order.id }}</strong></td>
+                        <td>{{ order.date }}</td>
+                        <td style="white-space: normal; min-width: 200px;">{{ order.items }}</td>
+                        <td><strong>€{{ "%.2f"|format(order.total) }}</strong></td>
+                        <td>
+                            <span class="badge {% if order.status == 'In Ricezione' %}badge-warning{% elif order.status == 'Confermato' %}badge-success{% else %}badge-danger{% endif %}">
+                                {{ order.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if order.payment_status == 'Pagato' %}badge-success{% else %}badge-danger{% endif %}">
+                                {{ order.payment_status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 4px;">
+                                <a href="{{ url_for('client_bp.index', reorder=order.id) }}" class="btn" style="padding: 4px 8px; font-size: 11px;">Ripeti</a>
+                                
+                                {% if order.status == 'In Ricezione' %}
+                                <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" onsubmit="return confirm('Annullare questo ordine?');" style="display: inline;">
+                                    <input type="hidden" name="hidden_selected_client_id" value="{{ selected_client_id }}">
+                                    <button type="submit" style="padding: 4px 8px; font-size: 11px; background: #ef4444; color: white; border: none; height: auto !important; width: auto !important;">Annulla</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">Nessun ordine presente nello storico.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+     LIGHTWEIGHT MOBILE TAB LINK NAVIGATION ENGINE SCRIPT
+     ========================================================================== -->
 <script>
-    function syncClientSelection(val) {
-        // Appends the selection state directly to filter your active log tables list view
-        window.location.href = "{{ url_for('client_bp.index') }}?selected_client_id=" + val;
-    }
+function switchClientTab(tabName) {
+    // 1. Reset and manage active class state across the top bar toggle switches
+    document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Add the active color class back to the specific selected link button element
+    document.getElementById('btn-' + tabName).classList.add('active');
+
+    // 2. Hide all split layout sections out of view
+    document.querySelectorAll('.client-split-section').forEach(section => {
+        section.classList.remove('active-section');
+    });
+    
+    // Smoothly display the targeted active tab workspace
+    document.getElementById('section-' + tabName).classList.add('active-section');
+}
 </script>
 
 {% endblock %}
