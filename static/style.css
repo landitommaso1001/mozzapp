@@ -226,4 +226,20 @@ button:hover { background: #e2e8f0; }
         border: 1px solid #fca5a5 !important;
         height: 42px !important;
     }
+
+    /* 🎨 Active Navigation Tab Full-Width Background Alignment Fix */
+    main > a[href*="active_tab="].active,
+    main > a[href*="active_tab="][class*="active"],
+    .tabs a[class*="active"],
+    .active-tab-style,
+    a[href*="active_tab=orders"]:not([status]):not([non_salda_consegnati]).active-tab-style {
+        background-color: var(--ocean-blue) !important;
+        color: white !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background-size: 100% 100% !important;
+        width: 100% !important; /* Forces the active indicator background layer to span full length */
+    }
+
 }
