@@ -278,27 +278,27 @@ button:hover { background: #e2e8f0; }
         justify-content: center !important;
     }
 
-    /* 📋 4-Line Order Filter Stacking Engine for Vista Admin Mobile */
-    /* Targets the active filters line directly inside the active orders tab view */
-    .tab-content #section-orders .btn,
-    main #orders-filters .btn,
-    div[style*="margin-bottom"] a[href*="active_tab=orders"],
-    {% if active_tab == 'orders' %} .btn {% endif %} {
-        /* Default mobile fallback reset layout */
-    }
 
-    /* Force the precise sequential 4-line flex structure requested */
-    @id-orders-filter-row-wrapper { display: block; }
-    
-    /* 1st Line: 'Tutti' spans full-width */
-    a[href*="active_tab=orders"]:not([status]):not([non_salda_consegnati]) {
+    /* 📋 FIXED 4-Line Order Filter Stacking Engine for Vista Admin Mobile */
+    /* Only targets the secondary filter buttons inside the tab workspace area */
+    .tab-content a[href*="active_tab=orders"]:not([status]):not([non_salda_consegnati]),
+    main a[href*="active_tab=orders"]:not([status]):not([non_salda_consegnati]),
+    .smartphone-tabs-grid a[href*="active_tab=orders"]:not([status]):not([non_salda_consegnati]) {
         flex: 1 1 100% !important;
         width: 100% !important;
-        display: block !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         order: 1;
     }
     
     /* 2nd Line: 'Da Approvare' and 'Da Produrre' side-by-side */
+    .tab-content a[href*="status=In%20Ricezione"], .tab-content a[href*="status=In_Ricezione"],
+    .tab-content a[href*="status=Confermato"],
+    .smartphone-tabs-grid a[href*="status"] {
+        /* Preserves inner grid structures safely */
+    }
+    
     a[href*="status=In%20Ricezione"], a[href*="status=In_Ricezione"],
     a[href*="status=Confermato"] {
         flex: 1 1 calc(50% - 4px) !important;
@@ -315,10 +315,14 @@ button:hover { background: #e2e8f0; }
     }
     
     /* 4th Line: 'Consegnati Non Pagati' spans full-width at the bottom */
+    .tab-content a[href*="non_salda_consegnati=1"],
+    main a[href*="non_salda_consegnati=1"],
     a[href*="non_salda_consegnati=1"] {
         flex: 1 1 100% !important;
         width: 100% !important;
-        display: block !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         background: #fee2e2 !important; 
         color: #991b1b !important; 
         font-weight: bold !important; 
