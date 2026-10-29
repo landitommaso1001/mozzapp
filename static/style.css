@@ -265,4 +265,65 @@ button:hover { background: #e2e8f0; }
     .order-table td:last-child { display: flex !important; align-items: center; gap: 10px; margin-top: 6px; }
     .order-table td:last-child:before { content: "Qta:" !important; font-size: 12px !important; color: var(--text-muted) !important; font-weight: 600 !important; }
     .order-table td:last-child input { height: 36px !important; padding: 6px 10px !important; }
+
+    .smartphone-tabs-grid div, 
+    .smartphone-tabs-grid .mobile-filter-block {
+        box-sizing: border-box !important;
+        height: 40px !important;               /* Uniform compact thickness target */
+        line-height: 1.2 !important;
+        font-size: 12px !important;             /* Crisp compact button font sizes */
+        padding: 10px 4px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* 📋 4-Line Order Filter Stacking Engine for Vista Admin Mobile */
+    /* Targets the active filters line directly inside the active orders tab view */
+    .tab-content #section-orders .btn,
+    main #orders-filters .btn,
+    div[style*="margin-bottom"] a[href*="active_tab=orders"],
+    {% if active_tab == 'orders' %} .btn {% endif %} {
+        /* Default mobile fallback reset layout */
+    }
+
+    /* Force the precise sequential 4-line flex structure requested */
+    @id-orders-filter-row-wrapper { display: block; }
+    
+    /* 1st Line: 'Tutti' spans full-width */
+    a[href*="active_tab=orders"]:not([status]):not([non_salda_consegnati]) {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        display: block !important;
+        order: 1;
+    }
+    
+    /* 2nd Line: 'Da Approvare' and 'Da Produrre' side-by-side */
+    a[href*="status=In%20Ricezione"], a[href*="status=In_Ricezione"],
+    a[href*="status=Confermato"] {
+        flex: 1 1 calc(50% - 4px) !important;
+        max-width: 50% !important;
+        order: 2;
+    }
+    
+    /* 3rd Line: 'Pronti / In Consegna' and 'Consegnati' side-by-side */
+    a[href*="status=Pronto"],
+    a[href*="status=Consegnato"]:not([non_salda_consegnati]) {
+        flex: 1 1 calc(50% - 4px) !important;
+        max-width: 50% !important;
+        order: 3;
+    }
+    
+    /* 4th Line: 'Consegnati Non Pagati' spans full-width at the bottom */
+    a[href*="non_salda_consegnati=1"] {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        display: block !important;
+        background: #fee2e2 !important; 
+        color: #991b1b !important; 
+        font-weight: bold !important; 
+        border: 1px solid #fca5a5 !important;
+        order: 4;
+    }
+
 }
