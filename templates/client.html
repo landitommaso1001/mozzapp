@@ -40,7 +40,11 @@
                                 <td>{{ fmt.name }} (€ {{"%.2f"|format(fmt.price)}})</td>
                                 <td>
                                     {% set lookup_key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
-                                    <input type="number" name="qty_{{ prod.id }}_{{ fmt.name }}" min="0" placeholder="0" value="{{ prefilled_items.get(lookup_key, '') }}">
+                                    <select name="qty_{{ prod.id }}_{{ fmt.name }}">
+                                        {% for i in range(0, 51) %}
+                                            <option value="{{ i }}" {% if prefilled_items.get(lookup_key, 0)|int == i %}selected{% endif %}>{{ i }}</option>
+                                        {% endfor %}
+                                    </select>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -49,7 +53,11 @@
                                 <td><strong>{{ prod.name }}</strong></td>
                                 <td>Standard (€ {{"%.2f"|format(prod.price_per_kg)}}/Kg)</td>
                                 <td>
-                                    <input type="number" name="qty_{{ prod.id }}_default" min="0" placeholder="0" value="{{ prefilled_items.get(prod.name, '') }}">
+                                    <select name="qty_{{ prod.id }}_default">
+                                        {% for i in range(0, 51) %}
+                                            <option value="{{ i }}" {% if prefilled_items.get(prod.name, 0)|int == i %}selected{% endif %}>{{ i }}</option>
+                                        {% endfor %}
+                                    </select>
                                 </td>
                             </tr>
                         {% endif %}
@@ -101,6 +109,7 @@
     </div>
 </div>
 
+
 <!-- 📱 SMARTPHONE PRESENTATION INTERFACE -->
 <div class="smartphone-layout">
     <div class="mobile-view-tabs">
@@ -109,6 +118,18 @@
     </div>
 
     <div id="section-order-form" class="client-split-section active-section">
+        {% if is_admin %}
+        <form method="GET" action="{{ url_for('client_bp.index') }}" style="margin-bottom: 12px;">
+            <label for="selected_client_id_mobile" style="font-weight:700;">Seleziona Cliente per Ordine:</label>
+            <select name="selected_client_id" id="selected_client_id_mobile" onchange="this.form.submit()">
+                <option value="0" {% if selected_client_id == 0 %}selected{% endif %}>Vendita Diretta / Banco</option>
+                {% for c in all_clients %}
+                    <option value="{{ c.id }}" {% if selected_client_id == c.id %}selected{% endif %}>{{ c.name }} ({{ c.phone }})</option>
+                {% endfor %}
+            </select>
+        </form>
+        {% endif %}
+
         <div class="card">
             <form method="POST" action="{{ url_for('client_bp.index') }}">
                 {% if is_admin %}
@@ -124,7 +145,11 @@
                                     <td>€ {{"%.2f"|format(fmt.price)}} / conf</td>
                                     <td>
                                         {% set lookup_key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
-                                        <input type="number" name="qty_{{ prod.id }}_{{ fmt.name }}" min="0" placeholder="0" value="{{ prefilled_items.get(lookup_key, '') }}">
+                                        <select name="qty_{{ prod.id }}_{{ fmt.name }}">
+                                            {% for i in range(0, 51) %}
+                                                <option value="{{ i }}" {% if prefilled_items.get(lookup_key, 0)|int == i %}selected{% endif %}>{{ i }}</option>
+                                            {% endfor %}
+                                        </select>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -133,7 +158,11 @@
                                     <td><strong>{{ prod.name }}</strong></td>
                                     <td>€ {{"%.2f"|format(prod.price_per_kg)}} / Kg</td>
                                     <td>
-                                        <input type="number" name="qty_{{ prod.id }}_default" min="0" placeholder="0" value="{{ prefilled_items.get(prod.name, '') }}">
+                                        <select name="qty_{{ prod.id }}_default">
+                                            {% for i in range(0, 51) %}
+                                                <option value="{{ i }}" {% if prefilled_items.get(prod.name, 0)|int == i %}selected{% endif %}>{{ i }}</option>
+                                            {% endfor %}
+                                        </select>
                                     </td>
                                 </tr>
                             {% endif %}
@@ -153,7 +182,7 @@
                 <span>€ {{ "%.2f"|format(order.total) }}</span>
             </div>
             <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
-                📅 {{ order.date }} {% if order.time %}⏰ {{ order.time }}{% endif %}<br>
+                📅 {{ order.date }} {% if order.time %} ⏰ Consegna: {{ order.time }} {% endif %}<br>
                 📦 {{ order.status }} | 💰 {{ order.payment_status }}
             </div>
             <div style="font-size: 13px; background: var(--bg-neutral); padding: 8px; border-radius: 4px; margin-bottom: 8px;">
@@ -184,3 +213,5 @@ function switchClientTab(tabName) {
 </script>
 
 {% endblock %}
+
+

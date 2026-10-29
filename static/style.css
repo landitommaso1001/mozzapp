@@ -173,6 +173,27 @@ button:hover { background: #e2e8f0; }
     .client-split-section { display: none; }
     .client-split-section.active-section { display: block !important; }
 
+    /* FIXED 3: Prevent date/calendar inputs from becoming too tall on smartphones */
+    input[type="date"], input[type="time"] {
+        height: 42px !important;
+        padding: 8px 10px !important;
+        line-height: 1.2 !important;
+    }
+
+    /* FIXED 4: Custom downscale rules for delivery time input fields */
+    input[name="delivery_time"] {
+        height: 34px !important;
+        font-size: 13px !important;
+        padding: 4px 8px !important;
+    }
+
+    /* Placeholder style rules specific to iOS text resizing drops */
+    input[name="delivery_time"]::placeholder {
+        font-size: 12px !important;
+        color: var(--text-muted) !important;
+    }
+
+
     /* Stacked card engine rules for mobile ordering inputs */
     .order-table, .order-table tbody, .order-table tr, .order-table td {
         display: block !important;
