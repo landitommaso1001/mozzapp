@@ -98,49 +98,28 @@ button:hover { background: #e2e8f0; }
    📱 HIGH-PRECISION MOBILE OVERRIDES (Viewport Width <= 768px)
    ========================================================================== */
 @media (max-width: 768px) {
-    /* Toggle global presentation layout blocks */
     div.desktop-layout, .desktop-layout { display: none !important; }
     .smartphone-layout { display: block !important; }
     .mobile-view-tabs { display: flex !important; width: 100%; background: var(--bg-clean); border: 1px solid var(--border-hairline); border-radius: 6px; margin-bottom: 16px; padding: 4px; }
     
     body { padding: 8px 8px !important; }
-
-    header {
-        flex-direction: column !important;
-        gap: 12px !important;
-        text-align: center !important;
-        padding: 14px !important;
-    }
-
+    header { flex-direction: column !important; gap: 12px !important; text-align: center !important; padding: 14px !important; }
     nav ul { flex-direction: row !important; justify-content: center !important; gap: 8px !important; }
     nav ul li a { font-size: 11px !important; padding: 6px 10px !important; }
-
     form { display: flex !important; flex-direction: column !important; gap: 10px !important; width: 100% !important; }
     input, select, button, .btn { width: 100% !important; box-sizing: border-box !important; padding: 10px 12px !important; font-size: 16px !important; margin: 0 !important; height: 42px !important; }
-
-    /* Swipe horizontal wrappers for admin analytics data sheets */
     main table, .card table, .table-responsive { display: block !important; max-width: 100% !important; overflow-x: auto !important; white-space: nowrap !important; -webkit-overflow-scrolling: touch !important; }
     main table th, main table td { display: table-cell !important; width: auto !important; padding: 8px 10px !important; }
-
-    /* Force text wrapping inside list cells on small viewports */
     main table td.items-cell-mobile, table td.items-cell-mobile, .table-responsive table td.items-cell-mobile { white-space: normal !important; word-wrap: break-word !important; overflow-wrap: break-word !important; word-break: break-word !important; min-width: 200px !important; max-width: 260px !important; }
-
-    /* Smartphone client order sub-tab toggle targets */
     .mobile-tab-btn { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 600; background: transparent; border: none !important; border-radius: 4px; color: var(--text-muted); cursor: pointer; }
     .mobile-tab-btn.active { background: var(--ocean-blue) !important; color: white !important; }
     .client-split-section { display: none; }
     .client-split-section.active-section { display: block !important; }
-
-    /* Compact calendar bounds controls adjustments */
     input[type="date"], input[type="time"] { height: 36px !important; padding: 6px 10px !important; font-size: 14px !important; line-height: 1.2 !important; }
     input[name="delivery_time"] { height: 34px !important; font-size: 13px !important; padding: 4px 8px !important; }
     input[name="delivery_time"]::placeholder { font-size: 12px !important; color: var(--text-muted) !important; }
     form label { margin-bottom: -4px !important; font-size: 11px !important; }
-
-    /* Unconditional global login text input label positioning overrides */
     label[for="phone"], label[for="password"], main label, .card label, form label[for="phone"], form label[for="password"] { display: block !important; font-size: 15px !important; font-weight: 700 !important; color: var(--text-dark) !important; margin-top: 16px !important; margin-bottom: 8px !important; text-align: left !important; }
-
-    /* Stacked card engine rules for mobile ordering inputs */
     .order-table, .order-table tbody, .order-table tr, .order-table td { display: block !important; width: 100% !important; }
     .order-table th { display: none !important; }
     .order-table tr { background: var(--bg-clean) !important; border: 1px solid var(--border-hairline) !important; border-radius: 6px !important; padding: 8px 12px !important; margin-bottom: 8px !important; }
@@ -152,121 +131,37 @@ button:hover { background: #e2e8f0; }
     .order-table td:last-child input { height: 36px !important; padding: 6px 10px !important; }
 
     /* ==========================================================================
-       🏭 1. ADMIN TOP MAIN NAVIGATION TABS PANEL (RE-RESTORED & SYMMETRICAL)
+       🏭 1. MOBILE STYLE ENGINE: TOP MAIN ADMIN MENU
        ========================================================================== */
-    main > a[href*="active_tab="], 
-    header + main > a,
-    main > br + a[href*="active_tab"] {
-        display: inline-flex !important;
-        box-sizing: border-box !important;
-        background: var(--bg-clean) !important;
-        color: var(--text-dark) !important;
-        border: 1px solid var(--border-hairline) !important;
-        padding: 10px 4px !important;
-        font-size: 11px !important;
-        font-weight: 600 !important;
-        border-radius: 4px !important;
-        text-align: center !important;
-        justify-content: center !important;
-        align-items: center !important;
-        flex: 1 1 calc(50% - 4px) !important;
-        width: calc(50% - 4px) !important;
-        max-width: calc(50% - 4px) !important;
-        margin: 2px 0 !important;
-        height: 38px !important;
+    .admin-main-nav { display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; gap: 6px !important; width: 100% !important; }
+    .admin-nav-item {
+        display: inline-flex !important; align-items: center !important; justify-content: center !important; box-sizing: border-box !important;
+        background: var(--bg-clean) !important; color: var(--text-dark) !important; border: 1px solid var(--border-hairline) !important;
+        padding: 10px 4px !important; font-size: 11px !important; font-weight: 600 !important; border-radius: 4px !important; height: 38px !important;
+        flex: 1 1 calc(50% - 4px) !important; width: calc(50% - 4px) !important; max-width: calc(50% - 4px) !important;
     }
-
-    main > a[href*="active_tab=reset_data"] {
-        flex: 1 1 100% !important;
-        width: 100% !important;
-        max-width: 100% !important;
-    }
+    .admin-nav-item[href*="active_tab=reset_data"] { flex: 1 1 100% !important; width: 100% !important; max-width: 100% !important; }
+    
+    /* 🌟 FULL BACKGROUND ACTIVE COLOR LOCK FOR TOP MENU */
+    .admin-nav-item.active-tab-style { background: var(--ocean-blue) !important; color: white !important; border-color: var(--ocean-blue) !important; }
 
     /* ==========================================================================
-       🏭 2. SUB-ORDER FILTERS SYMMETRICAL GRID (ORDINI ATTIVI PANEL)
+       🏭 2. MOBILE STYLE ENGINE: UNIFIED SUB-FILTERS GRID
        ========================================================================== */
-    main a[href*="active_tab=orders"][href*="status"],
-    main a[href*="active_tab=orders"][href*="non_salda_consegnati"],
-    main p + a[href*="active_tab=orders"] {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-sizing: border-box !important;
-        flex: 1 1 calc(50% - 4px) !important; 
-        width: calc(50% - 4px) !important;
-        max-width: calc(50% - 4px) !important;
-        height: 42px !important;              
-        padding: 6px 4px !important;
-        font-size: 11px !important;            
-        text-align: center !important;
-        border-radius: 4px !important;
-        margin: 3px 0 !important;
-        background: var(--bg-clean) !important;
-        border: 1px solid var(--border-hairline) !important;
+    .admin-sub-filters { display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; gap: 6px !important; width: 100% !important; }
+    .sub-filter-item {
+        display: inline-flex !important; align-items: center !important; justify-content: center !important; box-sizing: border-box !important;
+        background: var(--bg-clean) !important; color: var(--text-dark) !important; border: 1px solid var(--border-hairline) !important;
+        padding: 6px 4px !important; font-size: 12px !important; border-radius: 4px !important; height: 42px !important;
+        flex: 1 1 calc(50% - 4px) !important; width: calc(50% - 4px) !important; max-width: calc(50% - 4px) !important; margin: 0 !important;
     }
+    /* Line 1 Spanning (Tutti) */
+    .sub-filter-item:first-child { flex: 1 1 100% !important; width: 100% !important; max-width: 100% !important; font-size: 14px !important; }
+    /* Line 4 Spanning (Non Pagati Default) */
+    .admin-sub-filters a[href*="non_salda_consegnati=1"] { flex: 1 1 100% !important; width: 100% !important; max-width: 100% !important; background: #fee2e2 !important; color: #991b1b !important; border: 1px solid #fca5a5 !important; }
 
-    /* Line 1 Override: '📋 Tutti' spans full-width perfectly matching grid rows */
-    main a[href*="active_tab=orders"]:not([status]):not([non_salda_consegnati]) {
-        flex: 1 1 100% !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        font-size: 13px !important;
-        height: 42px !important;
-    }
-
-    /* Line 4 Override: '⚠️ Consegnati Non Pagati' spans full-width perfectly matching grid rows */
-    main a[href*="non_salda_consegnati=1"] {
-        flex: 1 1 100% !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        font-size: 12px !important;
-        font-weight: 700 !important;
-        background: #fee2e2 !important; 
-        color: #991b1b !important; 
-        border: 1px solid #fca5a5 !important;
-        height: 42px !important;
-    }
-
- 
-   /* ==========================================================================
-    🎨 ACTIVE STATE RESOLUTION ENGINE (Fixes Color Clipping & White Fade)
-   ========================================================================== */
-    
-    /* 1. Force the Main Menu active tabs (like Ordini Attivi) to color fully */
-    main > a[href*="active_tab="].active,
-    main > a[href*="active_tab="][class*="active"],
-    main > a.active-tab-style:not([href*="status"]):not([href*="non_salda_consegnati"]) {
-        background: var(--ocean-blue) !important;
-        color: white !important;
-        display: inline-flex !important;
-        width: calc(50% - 4px) !important; /* Retains its native 50% grid width block box */
-        max-width: calc(50% - 4px) !important;
-        box-shadow: inset 0 0 0 999px var(--ocean-blue) !important; /* Total fallback color saturation */
-    }
-
-    /* Keep the full-width rule intact specifically for the Reset Dati nav button if active */
-    main > a[href*="active_tab=reset_data"].active-tab-style {
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-
-    /* 2. Force Selected Sub-Filters to stay colored instead of turning white */
-    main a[href*="active_tab=orders"].active-tab-style,
-    .tab-content .tabs a.active-tab-style,
-    a.active-tab-style[href*="status"],
-    a.active-tab-style[href*="non_salda_consegnati"] {
-        background: #22c55e !important; /* Crisp Success Green to indicate an active filter layer */
-        color: white !important;
-        border-color: #16a34a !important;
-        box-shadow: inset 0 0 0 999px #22c55e !important; /* Prevents background overrides from bleeding white */
-    }
-    
-    /* Preserve the special red treatment for Consegnati Non Pagati when it is active */
-    a.active-tab-style[href*="non_salda_consegnati=1"] {
-        background: #ef4444 !important; /* Vibrant alert crimson red */
-        border-color: #dc2626 !important;
-        color: white !important;
-        box-shadow: inset 0 0 0 999px #ef4444 !important;
-    }
+    /* 🌟 FILTER SELECTED HIGH-STENSITY HIGHLIGHT LOCKS (Prevents fading to white) */
+    .sub-filter-item.active-tab-style { background: #22c55e !important; color: white !important; border-color: #16a34a !important; font-weight: 700 !important; }
+    .admin-sub-filters a.active-tab-style-red { background: #ef4444 !important; color: white !important; border-color: #dc2626 !important; font-weight: 700 !important; }
 
 }
