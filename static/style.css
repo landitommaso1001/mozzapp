@@ -20,8 +20,8 @@
 }
 
 .badge-admin {
-    background-color: #0f172a !important; /* Dark Slate Navy */
-    color: #f97316 !important;            /* Amber Orange text */
+    background-color: #dcfce7 !important; /* Soft Green background */
+    color: #15803d !important;            /* Forest Dark Green text */
     border: 1px solid #f97316 !important;
 }
 
