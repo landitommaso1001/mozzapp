@@ -20,8 +20,8 @@
 }
 
 .badge-admin {
-    background-color: #dcfce7 !important; /* Soft Green background */
-    color: #15803d !important;            /* Forest Dark Green text */
+    background-color: #0f172a !important; /* Dark Slate Navy */
+    color: #f97316 !important;            /* Amber Orange text */
     border: 1px solid #f97316 !important;
 }
 
@@ -88,19 +88,18 @@ input, select { background-color: var(--bg-clean) !important; border: 1px solid 
 button, .btn { font-size: 12px !important; font-weight: 600 !important; padding: 4px 10px !important; border-radius: 4px !important; cursor: pointer; border: 1px solid var(--border-hairline) !important; background: var(--bg-neutral); color: var(--text-dark); }
 button:hover { background: #e2e8f0; }
 
-/* ==========================================================================
-   🖥️ DESKTOP SWITCH DEFAULTS
-   ========================================================================== */
+/* Desktop Switch Defaults */
 .desktop-layout { display: block !important; }
 .smartphone-layout { display: none !important; }
 .mobile-view-tabs { display: none; }
 
+
 /* ==========================================================================
-   📱 HIGH-PRECISION RESPONSIVE MOBILE OVERRIDES
+   📱 HIGH-PRECISION MOBILE OVERRIDES (Viewport Width <= 768px)
    ========================================================================== */
 @media (max-width: 768px) {
-    /* Toggle global presentation states */
-    .desktop-layout { display: none !important; }
+    /* Toggle global presentation layout blocks */
+    div.desktop-layout, .desktop-layout { display: none !important; }
     .smartphone-layout { display: block !important; }
     .mobile-view-tabs { display: flex !important; width: 100%; background: var(--bg-clean); border: 1px solid var(--border-hairline); border-radius: 6px; margin-bottom: 16px; padding: 4px; }
     
@@ -116,218 +115,115 @@ button:hover { background: #e2e8f0; }
     nav ul { flex-direction: row !important; justify-content: center !important; gap: 8px !important; }
     nav ul li a { font-size: 11px !important; padding: 6px 10px !important; }
 
-    /* Admin Tab Layout Adjustments */
-    .tabs, .tab-container, .admin-actions, .button-row, nav {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: wrap !important;
-        gap: 6px !important;
-        width: 100% !important;
-    }
+    form { display: flex !important; flex-direction: column !important; gap: 10px !important; width: 100% !important; }
+    input, select, button, .btn { width: 100% !important; box-sizing: border-box !important; padding: 10px 12px !important; font-size: 16px !important; margin: 0 !important; height: 42px !important; }
 
-    .tabs a, .tabs button, .tab-container a, .admin-actions button {
-        flex: 1 1 calc(50% - 6px) !important;
-        min-width: 110px !important;
-        padding: 10px 4px !important;
-        font-size: 12px !important;
-        text-align: center !important;
-    }
+    /* Swipe horizontal wrappers for admin analytics data sheets */
+    main table, .card table, .table-responsive { display: block !important; max-width: 100% !important; overflow-x: auto !important; white-space: nowrap !important; -webkit-overflow-scrolling: touch !important; }
+    main table th, main table td { display: table-cell !important; width: auto !important; padding: 8px 10px !important; }
 
-    form {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 10px !important;
-        width: 100% !important;
-    }
-
-    input, select, button, .btn {
-        width: 100% !important;
-        box-sizing: border-box !important;
-        padding: 10px 12px !important; 
-        font-size: 16px !important; 
-        margin: 0 !important;
-        height: 42px !important;
-    }
-
-    /* Swipe boxes for horizontal analytics/data elements */
-    main table, .card table, .table-responsive {
-        display: block !important;
-        max-width: 100% !important;
-        overflow-x: auto !important;
-        white-space: nowrap !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-
-    main table th, main table td {
-        display: table-cell !important;
-        width: auto !important;
-        padding: 8px 10px !important;
-    }
-
-    /* Force text items column wrapping in active admin dashboards */
-    main table td.items-cell-mobile,
-    table td.items-cell-mobile,
-    .table-responsive table td.items-cell-mobile {
-        white-space: normal !important;
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        word-break: break-word !important;
-        min-width: 200px !important;
-        max-width: 260px !important;
-    }
+    /* Force text wrapping inside list cells on small viewports */
+    main table td.items-cell-mobile, table td.items-cell-mobile, .table-responsive table td.items-cell-mobile { white-space: normal !important; word-wrap: break-word !important; overflow-wrap: break-word !important; word-break: break-word !important; min-width: 200px !important; max-width: 260px !important; }
 
     /* Smartphone client order sub-tab toggle targets */
-    .mobile-tab-btn {
-        flex: 1;
-        text-align: center;
-        padding: 10px;
-        font-size: 13px;
-        font-weight: 600;
-        background: transparent;
-        border: none !important;
-        border-radius: 4px;
-        color: var(--text-muted);
-        cursor: pointer;
-    }
-    .mobile-tab-btn.active {
-        background: var(--ocean-blue) !important;
-        color: white !important;
-    }
-
+    .mobile-tab-btn { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 600; background: transparent; border: none !important; border-radius: 4px; color: var(--text-muted); cursor: pointer; }
+    .mobile-tab-btn.active { background: var(--ocean-blue) !important; color: white !important; }
     .client-split-section { display: none; }
     .client-split-section.active-section { display: block !important; }
 
-    /* FIXED 3: Prevent date/calendar inputs from becoming too tall on smartphones */
-    input[type="date"], input[type="time"] {
-        height: 36px !important;
-        padding: 6px 10px !important;
-        font-size: 14px !important;
-        line-height: 1.2 !important;
-    }
+    /* Compact calendar bounds controls adjustments */
+    input[type="date"], input[type="time"] { height: 36px !important; padding: 6px 10px !important; font-size: 14px !important; line-height: 1.2 !important; }
+    input[name="delivery_time"] { height: 34px !important; font-size: 13px !important; padding: 4px 8px !important; }
+    input[name="delivery_time"]::placeholder { font-size: 12px !important; color: var(--text-muted) !important; }
+    form label { margin-bottom: -4px !important; font-size: 11px !important; }
 
-    /* FIXED 4: Custom downscale rules for delivery time input fields */
-    input[name="delivery_time"] {
-        height: 34px !important;
-        font-size: 13px !important;
-        padding: 4px 8px !important;
-    }
-
-    /* Placeholder style rules specific to iOS text resizing drops */
-    input[name="delivery_time"]::placeholder {
-        font-size: 12px !important;
-        color: var(--text-muted) !important;
-    }
-
-    /* Standard inline mobile labels layout settings */
-    form label {
-        margin-bottom: -4px !important;
-        font-size: 11px !important;
-    }
-
-    /* 🌟 UNCONDITIONAL GLOBAL LOGIN FIX: Targets any label matching login fields directly */
-    label[for="phone"], 
-    label[for="password"],
-    main label, 
-    .card label,
-    form label[for="phone"],
-    form label[for="password"] {
-        display: block !important;
-        font-size: 15px !important;       /* Large readable size matching product headers */
-        font-weight: 700 !important;      /* Bold emphasis */
-        color: var(--text-dark) !important;
-        margin-top: 16px !important;      /* Large gap above labels */
-        margin-bottom: 8px !important;    /* Clear spacing to input field below */
-        text-align: left !important;
-    }
+    /* Unconditional global login text input label positioning overrides */
+    label[for="phone"], label[for="password"], main label, .card label, form label[for="phone"], form label[for="password"] { display: block !important; font-size: 15px !important; font-weight: 700 !important; color: var(--text-dark) !important; margin-top: 16px !important; margin-bottom: 8px !important; text-align: left !important; }
 
     /* Stacked card engine rules for mobile ordering inputs */
-    .order-table, .order-table tbody, .order-table tr, .order-table td {
-        display: block !important;
-        width: 100% !important;
-    }
+    .order-table, .order-table tbody, .order-table tr, .order-table td { display: block !important; width: 100% !important; }
     .order-table th { display: none !important; }
-    .order-table tr {
-        background: var(--bg-clean) !important;
-        border: 1px solid var(--border-hairline) !important;
-        border-radius: 6px !important;
-        padding: 8px 12px !important;
-        margin-bottom: 8px !important;
-    }
+    .order-table tr { background: var(--bg-clean) !important; border: 1px solid var(--border-hairline) !important; border-radius: 6px !important; padding: 8px 12px !important; margin-bottom: 8px !important; }
     .order-table td { border-bottom: none !important; padding: 2px 0 !important; }
-    .order-table td:first-child {
-        font-weight: 700 !important;
-        font-size: 14px !important;
-        border-bottom: 1px solid var(--border-hairline) !important;
-        padding-bottom: 4px !important;
-        margin-bottom: 4px !important;
-    }
+    .order-table td:first-child { font-weight: 700 !important; font-size: 14px !important; border-bottom: 1px solid var(--border-hairline) !important; padding-bottom: 4px !important; margin-bottom: 4px !important; }
     .order-table td:nth-child(2):before { content: "Prezzo: " !important; color: var(--text-muted) !important; font-size: 12px; }
     .order-table td:last-child { display: flex !important; align-items: center; gap: 10px; margin-top: 6px; }
     .order-table td:last-child:before { content: "Qta:" !important; font-size: 12px !important; color: var(--text-muted) !important; font-weight: 600 !important; }
     .order-table td:last-child input { height: 36px !important; padding: 6px 10px !important; }
 
-    .smartphone-tabs-grid div, 
-    .smartphone-tabs-grid .mobile-filter-block {
+    /* ==========================================================================
+       🏭 1. ADMIN TOP MAIN NAVIGATION TABS PANEL (RE-RESTORED & SYMMETRICAL)
+       ========================================================================== */
+    main > a[href*="active_tab="], 
+    header + main > a,
+    main > br + a[href*="active_tab"] {
+        display: inline-flex !important;
         box-sizing: border-box !important;
-        height: 40px !important;               /* Uniform compact thickness target */
-        line-height: 1.2 !important;
-        font-size: 12px !important;             /* Crisp compact button font sizes */
+        background: var(--bg-clean) !important;
+        color: var(--text-dark) !important;
+        border: 1px solid var(--border-hairline) !important;
         padding: 10px 4px !important;
-        display: flex !important;
-        align-items: center !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        border-radius: 4px !important;
+        text-align: center !important;
         justify-content: center !important;
+        align-items: center !important;
+        flex: 1 1 calc(50% - 4px) !important;
+        width: calc(50% - 4px) !important;
+        max-width: calc(50% - 4px) !important;
+        margin: 2px 0 !important;
+        height: 38px !important;
     }
 
+    main > a[href*="active_tab=reset_data"] {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
 
-    /* 📋 FIXED 4-Line Order Filter Stacking Engine for Vista Admin Mobile */
-    /* Only targets the secondary filter buttons inside the tab workspace area */
-    .tab-content a[href*="active_tab=orders"]:not([status]):not([non_salda_consegnati]),
-    main a[href*="active_tab=orders"]:not([status]):not([non_salda_consegnati]),
-    .smartphone-tabs-grid a[href*="active_tab=orders"]:not([status]):not([non_salda_consegnati]) {
-        flex: 1 1 100% !important;
-        width: 100% !important;
-        display: flex !important;
+    /* ==========================================================================
+       🏭 2. SUB-ORDER FILTERS SYMMETRICAL GRID (ORDINI ATTIVI PANEL)
+       ========================================================================== */
+    main a[href*="active_tab=orders"][href*="status"],
+    main a[href*="active_tab=orders"][href*="non_salda_consegnati"],
+    main p + a[href*="active_tab=orders"] {
+        display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        order: 1;
+        box-sizing: border-box !important;
+        flex: 1 1 calc(50% - 4px) !important; 
+        width: calc(50% - 4px) !important;
+        max-width: calc(50% - 4px) !important;
+        height: 42px !important;              
+        padding: 6px 4px !important;
+        font-size: 11px !important;            
+        text-align: center !important;
+        border-radius: 4px !important;
+        margin: 3px 0 !important;
+        background: var(--bg-clean) !important;
+        border: 1px solid var(--border-hairline) !important;
     }
-    
-    /* 2nd Line: 'Da Approvare' and 'Da Produrre' side-by-side */
-    .tab-content a[href*="status=In%20Ricezione"], .tab-content a[href*="status=In_Ricezione"],
-    .tab-content a[href*="status=Confermato"],
-    .smartphone-tabs-grid a[href*="status"] {
-        /* Preserves inner grid structures safely */
-    }
-    
-    a[href*="status=In%20Ricezione"], a[href*="status=In_Ricezione"],
-    a[href*="status=Confermato"] {
-        flex: 1 1 calc(50% - 4px) !important;
-        max-width: 50% !important;
-        order: 2;
-    }
-    
-    /* 3rd Line: 'Pronti / In Consegna' and 'Consegnati' side-by-side */
-    a[href*="status=Pronto"],
-    a[href*="status=Consegnato"]:not([non_salda_consegnati]) {
-        flex: 1 1 calc(50% - 4px) !important;
-        max-width: 50% !important;
-        order: 3;
-    }
-    
-    /* 4th Line: 'Consegnati Non Pagati' spans full-width at the bottom */
-    .tab-content a[href*="non_salda_consegnati=1"],
-    main a[href*="non_salda_consegnati=1"],
-    a[href*="non_salda_consegnati=1"] {
+
+    /* Line 1 Override: '📋 Tutti' spans full-width perfectly matching grid rows */
+    main a[href*="active_tab=orders"]:not([status]):not([non_salda_consegnati]) {
         flex: 1 1 100% !important;
         width: 100% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
+        max-width: 100% !important;
+        font-size: 13px !important;
+        height: 42px !important;
+    }
+
+    /* Line 4 Override: '⚠️ Consegnati Non Pagati' spans full-width perfectly matching grid rows */
+    main a[href*="non_salda_consegnati=1"] {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
         background: #fee2e2 !important; 
         color: #991b1b !important; 
-        font-weight: bold !important; 
         border: 1px solid #fca5a5 !important;
-        order: 4;
+        height: 42px !important;
     }
-
 }
