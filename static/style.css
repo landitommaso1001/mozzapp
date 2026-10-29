@@ -64,38 +64,22 @@ input, select { background-color: var(--bg-clean) !important; border: 1px solid 
 button, .btn { font-size: 12px !important; font-weight: 600 !important; padding: 4px 10px !important; border-radius: 4px !important; cursor: pointer; border: 1px solid var(--border-hairline) !important; background: var(--bg-neutral); color: var(--text-dark); }
 button:hover { background: #e2e8f0; }
 
-/* Mobile Sub-Tabs Navigation for Client View Split */
-.mobile-view-tabs {
-    display: none;
-    width: 100%;
-    background: var(--bg-clean);
-    border: 1px solid var(--border-hairline);
-    border-radius: 6px;
-    margin-bottom: 16px;
-    padding: 4px;
-}
-.mobile-tab-btn {
-    flex: 1;
-    text-align: center;
-    padding: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    background: transparent;
-    border: none !important;
-    border-radius: 4px;
-    color: var(--text-muted);
-    cursor: pointer;
-    height: auto !important;
-}
-.mobile-tab-btn.active {
-    background: var(--ocean-blue) !important;
-    color: white !important;
-}
+/* ==========================================================================
+   🖥️ DESKTOP SWITCH DEFAULTS
+   ========================================================================== */
+.desktop-layout { display: block !important; }
+.smartphone-layout { display: none !important; }
+.mobile-view-tabs { display: none; }
 
 /* ==========================================================================
-   📱 HIGH-PRECISION MOBILE LAYOUT SYSTEM
+   📱 HIGH-PRECISION RESPONSIVE MOBILE OVERRIDES
    ========================================================================== */
 @media (max-width: 768px) {
+    /* Toggle global presentation states */
+    .desktop-layout { display: none !important; }
+    .smartphone-layout { display: block !important; }
+    .mobile-view-tabs { display: flex !important; width: 100%; background: var(--bg-clean); border: 1px solid var(--border-hairline); border-radius: 6px; margin-bottom: 16px; padding: 4px; }
+    
     body { padding: 8px 8px !important; }
 
     header {
@@ -108,6 +92,7 @@ button:hover { background: #e2e8f0; }
     nav ul { flex-direction: row !important; justify-content: center !important; gap: 8px !important; }
     nav ul li a { font-size: 11px !important; padding: 6px 10px !important; }
 
+    /* Admin Tab Layout Adjustments */
     .tabs, .tab-container, .admin-actions, .button-row, nav {
         display: flex !important;
         flex-direction: row !important;
@@ -137,15 +122,15 @@ button:hover { background: #e2e8f0; }
         padding: 10px 12px !important; 
         font-size: 16px !important; 
         margin: 0 !important;
-        height: 42px !important; /* Slightly lower height for cleaner spacing */
+        height: 42px !important;
     }
 
-    /* 🌟 FIXED: Isolate general horizontal swipe layout for admin tables */
+    /* Swipe boxes for horizontal analytics/data elements */
     main table, .card table, .table-responsive {
         display: block !important;
         max-width: 100% !important;
         overflow-x: auto !important;
-        white-space: nowrap !important; /* Forces row data horizontally */
+        white-space: nowrap !important;
         -webkit-overflow-scrolling: touch !important;
     }
 
@@ -155,40 +140,53 @@ button:hover { background: #e2e8f0; }
         padding: 8px 10px !important;
     }
 
-    /* 🌟 FIXED WRAPPING CRITERIA: Target description fields to wrap text over multiple lines */
-    /* Checks typical data columns containing itemized text arrays */
-    main table td:nth-child(3), 
-    main table td:nth-child(5),
-    .table-responsive table td:nth-child(3),
-    table td[style*="normal"] {
-        white-space: normal !important; /* OVERRIDES THE NOWRAP FOR DESCRIPTIONS */
-        word-break: break-word !important;
+    /* Force text items column wrapping in active admin dashboards */
+    main table td.items-cell-mobile,
+    table td.items-cell-mobile,
+    .table-responsive table td.items-cell-mobile {
+        white-space: normal !important;
+        word-wrap: break-word !important;
         overflow-wrap: break-word !important;
-        min-width: 220px !important; /* Guarantees comfortable space to read items */
-        max-width: 280px !important;
+        word-break: break-word !important;
+        min-width: 200px !important;
+        max-width: 260px !important;
     }
 
-    /* 🌟 FIXED CLIENT CARD VIEW: Compact stacked blocks layout */
+    /* Smartphone client order sub-tab toggle targets */
+    .mobile-tab-btn {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        background: transparent;
+        border: none !important;
+        border-radius: 4px;
+        color: var(--text-muted);
+        cursor: pointer;
+    }
+    .mobile-tab-btn.active {
+        background: var(--ocean-blue) !important;
+        color: white !important;
+    }
+
+    .client-split-section { display: none; }
+    .client-split-section.active-section { display: block !important; }
+
+    /* Stacked card engine rules for mobile ordering inputs */
     .order-table, .order-table tbody, .order-table tr, .order-table td {
         display: block !important;
         width: 100% !important;
     }
     .order-table th { display: none !important; }
-    
-    /* Sleek, super compact product blocks */
     .order-table tr {
         background: var(--bg-clean) !important;
         border: 1px solid var(--border-hairline) !important;
         border-radius: 6px !important;
-        padding: 8px 12px !important; /* Compact padding */
-        margin-bottom: 8px !important; /* Tighter layout gap */
+        padding: 8px 12px !important;
+        margin-bottom: 8px !important;
     }
-    
-    .order-table td {
-        border-bottom: none !important;
-        padding: 2px 0 !important; /* Minimized inner row heights */
-    }
-    
+    .order-table td { border-bottom: none !important; padding: 2px 0 !important; }
     .order-table td:first-child {
         font-weight: 700 !important;
         font-size: 14px !important;
@@ -196,49 +194,8 @@ button:hover { background: #e2e8f0; }
         padding-bottom: 4px !important;
         margin-bottom: 4px !important;
     }
-
-    /* Compact helpers for order values */
-    .order-table td:nth-child(2):before {
-        content: "Prezzo: " !important;
-        color: var(--text-muted) !important;
-        font-size: 12px;
-    }
-    
-    .order-table td:last-child {
-        display: flex !important;
-        align-items: center;
-        gap: 10px;
-        margin-top: 6px;
-    }
-    
-    .order-table td:last-child:before {
-        content: "Qta:" !important;
-        font-size: 12px !important;
-        color: var(--text-muted) !important;
-        font-weight: 600 !important;
-    }
-    
-    .order-table td:last-child input {
-        height: 36px !important; /* Short numeric box for thumbs */
-        padding: 6px 10px !important;
-    }
-
-    /* View states elements */
-    .mobile-view-tabs { display: flex !important; }
-    .client-split-section { display: none; }
-    .client-split-section.active-section { display: block !important; }
-
-    /* 📋 CRITICAL HOTFIX: Force the newly designated items-cell-mobile to wrap unconditionally */
-    main table td.items-cell-mobile,
-    table td.items-cell-mobile,
-    .table-responsive table td.items-cell-mobile {
-        white-space: normal !important; /* Force text to wrap instead of trailing off-screen */
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        word-break: break-word !important;
-        min-width: 200px !important;    /* Gives your text column plenty of space to breathe */
-        max-width: 260px !important;
-    }
-
-
+    .order-table td:nth-child(2):before { content: "Prezzo: " !important; color: var(--text-muted) !important; font-size: 12px; }
+    .order-table td:last-child { display: flex !important; align-items: center; gap: 10px; margin-top: 6px; }
+    .order-table td:last-child:before { content: "Qta:" !important; font-size: 12px !important; color: var(--text-muted) !important; font-weight: 600 !important; }
+    .order-table td:last-child input { height: 36px !important; padding: 6px 10px !important; }
 }
