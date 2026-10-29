@@ -200,18 +200,19 @@ button:hover { background: #e2e8f0; }
         font-size: 11px !important;
     }
 
-    /* 🌟 HOTFIX RESOLUTION ORDER: Specific login element overrides placed underneath general forms */
-    form label[for="phone"], 
-    form label[for="password"],
-    .card h2 + form label,
-    #login-form label,
-    main form label[for] {
+    /* 🌟 UNCONDITIONAL GLOBAL LOGIN FIX: Targets any label matching login fields directly */
+    label[for="phone"], 
+    label[for="password"],
+    main label, 
+    .card label,
+    form label[for="phone"],
+    form label[for="password"] {
         display: block !important;
-        font-size: 15px !important;       /* Matches product layout text tracking scales */
-        font-weight: 700 !important;      /* Immersive bold emphasis layer */
+        font-size: 15px !important;       /* Large readable size matching product headers */
+        font-weight: 700 !important;      /* Bold emphasis */
         color: var(--text-dark) !important;
-        margin-top: 14px !important;      /* Adds an elegant separation height above labels */
-        margin-bottom: 6px !important;    /* Provides breathing room down to the text fields */
+        margin-top: 16px !important;      /* Large gap above labels */
+        margin-bottom: 8px !important;    /* Clear spacing to input field below */
         text-align: left !important;
     }
 
