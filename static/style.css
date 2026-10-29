@@ -227,19 +227,46 @@ button:hover { background: #e2e8f0; }
         height: 42px !important;
     }
 
-    /* 🎨 Active Navigation Tab Full-Width Background Alignment Fix */
+ 
+   /* ==========================================================================
+    🎨 ACTIVE STATE RESOLUTION ENGINE (Fixes Color Clipping & White Fade)
+   ========================================================================== */
+    
+    /* 1. Force the Main Menu active tabs (like Ordini Attivi) to color fully */
     main > a[href*="active_tab="].active,
     main > a[href*="active_tab="][class*="active"],
-    .tabs a[class*="active"],
-    .active-tab-style,
-    a[href*="active_tab=orders"]:not([status]):not([non_salda_consegnati]).active-tab-style {
-        background-color: var(--ocean-blue) !important;
+    main > a.active-tab-style:not([href*="status"]):not([href*="non_salda_consegnati"]) {
+        background: var(--ocean-blue) !important;
         color: white !important;
         display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background-size: 100% 100% !important;
-        width: 100% !important; /* Forces the active indicator background layer to span full length */
+        width: calc(50% - 4px) !important; /* Retains its native 50% grid width block box */
+        max-width: calc(50% - 4px) !important;
+        box-shadow: inset 0 0 0 999px var(--ocean-blue) !important; /* Total fallback color saturation */
+    }
+
+    /* Keep the full-width rule intact specifically for the Reset Dati nav button if active */
+    main > a[href*="active_tab=reset_data"].active-tab-style {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* 2. Force Selected Sub-Filters to stay colored instead of turning white */
+    main a[href*="active_tab=orders"].active-tab-style,
+    .tab-content .tabs a.active-tab-style,
+    a.active-tab-style[href*="status"],
+    a.active-tab-style[href*="non_salda_consegnati"] {
+        background: #22c55e !important; /* Crisp Success Green to indicate an active filter layer */
+        color: white !important;
+        border-color: #16a34a !important;
+        box-shadow: inset 0 0 0 999px #22c55e !important; /* Prevents background overrides from bleeding white */
+    }
+    
+    /* Preserve the special red treatment for Consegnati Non Pagati when it is active */
+    a.active-tab-style[href*="non_salda_consegnati=1"] {
+        background: #ef4444 !important; /* Vibrant alert crimson red */
+        border-color: #dc2626 !important;
+        color: white !important;
+        box-shadow: inset 0 0 0 999px #ef4444 !important;
     }
 
 }
