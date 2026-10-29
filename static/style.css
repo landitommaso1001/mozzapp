@@ -115,19 +115,6 @@ button:hover { background: #e2e8f0; }
         gap: 10px !important;
         width: 100% !important;
     }
-    
-    form label[for="phone"], 
-    form label[for="password"],
-    .login-container label,
-    #login-form label {
-        display: block !important;
-        font-size: 15px !important;       /* Matches your product and client selection sizes */
-        font-weight: 700 !important;      /* Bold header weight */
-        color: var(--text-dark) !important;
-        margin-top: 14px !important;      /* Generous gap above each label */
-        margin-bottom: 6px !important;    /* Clear spacing between the label and its input box */
-        text-align: left !important;
-    }
 
     input, select, button, .btn {
         width: 100% !important;
@@ -207,12 +194,26 @@ button:hover { background: #e2e8f0; }
         color: var(--text-muted) !important;
     }
 
-
+    /* Standard inline mobile labels layout settings */
     form label {
         margin-bottom: -4px !important;
         font-size: 11px !important;
     }
 
+    /* 🌟 HOTFIX RESOLUTION ORDER: Specific login element overrides placed underneath general forms */
+    form label[for="phone"], 
+    form label[for="password"],
+    .card h2 + form label,
+    #login-form label,
+    main form label[for] {
+        display: block !important;
+        font-size: 15px !important;       /* Matches product layout text tracking scales */
+        font-weight: 700 !important;      /* Immersive bold emphasis layer */
+        color: var(--text-dark) !important;
+        margin-top: 14px !important;      /* Adds an elegant separation height above labels */
+        margin-bottom: 6px !important;    /* Provides breathing room down to the text fields */
+        text-align: left !important;
+    }
 
     /* Stacked card engine rules for mobile ordering inputs */
     .order-table, .order-table tbody, .order-table tr, .order-table td {
