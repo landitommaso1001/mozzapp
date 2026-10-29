@@ -7,6 +7,30 @@
     --border-hairline: #e2e8f0;
 }
 
+/* 🏷️ Global Application Context Role Indicators */
+.role-indicator {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    text-transform: uppercase !important;
+    display: inline-block !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+}
+
+.badge-admin {
+    background-color: #0f172a !important; /* Dark Slate Navy */
+    color: #f97316 !important;            /* Amber Orange text */
+    border: 1px solid #f97316 !important;
+}
+
+.badge-cliente {
+    background-color: #dcfce7 !important; /* Soft Green background */
+    color: #15803d !important;            /* Forest Dark Green text */
+    border: 1px solid #bbf7d0 !important;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {

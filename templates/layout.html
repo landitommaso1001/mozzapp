@@ -13,24 +13,32 @@
 
     <title>Caseificio Vicedomini</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=15">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=16">
 
 </head>
 <body>
 
     <header>
-        <div class="brand-title">
-            <a href="{{ url_for('client_bp.index') }}">🧀 Caseificio Vicedomini</a>
-        </div>
-        <nav>
-            <ul>
-                <li><a href="{{ url_for('client_bp.index') }}">🛒 Vista Cliente</a></li>
-                {% if session.get('user_role') == 'admin' or is_admin %}
-                    <li><a href="{{ url_for('admin.index') }}">🏭 Vista Admin</a></li>
-                {% endif %}
-            </ul>
-        </nav>
-    </header>
+      <div class="brand-title" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <a href="{{ url_for('client_bp.index') }}">🧀 Caseificio Vicedomini</a>
+        
+        <!-- 🌟 DYNAMIC CONTEXT BADGES FOR PC & SMARTPHONE -->
+        {% if view == 'admin' %}
+            <span class="role-indicator badge-admin">🏭 VISTA ADMIN</span>
+        {% else %}
+            <span class="role-indicator badge-cliente">🛒 VISTA CLIENTE</span>
+        {% endif %}
+      </div>
+      <nav>
+        <ul>
+            <li><a href="{{ url_for('client_bp.index') }}">🛒 Vista Cliente</a></li>
+            {% if session.get('user_role') == 'admin' or is_admin %}
+                <li><a href="{{ url_for('admin.index') }}">🏭 Vista Admin</a></li>
+            {% endif %}
+        </ul>
+      </nav>
+  </header>
+
 
     <main>
         <div class="container">
