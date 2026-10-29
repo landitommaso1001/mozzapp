@@ -175,8 +175,9 @@ button:hover { background: #e2e8f0; }
 
     /* FIXED 3: Prevent date/calendar inputs from becoming too tall on smartphones */
     input[type="date"], input[type="time"] {
-        height: 42px !important;
-        padding: 8px 10px !important;
+        height: 36px !important;
+        padding: 6px 10px !important;
+        font-size: 14px !important;
         line-height: 1.2 !important;
     }
 
@@ -191,6 +192,12 @@ button:hover { background: #e2e8f0; }
     input[name="delivery_time"]::placeholder {
         font-size: 12px !important;
         color: var(--text-muted) !important;
+    }
+
+
+    form label {
+        margin-bottom: -4px !important;
+        font-size: 11px !important;
     }
 
 
