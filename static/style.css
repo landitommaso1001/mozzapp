@@ -116,6 +116,19 @@ button:hover { background: #e2e8f0; }
         width: 100% !important;
     }
     
+    form label[for="phone"], 
+    form label[for="password"],
+    .login-container label,
+    #login-form label {
+        display: block !important;
+        font-size: 15px !important;       /* Matches your product and client selection sizes */
+        font-weight: 700 !important;      /* Bold header weight */
+        color: var(--text-dark) !important;
+        margin-top: 14px !important;      /* Generous gap above each label */
+        margin-bottom: 6px !important;    /* Clear spacing between the label and its input box */
+        text-align: left !important;
+    }
+
     input, select, button, .btn {
         width: 100% !important;
         box-sizing: border-box !important;
