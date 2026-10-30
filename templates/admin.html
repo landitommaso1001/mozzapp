@@ -19,14 +19,14 @@
     {% if active_tab == 'orders' %}
     <div class="tab-content">
         
-        <!-- 📊 SUB-ORDER DASHBOARD FILTERS -->
+<!-- 📊 SUB-ORDER DASHBOARD FILTERS -->
 <div class="admin-sub-filters" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; width: 100%;">
-    <a href="{{ url_for('admin.index', active_tab='orders') }}" class="btn sub-filter-item {% if not current_status and not non_salda_consegnati %}active-tab-style{% endif %}">📋 Tutti</a>
-    <a href="{{ url_for('admin.index', active_tab='orders', status='In Ricezione') }}" class="btn sub-filter-item {% if current_status == 'In Ricezione' %}active-tab-style{% endif %}">⚠ Da Approvare</a>
-    <a href="{{ url_for('admin.index', active_tab='orders', status='Confermato') }}" class="btn sub-filter-item {% if current_status == 'Confermato' %}active-tab-style{% endif %}">🧀 Da Produrre</a>
-    <a href="{{ url_for('admin.index', active_tab='orders', status='Pronto') }}" class="btn sub-filter-item {% if current_status == 'Pronto' %}active-tab-style{% endif %}">🚚 In Consegna</a>
-    <a href="{{ url_for('admin.index', active_tab='orders', status='Consegnato') }}" class="btn sub-filter-item {% if current_status == 'Consegnato' and not non_salda_consegnati %}active-tab-style{% endif %}">✓ Consegnati</a>
-    <a href="{{ url_for('admin.index', active_tab='orders', non_salda_consegnati='1') }}" class="btn sub-filter-item {% if non_salda_consegnati == '1' %}active-tab-style-red{% endif %}" style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;">⚠️ Consegnati Non Pagati</a>
+    <a href="{{ url_for('admin.index', active_tab='orders') }}" class="btn sub-filter-item {% if not current_status and not non_salda_consegnati %}active-tab-style{% endif %}">📋 Tutti ({{ counters.all }})</a>
+    <a href="{{ url_for('admin.index', active_tab='orders', status='In Ricezione') }}" class="btn sub-filter-item {% if current_status == 'In Ricezione' %}active-tab-style{% endif %}">⚠ Ricezione ({{ counters.ricezione }})</a>
+    <a href="{{ url_for('admin.index', active_tab='orders', status='Confermato') }}" class="btn sub-filter-item {% if current_status == 'Confermato' %}active-tab-style{% endif %}">🧀 Produzione ({{ counters.confermato }})</a>
+    <a href="{{ url_for('admin.index', active_tab='orders', status='Pronto') }}" class="btn sub-filter-item {% if current_status == 'Pronto' %}active-tab-style{% endif %}">🚚 In Consegna ({{ counters.pronto }})</a>
+    <a href="{{ url_for('admin.index', active_tab='orders', status='Consegnato') }}" class="btn sub-filter-item {% if current_status == 'Consegnato' and non_salda_consegnati != '1' %}active-tab-style{% endif %}">✓ Consegnati ({{ counters.consegnato }})</a>
+    <a href="{{ url_for('admin.index', active_tab='orders', non_salda_consegnati='1') }}" class="btn sub-filter-item {% if non_salda_consegnati == '1' %}active-tab-style-red{% endif %}" style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;">⚠️ Non Pagati ({{ counters.non_salda }})</a>
 </div>
 
         <!-- LIVE FILTERING TOOLBAR: Client Dropdown + Calendar Date Range Pickers -->

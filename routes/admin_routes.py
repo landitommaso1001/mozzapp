@@ -169,6 +169,31 @@ def index():
                 except ValueError: 
                     continue
 
+    # 🌟 NEW: Calculate dynamic order counters for sub-filter badges
+    # We apply the same client and date range filters so counters stay accurate to your view
+    count_query = Order.query
+    if filter_date_from:
+        count_query = count_query.filter(Order.date >= filter_date_from)
+    if filter_date_to:
+        count_query = count_query.filter(Order.date <= filter_date_to)
+    if filter_client_id:
+        if filter_client_id == 'banco':
+            count_query = count_query.filter(Order.user_id == None)
+        else:
+            count_query = count_query.filter_by(user_id=int(filter_client_id))
+
+    all_current_orders = count_query.all()
+    
+    counters = {
+        'all': len([o for o in all_current_orders if o.status != 'Annullato']),
+        'ricezione': len([o for o in all_current_orders if o.status == 'In Ricezione']),
+        'confermato': len([o for o in all_current_orders if o.status == 'Confermato']),
+        'pronto': len([o for o in all_current_orders if o.status == 'Pronto']),
+        'consegnato': len([o for o in all_current_orders if o.status == 'Consegnato' and o.payment_status == 'Pagato']),
+        'non_salda': len([o for o in all_current_orders if o.status == 'Consegnato' and o.payment_status == 'Da Saldare'])
+    }
+
+
     return render_template(
         'admin.html',
         orders=admin_orders,
@@ -176,6 +201,7 @@ def index():
         clients=client_list,
         active_tab=active_tab,
         view='admin',
+        counters=counters,
         total_revenue=total_revenue,
         paid_revenue=paid_revenue,
         unpaid_revenue=unpaid_revenue,
