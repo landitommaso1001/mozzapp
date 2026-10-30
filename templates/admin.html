@@ -146,7 +146,7 @@
                             <span>💰 {{ o.payment_status }}</span>
                             
                             <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 4px;">
-                                {% if o.status == 'In Ricezione' %}
+                                                                {% if o.status == 'In Ricezione' %}
                                     <form method="POST" action="{{ url_for('admin.update_order_status') }}">
                                         <input type="hidden" name="order_id" value="{{ o.id }}">
                                         <input type="hidden" name="new_status" value="Confermato">
@@ -157,7 +157,7 @@
                                         
                                         <label style="display: block; text-align: left; font-size: 11px; font-weight: bold; margin-bottom: 2px; color: #475569;">⏰ Ora Consegna:</label>
                                         <input type="time" name="delivery_time" required style="padding: 4px; font-size: 12px; margin-bottom: 4px; width: 100%; box-sizing: border-box; display: block; height: 32px !important;">
-                                        <button type="submit" style="background-color: #22c55e; color: white; width: 100%; font-weight: bold; padding: 6px; border: none; border-radius: 4px; cursor: pointer;">✓ Approva</button>
+                                        <button type="submit" style="background-color: #22c55e; color: white; width: 100%; font-weight: bold; padding: 6px; border: none; border-radius: 4px; cursor: pointer;">Approva</button>
                                     </form>
                                 {% elif o.status == 'Confermato' %}
                                     <form method="POST" action="{{ url_for('admin.update_order_status') }}">
@@ -167,7 +167,7 @@
                                         <input type="hidden" name="client_id" value="{{ current_client_id }}">
                                         <input type="hidden" name="date_from" value="{{ current_date_from }}">
                                         <input type="hidden" name="date_to" value="{{ current_date_to }}">
-                                        <button type="submit" style="background-color: #3b82f6; color: white; width: 100%;">🧀 Pronto</button>
+                                        <button type="submit" style="background-color: #3b82f6; color: white; width: 100%;">Pronto</button>
                                     </form>
                                 {% elif o.status == 'Pronto' %}
                                     <form method="POST" action="{{ url_for('admin.update_order_status') }}">
@@ -177,7 +177,7 @@
                                         <input type="hidden" name="client_id" value="{{ current_client_id }}">
                                         <input type="hidden" name="date_from" value="{{ current_date_from }}">
                                         <input type="hidden" name="date_to" value="{{ current_date_to }}">
-                                        <button type="submit" style="background-color: #64748b; color: white; width: 100%;">🚚 Consegnato</button>
+                                        <button type="submit" style="background-color: #64748b; color: white; width: 100%;">Consegnato</button>
                                     </form>
                                 {% endif %}
 
@@ -188,7 +188,7 @@
                                         <input type="hidden" name="client_id" value="{{ current_client_id }}">
                                         <input type="hidden" name="date_from" value="{{ current_date_from }}">
                                         <input type="hidden" name="date_to" value="{{ current_date_to }}">
-                                        <button type="submit" style="background-color: #eab308; color: white; width: 100%;">💰 Salda</button>
+                                        <button type="submit" style="background-color: #eab308; color: white; width: 100%;">Salda</button>
                                     </form>
                                 {% endif %}
 
@@ -199,9 +199,10 @@
                                         <input type="hidden" name="client_id" value="{{ current_client_id }}">
                                         <input type="hidden" name="date_from" value="{{ current_date_from }}">
                                         <input type="hidden" name="date_to" value="{{ current_date_to }}">
-                                        <button type="submit" style="background-color: #ef4444; color: white; width: 100%;">❌ Annulla</button>
+                                        <button type="submit" style="background-color: #ef4444; color: white; width: 100%;">Annulla</button>
                                     </form>
                                 {% endif %}
+
                             </div>
                         </td>
                     </tr>
