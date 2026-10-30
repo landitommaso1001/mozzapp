@@ -204,13 +204,14 @@ def index():
 @admin_bp.route('/order/update_status', methods=['POST'])
 @admin_required
 def update_order_status():
-    order_id = request.args.get('order_id')
-    new_status = request.args.get('new_status')
+    # Read state metrics directly from secure form body inputs
+    order_id = request.form.get('order_id')
+    new_status = request.form.get('new_status')
     
-    status = request.args.get('status', '')
-    client_id = request.args.get('client_id', '')
-    date_from = request.args.get('date_from', '')
-    date_to = request.args.get('date_to', '')
+    status = request.form.get('status', '')
+    client_id = request.form.get('client_id', '')
+    date_from = request.form.get('date_from', '')
+    date_to = request.form.get('date_to', '')
     
     order = Order.query.filter_by(id=order_id).first_or_404()
     try:
@@ -228,12 +229,12 @@ def update_order_status():
 @admin_bp.route('/order/mark_paid', methods=['POST'])
 @admin_required
 def mark_order_paid():
-    order_id = request.args.get('order_id')
+    order_id = request.form.get('order_id')
     
-    status = request.args.get('status', '')
-    client_id = request.args.get('client_id', '')
-    date_from = request.args.get('date_from', '')
-    date_to = request.args.get('date_to', '')
+    status = request.form.get('status', '')
+    client_id = request.form.get('client_id', '')
+    date_from = request.form.get('date_from', '')
+    date_to = request.form.get('date_to', '')
     
     order = Order.query.filter_by(id=order_id).first_or_404()
     try:
@@ -249,12 +250,12 @@ def mark_order_paid():
 @admin_bp.route('/order/cancel', methods=['POST'])
 @admin_required
 def cancel_order():
-    order_id = request.args.get('order_id')
+    order_id = request.form.get('order_id')
     
-    status = request.args.get('status', '')
-    client_id = request.args.get('client_id', '')
-    date_from = request.args.get('date_from', '')
-    date_to = request.args.get('date_to', '')
+    status = request.form.get('status', '')
+    client_id = request.form.get('client_id', '')
+    date_from = request.form.get('date_from', '')
+    date_to = request.form.get('date_to', '')
     
     order = Order.query.filter_by(id=order_id).first_or_404()
     try:
@@ -267,7 +268,6 @@ def cancel_order():
         flash(f"Errore: {str(e)}", "danger")
         
     return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=date_from, date_to=date_to))
-
 
 
 @admin_bp.route('/client/create', methods=['POST'])
