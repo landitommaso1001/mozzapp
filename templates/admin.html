@@ -99,19 +99,34 @@
                 </thead>
                 <tbody>
 {% for o in orders %}
+<!-- 📊 COMPACTED VISIBILITY TABLE LAYOUT FOR ACTIVE ADMIN LOGS -->
 <tr>
-    <td>{{ o.id }}</td>
-    <td>{{ o.client }}</td>
+    <td><code style="font-weight: bold; color: #475569;">{{ o.id }}</code></td>
+    
+    <!-- 🌟 NEW: Render split client profile details cleanly -->
+    <td>{{ o.formatted_client_html|safe }}</td>
+    
     <td>📅 {{ o.date }}
         {% if o.time %}
-            <br>⏰ {{ o.time }}
+            <br>⏰ <span style="font-weight: bold; color: var(--ocean-blue);">{{ o.time }}</span>
         {% endif %}
     </td>
 
-    <!-- 🌟 CORRECTED & ISOLATED CELL WITH EXPLICIT CLASS FOR MOBILE WRAPPING -->
-    <td class="items-cell-mobile">{{ o.items }}</td>
+    <!-- 🌟 NEW: Split item commas into elegant single line vertical row fragments -->
+    <td class="items-cell-mobile">
+        <div class="split-items-list">
+            {% if o.items %}
+                {% for single_item in o.items.split(',') %}
+                    {% if single_item.strip() %}
+                        <div class="product-item-row">🥛 {{ single_item.strip() }}</div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+    </td>
 
-    <td>€ {{ "%.2f"|format(o.total) }}</td>
+    <td style="text-align: right; font-weight: bold; color: #0f172a;">€ {{ "%.2f"|format(o.total) }}</td>
+
     <td>
         <span>📦 {{ o.status }}</span><br>
         <span>💰 {{ o.payment_status }}</span>
