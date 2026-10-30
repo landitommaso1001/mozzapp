@@ -1,19 +1,16 @@
-{% extends "layout.html" %}
+{% extends 'layout.html' %}
 {% block content %}
 
-<!-- User Session Bar -->
 <div class="user-session-bar" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
     <span>👤 Utente: <strong>{{ session['user_name'] }}</strong></span>
     <a href="{{ url_for('client_bp.logout') }}" class="btn logout-btn-fixed" style="background: #ef4444; color: white; border: none; padding: 6px 12px;">🚪 Esci</a>
 </div>
-
 
 <!-- 🖥️ DESKTOP PRESENTATION INTERFACE -->
 <div class="desktop-layout">
     <form method="POST" action="{{ url_for('client_bp.index') }}">
         {% if is_admin %}
         <div class="card" style="background: var(--bg-neutral); margin-bottom: 16px; border-left: 4px solid var(--ocean-blue) !important;">
-            <!-- 🖥️ Highlighted Desktop Label & Selection -->
             <label for="admin_target_client_id_pc" style="display: block; font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px;">👤 Seleziona Cliente per Ordine:</label>
             <select name="admin_target_client_id" id="admin_target_client_id_pc" style="font-size: 14px; padding: 8px; width: 100%; max-width: 400px;">
                 <option value="0" {% if selected_client_id == 0 %}selected{% endif %}>-- Vendita Diretta al Banco / Ordine Interno --</option>
@@ -73,13 +70,15 @@
             </div>
         </div>
     </form>
-
     <div class="card" style="margin-top: 20px;">
-        <h3>📋 {% if is_admin %} Storico Ordini Filtrato {% else %} Storico Dei Tuoi Ordini {% endif %}</h3>
+        <h3>📋 {% if is_admin %} Storico Ordini Globale {% else %} Storico Dei Tuoi Ordini {% endif %}</h3>
         <table class="table-responsive">
             <thead>
                 <tr>
                     <th>ID Ordine (Data)</th>
+                    {% if is_admin %}
+                        <th>Cliente</th>
+                    {% endif %}
                     <th>Stato</th>
                     <th>Pagamento</th>
                     <th>Dettagli Articoli</th>
@@ -91,6 +90,9 @@
                 {% for order in orders %}
                 <tr>
                     <td><strong>{{ order.id }}</strong><br><small>{{ order.date }} {% if order.time %}⏰ {{ order.time }}{% endif %}</small></td>
+                    {% if is_admin %}
+                        <td><span style="font-weight: 600; color: #1e293b;">👤 {{ order.client }}</span></td>
+                    {% endif %}
                     <td>{{ order.status }}</td>
                     <td>{{ order.payment_status }}</td>
                     <td style="white-space: normal;">{{ order.items }}</td>
@@ -105,14 +107,12 @@
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Nessun ordine presente in archivio.</td></tr>
+                <tr><td colspan="{% if is_admin %}7{% else %}6{% endif %}" style="text-align: center; color: var(--text-muted);">Nessun ordine presente in archivio.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
-
-
 <!-- 📱 SMARTPHONE PRESENTATION INTERFACE -->
 <div class="smartphone-layout">
     <div class="mobile-view-tabs">
@@ -184,6 +184,13 @@
                 <span>#{{ order.id }}</span>
                 <span>€ {{ "%.2f"|format(order.total) }}</span>
             </div>
+            
+            {% if is_admin %}
+                <div style="font-weight: bold; font-size: 12px; color: #334155; margin-bottom: 4px;">
+                    👤 Cliente: {{ order.client }}
+                </div>
+            {% endif %}
+
             <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
                 📅 {{ order.date }} {% if order.time %} ⏰ Consegna: {{ order.time }} {% endif %}<br>
                 📦 {{ order.status }} | 💰 {{ order.payment_status }}
@@ -211,10 +218,14 @@ function switchClientTab(tabName) {
     document.querySelectorAll('.mobile-tab-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('btn-' + tabName).classList.add('active');
     document.querySelectorAll('.client-split-section').forEach(sec => sec.classList.remove('active-section'));
-    document.getElementById('section-' + tabName).classList.add('active-section');
+    document.getElementById('section-' + tabName).classWith('active-section');
+    
+    // Fallback normalization logic
+    let targetSection = document.getElementById('section-' + tabName);
+    if(targetSection) {
+        targetSection.classList.add('active-section');
+    }
 }
 </script>
 
 {% endblock %}
-
-

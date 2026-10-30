@@ -193,14 +193,14 @@ def index():
                 if f_name: parsed_formats.append({'name': f_name, 'price': f_price})
         enriched_products.append({'id': product.id, 'name': product.name, 'price_per_kg': product.price_per_kg, 'parsed_formats': parsed_formats})
 
-    # 🌟 FIX: Database synchronization layer to stop user history leaks
+       # 🌟 CUSTOMIZED SCOPE LAYER: Admins view everything across all accounts; clients see only their own profile records
     if is_admin:
-        if selected_client_id > 0:
-            my_orders = Order.query.filter_by(user_id=selected_client_id).order_by(Order.serial_id.desc()).all()
-        else:
-            my_orders = Order.query.filter((Order.user_id == None) | (Order.user_id == 0)).order_by(Order.serial_id.desc()).all()
+        # Master Admin visibility list across all system accounts
+        my_orders = Order.query.order_by(Order.serial_id.desc()).all()
     else:
+        # Standard customer view locked into their active profile identity context
         my_orders = Order.query.filter_by(user_id=user_id).order_by(Order.serial_id.desc()).all()
+
     
     return render_template(
         'client.html', 
