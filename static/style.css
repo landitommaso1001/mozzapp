@@ -93,6 +93,20 @@ button:hover { background: #e2e8f0; }
 .smartphone-layout { display: none !important; }
 .mobile-view-tabs { display: none; }
 
+/* Global Active Tab Highlights for Desktop & Mobile */
+.active-tab-style {
+    background-color: var(--ocean-blue) !important;
+    color: white !important;
+    border-color: var(--ocean-blue) !important;
+}
+
+.active-tab-style-red {
+    background-color: #ef4444 !important;
+    color: white !important;
+    border-color: #dc2626 !important;
+    font-weight: 700 !important;
+}
+
 
 /* ==========================================================================
    📱 HIGH-PRECISION MOBILE OVERRIDES (Viewport Width <= 768px)

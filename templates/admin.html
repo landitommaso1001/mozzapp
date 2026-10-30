@@ -5,13 +5,13 @@
     
     <h1 style="margin-top: 0; color: #333;">🏭 Controllo Caseificio</h1>
 
-    <!-- 🏭 MAIN ADMIN NAVIGATION TABS ROW -->
+<!-- 🏭 MAIN ADMIN NAVIGATION TABS ROW -->
 <div class="admin-main-nav" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; width: 100%;">
-    <a href="{{ url_for('admin.index', active_tab='orders') }}" class="btn admin-nav-item {% if active_tab == 'orders' %}active-tab-style{% endif %}">📋 Ordini Attivi</a>
+    <a href="{{ url_for('admin.index', active_tab='orders') }}" class="btn admin-nav-item {% if active_tab == 'orders' or not active_tab %}active-tab-style{% endif %}">📋 Ordini Attivi</a>
     <a href="{{ url_for('admin.index', active_tab='catalog') }}" class="btn admin-nav-item {% if active_tab == 'catalog' %}active-tab-style{% endif %}">⚙ Configura Listino</a>
     <a href="{{ url_for('admin.index', active_tab='analytics') }}" class="btn admin-nav-item {% if active_tab == 'analytics' %}active-tab-style{% endif %}">📊 Resoconto Vendite</a>
     <a href="{{ url_for('admin.index', active_tab='users_management') }}" class="btn admin-nav-item {% if active_tab == 'users_management' %}active-tab-style{% endif %}">👥 Gestione Utenti</a>
-    <a href="{{ url_for('admin.index', active_tab='reset_data') }}" class="btn admin-nav-item {% if active_tab == 'reset_data' %}active-tab-style{% endif %}">⚠ Reset Dati</a>
+    <a href="{{ url_for('admin.index', active_tab='reset_data') }}" class="btn admin-nav-item {% if active_tab == 'reset_data' %}active-tab-style{% endif %}">⚠️ Reset Dati</a>
 </div>
 
 
