@@ -64,9 +64,18 @@
                     {% endfor %}
                 </tbody>
             </table>
+            <div style="margin-top: 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
+                <label for="delivery_date_pc" style="font-weight: 700; color: var(--text-dark); font-size: 13px;">📅 Data Consegna:</label>
+                <input type="date" name="delivery_date" id="delivery_date_pc" required style="width: auto; padding: 6px 10px; font-size: 13px;">
+            </div>
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px;">
                 <button type="reset" class="btn">🗑 Svuota</button>
-                <button type="submit" class="btn" style="background: var(--ocean-blue); color: white; border: none;">Invia Ordine</button>
+                <div style="margin-top: 12px; margin-bottom: 6px;">
+                    <label for="delivery_date_mobile" style="display: block !important; font-size: 14px !important; font-weight: 700 !important; color: var(--text-dark) !important; margin-bottom: 6px !important; text-align: left !important;">📅 Data Richiesta Consegna:</label>
+                    <input type="date" name="delivery_date" id="delivery_date_mobile" required style="width: 100% !important; box-sizing: border-box !important; padding: 10px !important; font-size: 16px !important; height: 42px !important;">
+                </div>
+
+                <button type="submit" class="btn" style="background: var(--ocean-blue); color: white; border: none; width: 100%; margin-top: 12px;">Invia Ordine</button>
             </div>
         </div>
     </form>
@@ -225,6 +234,20 @@ function switchClientTab(tabName) {
         targetSection.classList.add('active-section'); // Fixed from classWith
     }
 }
+</script>
+<script>
+    // Automatically set the default delivery option values to today's date
+    const today = new Date();
+    const offset = today.getTimezoneOffset();
+    const localToday = new Date(today.getTime() - (offset * 60 * 1000));
+    const todayISO = localToday.toISOString().split('T')[0];
+    
+    if(document.getElementById('delivery_date_pc')) {
+        document.getElementById('delivery_date_pc').value = todayISO;
+    }
+    if(document.getElementById('delivery_date_mobile')) {
+        document.getElementById('delivery_date_mobile').value = todayISO;
+    }
 </script>
 
 {% endblock %}

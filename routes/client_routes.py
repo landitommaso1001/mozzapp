@@ -150,12 +150,16 @@ def index():
             if is_admin:
                 return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
             return redirect(url_for('client_bp.index'))
+
+        chosen_delivery_date = request.form.get('delivery_date')
+        if not chosen_delivery_date:
+            chosen_delivery_date = date.today().strftime("%Y-%m-%d")
             
         new_order = Order(
             id=f"ORD-{random.randint(1000, 9999)}",
             user_id=order_user_id,
             client=order_client_name,
-            date=date.today().strftime("%Y-%m-%d"),
+            date=chosen_delivery_date,,
             items=", ".join(item_strings),
             total=calculated_total,
             status='In Ricezione',
