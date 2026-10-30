@@ -214,16 +214,15 @@
 </div>
 
 <script>
+/* 🌟 FIXED MOBILE TOGGLE METHOD */
 function switchClientTab(tabName) {
     document.querySelectorAll('.mobile-tab-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('btn-' + tabName).classList.add('active');
     document.querySelectorAll('.client-split-section').forEach(sec => sec.classList.remove('active-section'));
-    document.getElementById('section-' + tabName).classWith('active-section');
     
-    // Fallback normalization logic
     let targetSection = document.getElementById('section-' + tabName);
     if(targetSection) {
-        targetSection.classList.add('active-section');
+        targetSection.classList.add('active-section'); // Fixed from classWith
     }
 }
 </script>
