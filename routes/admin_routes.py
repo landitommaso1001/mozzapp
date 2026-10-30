@@ -61,6 +61,23 @@ def index():
         order_query = order_query.filter_by(status=filter_status)
 
     admin_orders = order_query.order_by(Order.serial_id.desc()).all()
+    
+    # 🌟 NEW: Format names and phone records to force vertical structural line breaks
+    for o in admin_orders:
+        if o.client and "(" in o.client and ")" in o.client:
+            try:
+                name_part, rest = o.client.split("(", 1)
+                phone_part = rest.replace(")", "").strip()
+                o.formatted_client_name = name_part.strip()
+                o.formatted_client_phone = phone_part
+            except Exception:
+                o.formatted_client_name = o.client
+                o.formatted_client_phone = ""
+        else:
+            o.formatted_client_name = o.client if o.client else "Vendita Diretta / Banco"
+            o.formatted_client_phone = ""
+
+
     catalog_products = Product.query.all()
     client_list = User.query.filter_by(role='client').all()
     

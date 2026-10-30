@@ -98,109 +98,120 @@
                     </tr>
                 </thead>
                 <tbody>
-{% for o in orders %}
-<!-- 📊 COMPACTED VISIBILITY TABLE LAYOUT FOR ACTIVE ADMIN LOGS -->
-<tr>
-    <td><code style="font-weight: bold; color: #475569;">{{ o.id }}</code></td>
-    
-    <!-- 🌟 NEW: Render split client profile details cleanly -->
-    <td>{{ o.formatted_client_html|safe }}</td>
-    
-    <td>📅 {{ o.date }}
-        {% if o.time %}
-            <br>⏰ <span style="font-weight: bold; color: var(--ocean-blue);">{{ o.time }}</span>
-        {% endif %}
-    </td>
+                    {% for o in orders %}
+                    <tr>
+                        <!-- Order Tracking ID -->
+                        <td><code style="font-weight: bold; color: #475569;">{{ o.id }}</code></td>
+                        
+                        <!-- 👤 UPDATED COMPACT MULTILINE CLIENT CELL -->
+                        <td style="vertical-align: middle;">
+                            <div style="display: flex; flex-direction: column; gap: 2px; text-align: left; white-space: normal !important;">
+                                <span style="font-weight: 700; color: var(--text-dark); font-size: 13px; display: block;">
+                                    👤 {{ o.formatted_client_name }}
+                                </span>
+                                {% if o.formatted_client_phone %}
+                                    <span style="color: var(--text-muted); font-size: 11px; display: block; white-space: nowrap;">
+                                        📞 {{ o.formatted_client_phone }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        
+                        <!-- Delivery Target Parameters -->
+                        <td>📅 {{ o.date }}
+                            {% if o.time %}
+                                <br>⏰ <span style="font-weight: bold; color: var(--ocean-blue);">{{ o.time }}</span>
+                            {% endif %}
+                        </td>
 
-    <!-- 🌟 NEW: Split item commas into elegant single line vertical row fragments -->
-    <td class="items-cell-mobile">
-        <div class="split-items-list">
-            {% if o.items %}
-                {% for single_item in o.items.split(',') %}
-                    {% if single_item.strip() %}
-                        <div class="product-item-row">🥛 {{ single_item.strip() }}</div>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-        </div>
-    </td>
+                        <!-- Split Ordered Items List (Stacked on single rows per element) -->
+                        <td class="items-cell-mobile">
+                            <div class="split-items-list">
+                                {% if o.items %}
+                                    {% for single_item in o.items.split(',') %}
+                                        {% if single_item.strip() %}
+                                            <div class="product-item-row">🥛 {{ single_item.strip() }}</div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </td>
 
-    <td style="text-align: right; font-weight: bold; color: #0f172a;">€ {{ "%.2f"|format(o.total) }}</td>
+                        <!-- Financial Total Column -->
+                        <td style="text-align: right; font-weight: bold; color: #0f172a;">€ {{ "%.2f"|format(o.total) }}</td>
+                        
+                        <!-- Fast Dashboard Quick Action Forms Interface -->
+                        <td>
+                            <span>📦 {{ o.status }}</span><br>
+                            <span>💰 {{ o.payment_status }}</span>
+                            
+                            <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 4px;">
+                                {% if o.status == 'In Ricezione' %}
+                                    <form method="POST" action="{{ url_for('admin.update_order_status') }}">
+                                        <input type="hidden" name="order_id" value="{{ o.id }}">
+                                        <input type="hidden" name="new_status" value="Confermato">
+                                        <input type="hidden" name="status" value="{{ current_status }}">
+                                        <input type="hidden" name="client_id" value="{{ current_client_id }}">
+                                        <input type="hidden" name="date_from" value="{{ current_date_from }}">
+                                        <input type="hidden" name="date_to" value="{{ current_date_to }}">
+                                        
+                                        <label style="display: block; text-align: left; font-size: 11px; font-weight: bold; margin-bottom: 2px; color: #475569;">⏰ Ora Consegna:</label>
+                                        <input type="time" name="delivery_time" required style="padding: 4px; font-size: 12px; margin-bottom: 4px; width: 100%; box-sizing: border-box; display: block; height: 32px !important;">
+                                        <button type="submit" style="background-color: #22c55e; color: white; width: 100%; font-weight: bold; padding: 6px; border: none; border-radius: 4px; cursor: pointer;">✓ Approva</button>
+                                    </form>
+                                {% elif o.status == 'Confermato' %}
+                                    <form method="POST" action="{{ url_for('admin.update_order_status') }}">
+                                        <input type="hidden" name="order_id" value="{{ o.id }}">
+                                        <input type="hidden" name="new_status" value="Pronto">
+                                        <input type="hidden" name="status" value="{{ current_status }}">
+                                        <input type="hidden" name="client_id" value="{{ current_client_id }}">
+                                        <input type="hidden" name="date_from" value="{{ current_date_from }}">
+                                        <input type="hidden" name="date_to" value="{{ current_date_to }}">
+                                        <button type="submit" style="background-color: #3b82f6; color: white; width: 100%;">🧀 Pronto</button>
+                                    </form>
+                                {% elif o.status == 'Pronto' %}
+                                    <form method="POST" action="{{ url_for('admin.update_order_status') }}">
+                                        <input type="hidden" name="order_id" value="{{ o.id }}">
+                                        <input type="hidden" name="new_status" value="Consegnato">
+                                        <input type="hidden" name="status" value="{{ current_status }}">
+                                        <input type="hidden" name="client_id" value="{{ current_client_id }}">
+                                        <input type="hidden" name="date_from" value="{{ current_date_from }}">
+                                        <input type="hidden" name="date_to" value="{{ current_date_to }}">
+                                        <button type="submit" style="background-color: #64748b; color: white; width: 100%;">🚚 Consegnato</button>
+                                    </form>
+                                {% endif %}
 
-    <td>
-        <span>📦 {{ o.status }}</span><br>
-        <span>💰 {{ o.payment_status }}</span>
-        
-        
-<div style="margin-top: 4px; display: flex; flex-direction: column; gap: 4px;">
-    {% if o.status == 'In Ricezione' %}
-        <!-- 🌟 FIX: Clean POST request using structured hidden input values to preserve filter states -->
-        <form method="POST" action="{{ url_for('admin.update_order_status') }}">
-            <input type="hidden" name="order_id" value="{{ o.id }}">
-            <input type="hidden" name="new_status" value="Confermato">
-            <input type="hidden" name="status" value="{{ current_status }}">
-            <input type="hidden" name="client_id" value="{{ current_client_id }}">
-            <input type="hidden" name="date_from" value="{{ current_date_from }}">
-            <input type="hidden" name="date_to" value="{{ current_date_to }}">
-            
-            <!-- 🌟 The Time Input field is now strictly required before submitting validation -->
-            <label style="display: block; text-align: left; font-size: 11px; font-weight: bold; margin-bottom: 2px; color: #475569;">⏰ Ora Consegna:</label>
-            <input type="time" name="delivery_time" required style="padding: 4px; font-size: 12px; margin-bottom: 4px; width: 100%; box-sizing: border-box; display: block; height: 32px !important;">
-            <button type="submit" style="background-color: #22c55e; color: white; width: 100%; font-weight: bold; padding: 6px; border: none; border-radius: 4px; cursor: pointer;">✓ Approva Ordine</button>
-        </form>
-    {% elif o.status == 'Confermato' %}
-        <form method="POST" action="{{ url_for('admin.update_order_status') }}">
-            <input type="hidden" name="order_id" value="{{ o.id }}">
-            <input type="hidden" name="new_status" value="Pronto">
-            <input type="hidden" name="status" value="{{ current_status }}">
-            <input type="hidden" name="client_id" value="{{ current_client_id }}">
-            <input type="hidden" name="date_from" value="{{ current_date_from }}">
-            <input type="hidden" name="date_to" value="{{ current_date_to }}">
-            <button type="submit" style="background-color: #3b82f6; color: white; width: 100%;">🧀 Pronto</button>
-        </form>
-    {% elif o.status == 'Pronto' %}
-        <form method="POST" action="{{ url_for('admin.update_order_status') }}">
-            <input type="hidden" name="order_id" value="{{ o.id }}">
-            <input type="hidden" name="new_status" value="Consegnato">
-            <input type="hidden" name="status" value="{{ current_status }}">
-            <input type="hidden" name="client_id" value="{{ current_client_id }}">
-            <input type="hidden" name="date_from" value="{{ current_date_from }}">
-            <input type="hidden" name="date_to" value="{{ current_date_to }}">
-            <button type="submit" style="background-color: #64748b; color: white; width: 100%;">🚚 Consegnato</button>
-        </form>
-    {% endif %}
+                                {% if o.payment_status != 'Pagato' and o.status != 'Annullato' %}
+                                    <form method="POST" action="{{ url_for('admin.mark_order_paid') }}">
+                                        <input type="hidden" name="order_id" value="{{ o.id }}">
+                                        <input type="hidden" name="status" value="{{ current_status }}">
+                                        <input type="hidden" name="client_id" value="{{ current_client_id }}">
+                                        <input type="hidden" name="date_from" value="{{ current_date_from }}">
+                                        <input type="hidden" name="date_to" value="{{ current_date_to }}">
+                                        <button type="submit" style="background-color: #eab308; color: white; width: 100%;">💰 Salda</button>
+                                    </form>
+                                {% endif %}
 
-    {% if o.payment_status != 'Pagato' and o.status != 'Annullato' %}
-        <form method="POST" action="{{ url_for('admin.mark_order_paid') }}">
-            <input type="hidden" name="order_id" value="{{ o.id }}">
-            <input type="hidden" name="status" value="{{ current_status }}">
-            <input type="hidden" name="client_id" value="{{ current_client_id }}">
-            <input type="hidden" name="date_from" value="{{ current_date_from }}">
-            <input type="hidden" name="date_to" value="{{ current_date_to }}">
-            <button type="submit" style="background-color: #eab308; color: white; width: 100%;">💰 Salda</button>
-        </form>
-    {% endif %}
-
-    {% if o.status in ['In Ricezione', 'Confermato', 'Pronto'] %}
-        <form method="POST" action="{{ url_for('admin.cancel_order') }}" onsubmit="return confirm('Annullare questo ordine?');">
-            <input type="hidden" name="order_id" value="{{ o.id }}">
-            <input type="hidden" name="status" value="{{ current_status }}">
-            <input type="hidden" name="client_id" value="{{ current_client_id }}">
-            <input type="hidden" name="date_from" value="{{ current_date_from }}">
-            <input type="hidden" name="date_to" value="{{ current_date_to }}">
-            <button type="submit" style="background-color: #ef4444; color: white; width: 100%;">❌ Annulla</button>
-        </form>
-    {% endif %}
-</div>
-
-    </td>
-</tr>
-{% else %}
-<tr>
-    <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">Nessun ordine presente corrispondente ai filtri selezionati.</td>
-</tr>
-{% endfor %}
+                                {% if o.status in ['In Ricezione', 'Confermato', 'Pronto'] %}
+                                    <form method="POST" action="{{ url_for('admin.cancel_order') }}" onsubmit="return confirm('Annullare questo ordine?');">
+                                        <input type="hidden" name="order_id" value="{{ o.id }}">
+                                        <input type="hidden" name="status" value="{{ current_status }}">
+                                        <input type="hidden" name="client_id" value="{{ current_client_id }}">
+                                        <input type="hidden" name="date_from" value="{{ current_date_from }}">
+                                        <input type="hidden" name="date_to" value="{{ current_date_to }}">
+                                        <button type="submit" style="background-color: #ef4444; color: white; width: 100%;">❌ Annulla</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">Nessun ordine presente corrispondente ai filtri selezionati.</td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
+
             </table>
         </div>
         {% else %}

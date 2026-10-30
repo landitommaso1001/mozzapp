@@ -64,7 +64,6 @@ nav ul { list-style: none; display: flex; gap: 14px; }
 nav ul li a { font-size: 12px; font-weight: 600; text-transform: uppercase; padding: 4px 8px; }
 
 main { width: 100%; max-width: 100%; margin: 0 auto; clear: both; }
-
 .card {
     background: var(--bg-clean) !important;
     border: 1px solid var(--border-hairline) !important;
@@ -106,8 +105,6 @@ button:hover { background: #e2e8f0; }
     border-color: #dc2626 !important;
     font-weight: 700 !important;
 }
-
-
 /* ==========================================================================
    📱 HIGH-PRECISION MOBILE OVERRIDES (Viewport Width <= 768px)
    ========================================================================== */
@@ -122,9 +119,12 @@ button:hover { background: #e2e8f0; }
     nav ul li a { font-size: 11px !important; padding: 6px 10px !important; }
     form { display: flex !important; flex-direction: column !important; gap: 10px !important; width: 100% !important; }
     input, select, button, .btn { width: 100% !important; box-sizing: border-box !important; padding: 10px 12px !important; font-size: 16px !important; margin: 0 !important; height: 42px !important; }
-    main table, .card table, .table-responsive { display: block !important; max-width: 100% !important; overflow-x: auto !important; white-space: nowrap !important; -webkit-overflow-scrolling: touch !important; }
+    
+    /* 🌟 ADJUSTED: Allow flexible wrapping to completely eliminate horizontal scrolling */
+    main table, .card table, .table-responsive { display: block !important; max-width: 100% !important; overflow-x: auto !important; white-space: normal !important; -webkit-overflow-scrolling: touch !important; }
     main table th, main table td { display: table-cell !important; width: auto !important; padding: 8px 10px !important; }
-    main table td.items-cell-mobile, table td.items-cell-mobile, .table-responsive table td.items-cell-mobile { white-space: normal !important; word-wrap: break-word !important; overflow-wrap: break-word !important; word-break: break-word !important; min-width: 200px !important; max-width: 260px !important; }
+    main table td.items-cell-mobile, table td.items-cell-mobile, .table-responsive table td.items-cell-mobile { white-space: normal !important; word-wrap: break-word !important; overflow-wrap: break-word !important; word-break: break-word !important; min-width: 150px !important; max-width: 220px !important; }
+    
     .mobile-tab-btn { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 600; background: transparent; border: none !important; border-radius: 4px; color: var(--text-muted); cursor: pointer; }
     .mobile-tab-btn.active { background: var(--ocean-blue) !important; color: white !important; }
     .client-split-section { display: none; }
@@ -134,6 +134,7 @@ button:hover { background: #e2e8f0; }
     input[name="delivery_time"]::placeholder { font-size: 12px !important; color: var(--text-muted) !important; }
     form label { margin-bottom: -4px !important; font-size: 11px !important; }
     label[for="phone"], label[for="password"], main label, .card label, form label[for="phone"], form label[for="password"] { display: block !important; font-size: 15px !important; font-weight: 700 !important; color: var(--text-dark) !important; margin-top: 16px !important; margin-bottom: 8px !important; text-align: left !important; }
+    
     .order-table, .order-table tbody, .order-table tr, .order-table td { display: block !important; width: 100% !important; }
     .order-table th { display: none !important; }
     .order-table tr { background: var(--bg-clean) !important; border: 1px solid var(--border-hairline) !important; border-radius: 6px !important; padding: 8px 12px !important; margin-bottom: 8px !important; }
@@ -151,13 +152,12 @@ button:hover { background: #e2e8f0; }
     .admin-nav-item {
         display: inline-flex !important; align-items: center !important; justify-content: center !important; box-sizing: border-box !important;
         background: var(--bg-clean) !important; color: var(--text-dark) !important; border: 1px solid var(--border-hairline) !important;
-        padding: 10px 2px !important; /* Tighter padding to prevent overflow */
-        font-size: 13px !important;    /* 🌟 Bumed up from 11px */
+        padding: 10px 2px !important;
+        font-size: 13px !important;    
         font-weight: 600 !important; border-radius: 4px !important; height: 38px !important;
         flex: 1 1 calc(50% - 4px) !important; width: calc(50% - 4px) !important; max-width: calc(50% - 4px) !important;
     }
     .admin-nav-item[href*="active_tab=reset_data"] { flex: 1 1 100% !important; width: 100% !important; max-width: 100% !important; }
-    
     .admin-nav-item.active-tab-style { background: var(--ocean-blue) !important; color: white !important; border-color: var(--ocean-blue) !important; }
 
     /* ==========================================================================
@@ -167,35 +167,51 @@ button:hover { background: #e2e8f0; }
     .sub-filter-item {
         display: inline-flex !important; align-items: center !important; justify-content: center !important; box-sizing: border-box !important;
         background: var(--bg-clean) !important; color: var(--text-dark) !important; border: 1px solid var(--border-hairline) !important;
-        padding: 6px 2px !important;  /* Tighter padding to prevent overflow */
-        font-size: 13px !important;    /* 🌟 Bumped up from 12px */
+        padding: 6px 2px !important;  
+        font-size: 13px !important;    
         border-radius: 4px !important; height: 42px !important;
         flex: 1 1 calc(50% - 4px) !important; width: calc(50% - 4px) !important; max-width: calc(50% - 4px) !important; margin: 0 !important;
     }
-
-    /* Line 1 Spanning (Tutti) */
     .sub-filter-item:first-child { flex: 1 1 100% !important; width: 100% !important; max-width: 100% !important; font-size: 14px !important; }
-    /* Line 4 Spanning (Non Pagati Default) */
     .admin-sub-filters a[href*="non_salda_consegnati=1"] { flex: 1 1 100% !important; width: 100% !important; max-width: 100% !important; background: #fee2e2 !important; color: #991b1b !important; border: 1px solid #fca5a5 !important; }
-
-    /* 🌟 FILTER SELECTED HIGH-STENSITY HIGHLIGHT LOCKS (Prevents fading to white) */
     .sub-filter-item.active-tab-style { background: #22c55e !important; color: white !important; border-color: #16a34a !important; font-weight: 700 !important; }
     .admin-sub-filters a.active-tab-style-red { background: #ef4444 !important; color: white !important; border-color: #dc2626 !important; font-weight: 700 !important; }
 
-/* Prevent the logout button from stretching to full width on mobile viewports */
-.user-session-bar a.logout-btn-fixed {
-    width: auto !important;
-    display: inline-block !important;
-    height: auto !important;
-    padding: 6px 12px !important;
-    font-size: 12px !important;
-}
-.smartphone-layout input[type="date"] {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: 42px !important;
-    padding: 8px 10px !important;
-}
+    /* Prevent the logout button from stretching to full width on mobile viewports */
+    .user-session-bar a.logout-btn-fixed {
+        width: auto !important;
+        display: inline-block !important;
+        height: auto !important;
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+    }
+    
+    .smartphone-layout input[type="date"] {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: 42px !important;
+        padding: 8px 10px !important;
+    }
 
+    /* ==========================================================================
+       🌟 3. NEW: COMPACTION STACK ENGINE FOR THE SPREADSHEET MATRIX
+       ========================================================================== */
+    .split-items-list {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 5px !important;
+        text-align: left !important;
+    }
+
+    .product-item-row {
+        display: block !important;
+        background: #f1f5f9 !important; /* Soft slate capsule box background */
+        padding: 3px 6px !important;
+        border-radius: 4px !important;
+        font-size: 12px !important;
+        line-height: 1.3 !important;
+        white-space: normal !important;
+        border-left: 3px solid var(--ocean-blue) !important; /* Ocean blue anchor border */
+    }
 }
