@@ -7,6 +7,30 @@
     --border-hairline: #e2e8f0;
 }
 
+/* 🏷️ Global Application Context Role Indicators */
+.role-indicator {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    text-transform: uppercase !important;
+    display: inline-block !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+}
+
+.badge-admin {
+    background-color: #0f172a !important; /* Dark Slate Navy */
+    color: #f97316 !important;            /* Amber Orange text */
+    border: 1px solid #f97316 !important;
+}
+
+.badge-cliente {
+    background-color: #dcfce7 !important; /* Soft Green background */
+    color: #15803d !important;            /* Forest Dark Green text */
+    border: 1px solid #bbf7d0 !important;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -16,7 +40,6 @@ body {
     font-size: 13px !important;
     line-height: 1.5;
     padding: 12px 16px;
-    /* CRITICAL SAFETY LOCKS: Prevents content from overflowing past the screen */
     max-width: 100vw !important;
     overflow-x: hidden !important;
 }
@@ -34,7 +57,6 @@ header {
     align-items: center;
     justify-content: space-between;
     box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-    max-width: 100%;
 }
 
 .brand-title { font-size: 14px; font-weight: 700; }
@@ -42,7 +64,6 @@ nav ul { list-style: none; display: flex; gap: 14px; }
 nav ul li a { font-size: 12px; font-weight: 600; text-transform: uppercase; padding: 4px 8px; }
 
 main { width: 100%; max-width: 100%; margin: 0 auto; clear: both; }
-.container { width: 100%; max-width: 100%; }
 
 .card {
     background: var(--bg-clean) !important;
@@ -53,7 +74,7 @@ main { width: 100%; max-width: 100%; margin: 0 auto; clear: both; }
     max-width: 100% !important;
 }
 
-/* Base structural table layout values */
+/* Base Desktop Tables */
 table { 
     width: 100% !important; 
     border-collapse: collapse !important; 
@@ -67,73 +88,94 @@ input, select { background-color: var(--bg-clean) !important; border: 1px solid 
 button, .btn { font-size: 12px !important; font-weight: 600 !important; padding: 4px 10px !important; border-radius: 4px !important; cursor: pointer; border: 1px solid var(--border-hairline) !important; background: var(--bg-neutral); color: var(--text-dark); }
 button:hover { background: #e2e8f0; }
 
+/* Desktop Switch Defaults */
+.desktop-layout { display: block !important; }
+.smartphone-layout { display: none !important; }
+.mobile-view-tabs { display: none; }
+
+/* Global Active Tab Highlights for Desktop & Mobile */
+.active-tab-style {
+    background-color: var(--ocean-blue) !important;
+    color: white !important;
+    border-color: var(--ocean-blue) !important;
+}
+
+.active-tab-style-red {
+    background-color: #ef4444 !important;
+    color: white !important;
+    border-color: #dc2626 !important;
+    font-weight: 700 !important;
+}
+
+
 /* ==========================================================================
-   📱 RESPONSIVE SMARTPHONE MEDIA QUERIES
+   📱 HIGH-PRECISION MOBILE OVERRIDES (Viewport Width <= 768px)
    ========================================================================== */
 @media (max-width: 768px) {
-    body {
-        padding: 8px 8px !important;
-    }
-
-    header {
-        flex-direction: column !important;
-        gap: 12px !important;
-        text-align: center !important;
-        padding: 14px !important;
-    }
-
-    nav ul {
-        flex-direction: row !important;
-        justify-content: center !important;
-        gap: 8px !important;
-    }
-
-    nav ul li a {
-        font-size: 11px !important;
-        padding: 6px 10px !important;
-    }
-
-    /* Stacks filter options smoothly into clean lists */
-    form {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 12px !important;
-        width: 100% !important;
-    }
+    div.desktop-layout, .desktop-layout { display: none !important; }
+    .smartphone-layout { display: block !important; }
+    .mobile-view-tabs { display: flex !important; width: 100%; background: var(--bg-clean); border: 1px solid var(--border-hairline); border-radius: 6px; margin-bottom: 16px; padding: 4px; }
     
-    label {
-        margin-bottom: -6px !important;
-        font-size: 12px !important;
-    }
-    
-    input, select, button, .btn {
-        width: 100% !important;
-        box-sizing: border-box !important;
-        padding: 12px 14px !important; 
-        font-size: 16px !important; 
-        margin: 0 !important;
-        height: 46px !important; 
-    }
+    body { padding: 8px 8px !important; }
+    header { flex-direction: column !important; gap: 12px !important; text-align: center !important; padding: 14px !important; }
+    nav ul { flex-direction: row !important; justify-content: center !important; gap: 8px !important; }
+    nav ul li a { font-size: 11px !important; padding: 6px 10px !important; }
+    form { display: flex !important; flex-direction: column !important; gap: 10px !important; width: 100% !important; }
+    input, select, button, .btn { width: 100% !important; box-sizing: border-box !important; padding: 10px 12px !important; font-size: 16px !important; margin: 0 !important; height: 42px !important; }
+    main table, .card table, .table-responsive { display: block !important; max-width: 100% !important; overflow-x: auto !important; white-space: nowrap !important; -webkit-overflow-scrolling: touch !important; }
+    main table th, main table td { display: table-cell !important; width: auto !important; padding: 8px 10px !important; }
+    main table td.items-cell-mobile, table td.items-cell-mobile, .table-responsive table td.items-cell-mobile { white-space: normal !important; word-wrap: break-word !important; overflow-wrap: break-word !important; word-break: break-word !important; min-width: 200px !important; max-width: 260px !important; }
+    .mobile-tab-btn { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 600; background: transparent; border: none !important; border-radius: 4px; color: var(--text-muted); cursor: pointer; }
+    .mobile-tab-btn.active { background: var(--ocean-blue) !important; color: white !important; }
+    .client-split-section { display: none; }
+    .client-split-section.active-section { display: block !important; }
+    input[type="date"], input[type="time"] { height: 36px !important; padding: 6px 10px !important; font-size: 14px !important; line-height: 1.2 !important; }
+    input[name="delivery_time"] { height: 34px !important; font-size: 13px !important; padding: 4px 8px !important; }
+    input[name="delivery_time"]::placeholder { font-size: 12px !important; color: var(--text-muted) !important; }
+    form label { margin-bottom: -4px !important; font-size: 11px !important; }
+    label[for="phone"], label[for="password"], main label, .card label, form label[for="phone"], form label[for="password"] { display: block !important; font-size: 15px !important; font-weight: 700 !important; color: var(--text-dark) !important; margin-top: 16px !important; margin-bottom: 8px !important; text-align: left !important; }
+    .order-table, .order-table tbody, .order-table tr, .order-table td { display: block !important; width: 100% !important; }
+    .order-table th { display: none !important; }
+    .order-table tr { background: var(--bg-clean) !important; border: 1px solid var(--border-hairline) !important; border-radius: 6px !important; padding: 8px 12px !important; margin-bottom: 8px !important; }
+    .order-table td { border-bottom: none !important; padding: 2px 0 !important; }
+    .order-table td:first-child { font-weight: 700 !important; font-size: 14px !important; border-bottom: 1px solid var(--border-hairline) !important; padding-bottom: 4px !important; margin-bottom: 4px !important; }
+    .order-table td:nth-child(2):before { content: "Prezzo: " !important; color: var(--text-muted) !important; font-size: 12px; }
+    .order-table td:last-child { display: flex !important; align-items: center; gap: 10px; margin-top: 6px; }
+    .order-table td:last-child:before { content: "Qta:" !important; font-size: 12px !important; color: var(--text-muted) !important; font-weight: 600 !important; }
+    .order-table td:last-child input { height: 36px !important; padding: 6px 10px !important; }
 
-    /* THE CORRECTION: Isolates width constraints into a separate scroll wrapper rule */
-    table {
-        display: table !important; /* Reset back to default table behavior */
-        width: 100% !important;
+    /* ==========================================================================
+       🏭 1. MOBILE STYLE ENGINE: TOP MAIN ADMIN MENU
+       ========================================================================== */
+    .admin-main-nav { display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; gap: 6px !important; width: 100% !important; }
+    .admin-nav-item {
+        display: inline-flex !important; align-items: center !important; justify-content: center !important; box-sizing: border-box !important;
+        background: var(--bg-clean) !important; color: var(--text-dark) !important; border: 1px solid var(--border-hairline) !important;
+        padding: 10px 4px !important; font-size: 11px !important; font-weight: 600 !important; border-radius: 4px !important; height: 38px !important;
+        flex: 1 1 calc(50% - 4px) !important; width: calc(50% - 4px) !important; max-width: calc(50% - 4px) !important;
     }
-
-    /* Apply the horizontal swipe capability cleanly to container classes or tables natively */
-    .table-responsive, table {
-        display: block !important;
-        max-width: 100% !important;
-        overflow-x: auto !important;
-        white-space: nowrap !important;
-        -webkit-overflow-scrolling: touch !important; 
-    }
+    .admin-nav-item[href*="active_tab=reset_data"] { flex: 1 1 100% !important; width: 100% !important; max-width: 100% !important; }
     
-    .tabs {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        gap: 6px !important;
-        width: 100% !important;
+    /* 🌟 FULL BACKGROUND ACTIVE COLOR LOCK FOR TOP MENU */
+    .admin-nav-item.active-tab-style { background: var(--ocean-blue) !important; color: white !important; border-color: var(--ocean-blue) !important; }
+
+    /* ==========================================================================
+       🏭 2. MOBILE STYLE ENGINE: UNIFIED SUB-FILTERS GRID
+       ========================================================================== */
+    .admin-sub-filters { display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; gap: 6px !important; width: 100% !important; }
+    .sub-filter-item {
+        display: inline-flex !important; align-items: center !important; justify-content: center !important; box-sizing: border-box !important;
+        background: var(--bg-clean) !important; color: var(--text-dark) !important; border: 1px solid var(--border-hairline) !important;
+        padding: 6px 4px !important; font-size: 12px !important; border-radius: 4px !important; height: 42px !important;
+        flex: 1 1 calc(50% - 4px) !important; width: calc(50% - 4px) !important; max-width: calc(50% - 4px) !important; margin: 0 !important;
     }
+    /* Line 1 Spanning (Tutti) */
+    .sub-filter-item:first-child { flex: 1 1 100% !important; width: 100% !important; max-width: 100% !important; font-size: 14px !important; }
+    /* Line 4 Spanning (Non Pagati Default) */
+    .admin-sub-filters a[href*="non_salda_consegnati=1"] { flex: 1 1 100% !important; width: 100% !important; max-width: 100% !important; background: #fee2e2 !important; color: #991b1b !important; border: 1px solid #fca5a5 !important; }
+
+    /* 🌟 FILTER SELECTED HIGH-STENSITY HIGHLIGHT LOCKS (Prevents fading to white) */
+    .sub-filter-item.active-tab-style { background: #22c55e !important; color: white !important; border-color: #16a34a !important; font-weight: 700 !important; }
+    .admin-sub-filters a.active-tab-style-red { background: #ef4444 !important; color: white !important; border-color: #dc2626 !important; font-weight: 700 !important; }
+
 }

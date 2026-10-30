@@ -32,6 +32,8 @@ def index():
     filter_start_date = request.args.get('start_date', '')
     filter_end_date = request.args.get('end_date', '')
     filter_product = request.args.get('product_name', '')
+
+    filter_unpaid_delivered = request.args.get('non_salda_consegnati', '')
     
     # --- NEW PARAMETERS FOR ANALYTICS FILTERING ---
     analytics_client_id = request.args.get('analytics_client_id', '')
@@ -53,6 +55,10 @@ def index():
             order_query = order_query.filter(Order.user_id == None)
         else:
             order_query = order_query.filter_by(user_id=int(filter_client_id))
+    if filter_unpaid_delivered == '1':
+        order_query = order_query.filter_by(status='Consegnato', payment_status='Da Saldare')
+    elif filter_status:
+        order_query = order_query.filter_by(status=filter_status)
 
     admin_orders = order_query.order_by(Order.serial_id.desc()).all()
     catalog_products = Product.query.all()
@@ -185,6 +191,7 @@ def index():
         analytics_client_id=analytics_client_id,
         analytics_payment_status=analytics_payment_status,
         catalog_map=catalog_map,
+        non_salda_consegnati=filter_unpaid_delivered,
         current_status=filter_status,      
         current_client_id=filter_client_id,
         current_date_from=filter_date_from, 
