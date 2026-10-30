@@ -20,9 +20,9 @@
 }
 
 .badge-admin {
-    background-color: #0f172a !important; /* Dark Slate Navy */
-    color: #f97316 !important;            /* Amber Orange text */
-    border: 1px solid #f97316 !important;
+    background-color: #e0f2fe !important; /* Soft sky blue background */
+    color: #0369a1 !important;            /* Deep ocean blue text */
+    border: 1px solid #bae6fd !important; /* Muted blue border */
 }
 
 .badge-cliente {
