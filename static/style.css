@@ -186,6 +186,12 @@ button:hover { background: #e2e8f0; }
     padding: 6px 12px !important;
     font-size: 12px !important;
 }
-
+.smartphone-layout input[type="date"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: 42px !important;
+    padding: 8px 10px !important;
+}
 
 }
