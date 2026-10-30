@@ -159,7 +159,7 @@ def index():
             id=f"ORD-{random.randint(1000, 9999)}",
             user_id=order_user_id,
             client=order_client_name,
-            date=chosen_delivery_date,,
+            date=chosen_delivery_date,
             items=", ".join(item_strings),
             total=calculated_total,
             status='In Ricezione',
