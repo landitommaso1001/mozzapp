@@ -1,10 +1,12 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+<!-- User Session Bar -->
+<div class="user-session-bar" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
     <span>👤 Utente: <strong>{{ session['user_name'] }}</strong></span>
-    <a href="{{ url_for('client_bp.logout') }}" class="btn" style="background: #ef4444; color: white; border: none; padding: 6px 12px;">🚪 Esci</a>
+    <a href="{{ url_for('client_bp.logout') }}" class="btn logout-btn-fixed" style="background: #ef4444; color: white; border: none; padding: 6px 12px;">🚪 Esci</a>
 </div>
+
 
 <!-- 🖥️ DESKTOP PRESENTATION INTERFACE -->
 <div class="desktop-layout">

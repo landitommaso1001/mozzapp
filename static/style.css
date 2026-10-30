@@ -178,4 +178,14 @@ button:hover { background: #e2e8f0; }
     .sub-filter-item.active-tab-style { background: #22c55e !important; color: white !important; border-color: #16a34a !important; font-weight: 700 !important; }
     .admin-sub-filters a.active-tab-style-red { background: #ef4444 !important; color: white !important; border-color: #dc2626 !important; font-weight: 700 !important; }
 
+/* Prevent the logout button from stretching to full width on mobile viewports */
+.user-session-bar a.logout-btn-fixed {
+    width: auto !important;
+    display: inline-block !important;
+    height: auto !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+}
+
+
 }
