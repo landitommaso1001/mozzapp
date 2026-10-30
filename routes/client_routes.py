@@ -82,7 +82,6 @@ def logout():
     flash("Sessione chiusa correttamente.", "success")
     return redirect(url_for('client_bp.login'))
 
-
 @client_bp.route('/', methods=['GET', 'POST'])
 def index():
     if 'user_id' not in session:
@@ -91,9 +90,13 @@ def index():
     user_id = session['user_id']
     is_admin = (session.get('user_role') == 'admin')
     
-    # Safe initialization of selected_client_id at the top level
-    raw_selected_id = request.args.get('selected_client_id', '0')
-    selected_client_id = int(raw_selected_id) if raw_selected_id.isdigit() else 0
+    # 🌟 FIX: Safely extract selected client identifier across both input payload strategies
+    if request.method == 'POST':
+        raw_selected_id = request.form.get('admin_target_client_id', '0')
+    else:
+        raw_selected_id = request.args.get('selected_client_id', '0')
+        
+    selected_client_id = int(raw_selected_id) if str(raw_selected_id).isdigit() else 0
     
     catalog_products = Product.query.filter_by(available=True).all()
     all_clients = User.query.filter_by(role='client').all() if is_admin else []
@@ -167,7 +170,7 @@ def index():
             return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
         return redirect(url_for('client_bp.index'))
 
-    # Reorder functionality parser
+    # Reorder parser
     prefilled_items = {}
     reorder_id = request.args.get('reorder')
     if reorder_id:
@@ -190,11 +193,12 @@ def index():
                 if f_name: parsed_formats.append({'name': f_name, 'price': f_price})
         enriched_products.append({'id': product.id, 'name': product.name, 'price_per_kg': product.price_per_kg, 'parsed_formats': parsed_formats})
 
+    # 🌟 FIX: Database synchronization layer to stop user history leaks
     if is_admin:
         if selected_client_id > 0:
             my_orders = Order.query.filter_by(user_id=selected_client_id).order_by(Order.serial_id.desc()).all()
         else:
-            my_orders = Order.query.filter(Order.user_id == None).order_by(Order.serial_id.desc()).all()
+            my_orders = Order.query.filter((Order.user_id == None) | (Order.user_id == 0)).order_by(Order.serial_id.desc()).all()
     else:
         my_orders = Order.query.filter_by(user_id=user_id).order_by(Order.serial_id.desc()).all()
     
@@ -222,16 +226,14 @@ def cancel_order(order_id):
         
     if order.status == 'In Ricezione':
         order.status = 'Annullato'
-        order.payment_status = 'Annullato'  # Align billing records simultaneously
+        order.payment_status = 'Annullato'
         db.session.commit()
         flash(f"Ordine {order_id} annullato con successo.", "success")
     else:
         flash("Impossibile annullare l'ordine.", "error")
         
     if is_admin:
-        # 🌟 FIXED: Read state context parameters cleanly from hidden input payload fields
         selected_client = request.form.get('hidden_selected_client_id', '0')
         return redirect(url_for('client_bp.index', selected_client_id=selected_client))
         
     return redirect(url_for('client_bp.index'))
-
