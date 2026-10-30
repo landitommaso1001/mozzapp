@@ -151,12 +151,13 @@ button:hover { background: #e2e8f0; }
     .admin-nav-item {
         display: inline-flex !important; align-items: center !important; justify-content: center !important; box-sizing: border-box !important;
         background: var(--bg-clean) !important; color: var(--text-dark) !important; border: 1px solid var(--border-hairline) !important;
-        padding: 10px 4px !important; font-size: 11px !important; font-weight: 600 !important; border-radius: 4px !important; height: 38px !important;
+        padding: 10px 2px !important; /* Tighter padding to prevent overflow */
+        font-size: 13px !important;    /* 🌟 Bumed up from 11px */
+        font-weight: 600 !important; border-radius: 4px !important; height: 38px !important;
         flex: 1 1 calc(50% - 4px) !important; width: calc(50% - 4px) !important; max-width: calc(50% - 4px) !important;
     }
     .admin-nav-item[href*="active_tab=reset_data"] { flex: 1 1 100% !important; width: 100% !important; max-width: 100% !important; }
     
-    /* 🌟 FULL BACKGROUND ACTIVE COLOR LOCK FOR TOP MENU */
     .admin-nav-item.active-tab-style { background: var(--ocean-blue) !important; color: white !important; border-color: var(--ocean-blue) !important; }
 
     /* ==========================================================================
@@ -166,9 +167,12 @@ button:hover { background: #e2e8f0; }
     .sub-filter-item {
         display: inline-flex !important; align-items: center !important; justify-content: center !important; box-sizing: border-box !important;
         background: var(--bg-clean) !important; color: var(--text-dark) !important; border: 1px solid var(--border-hairline) !important;
-        padding: 6px 4px !important; font-size: 12px !important; border-radius: 4px !important; height: 42px !important;
+        padding: 6px 2px !important;  /* Tighter padding to prevent overflow */
+        font-size: 13px !important;    /* 🌟 Bumped up from 12px */
+        border-radius: 4px !important; height: 42px !important;
         flex: 1 1 calc(50% - 4px) !important; width: calc(50% - 4px) !important; max-width: calc(50% - 4px) !important; margin: 0 !important;
     }
+
     /* Line 1 Spanning (Tutti) */
     .sub-filter-item:first-child { flex: 1 1 100% !important; width: 100% !important; max-width: 100% !important; font-size: 14px !important; }
     /* Line 4 Spanning (Non Pagati Default) */
