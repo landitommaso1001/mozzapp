@@ -124,7 +124,12 @@ def index():
                 selected_client_id = 0
         else:
             order_user_id = user_id
-            order_client_name = session['user_name']
+            # Retrieve the phone number dynamically from the logged-in User instance
+            current_user_obj = User.query.get(user_id)
+            if current_user_obj:
+                order_client_name = f"{current_user_obj.name} ({current_user_obj.phone})"
+            else:
+                order_client_name = session['user_name']
         
         for product in catalog_products:
             if product.sizes_raw:
