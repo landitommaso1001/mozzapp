@@ -215,3 +215,47 @@ button:hover { background: #e2e8f0; }
         border-left: 3px solid var(--ocean-blue) !important; /* Ocean blue anchor border */
     }
 }
+
+/* ==========================================================================
+   🎨 SEMANTIC BUTTON VARIATIONS (Elegant Utility Extension)
+   ========================================================================== */
+
+/* Primary Action Button (e.g., Save, Submit, Principal Operations) */
+.btn-primary {
+    background-color: var(--ocean-blue) !important;
+    color: #ffffff !important;
+    border-color: #0274ae !important;
+}
+.btn-primary:hover {
+    background-color: #0369a1 !important;
+}
+
+/* Success Action Button (e.g., Mark Paid, Confirm Order, Complete) */
+.btn-success {
+    background-color: #22c55e !important; /* Vibrant Green */
+    color: #ffffff !important;
+    border-color: #16a34a !important;
+}
+.btn-success:hover {
+    background-color: #15803d !important;
+}
+
+/* Danger / Destructive Action Button (e.g., Cancel Order, Delete Product) */
+.btn-danger {
+    background-color: #ef4444 !important; /* High-Visibility Red */
+    color: #ffffff !important;
+    border-color: #dc2626 !important;
+}
+.btn-danger:hover {
+    background-color: #b91c1c !important;
+}
+
+/* Warning / Accent Action Button (e.g., Reset, Prefill, Special Alerts) */
+.btn-warning {
+    background-color: #f59e0b !important; /* Solid Amber / Orange */
+    color: #ffffff !important;
+    border-color: #d97706 !important;
+}
+.btn-warning:hover {
+    background-color: #b45309 !important;
+}
