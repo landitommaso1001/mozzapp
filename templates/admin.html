@@ -109,16 +109,17 @@
                 </div>
             </form>
 
-            <!-- Sub Filter Status Selection Counter Buttons Layer -->
+            <!-- Sub Filter Status Counter Buttons Layer -->
             <div class="admin-sub-filters" style="margin-bottom: 12px; display:flex; flex-wrap:wrap; gap:6px;">
                 <a href="{{ url_for('admin.index', active_tab='orders', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if not current_status and not non_salda_consegnati %}active-tab-style{% endif %}">Tutti gli Ordini Attivi ({{ counters.all }})</a>
-                <a href="{{ url_for('admin.index', active_tab='orders', status='In Ricezione', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if current_status == 'In Ricezione' %}active-tab-style{% endif %}">📥 In Ricezione ({{ counters.ricezione }})</a>
+                <a href="{{ url_for('admin.index', active_tab='orders', status='In Ricezione', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if current_status == 'In Ricezione' %}active-tab-style{% endif %}">📥 Ordinati ({{ counters.ricezione }})</a>
                 <a href="{{ url_for('admin.index', active_tab='orders', status='Confermato', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if current_status == 'Confermato' %}active-tab-style{% endif %}">✅ In Produzione ({{ counters.confermato }})</a>
                 <a href="{{ url_for('admin.index', active_tab='orders', status='Pronto', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if current_status == 'Pronto' %}active-tab-style{% endif %}">📦 In Consegna ({{ counters.pronto }})</a>
                 <a href="{{ url_for('admin.index', active_tab='orders', status='Consegnato', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if current_status == 'Consegnato' and not non_salda_consegnati %}active-tab-style{% endif %}">✓ Consegnati ({{ counters.consegnato }})</a>
-                <a href="{{ url_for('admin.index', active_tab='orders', non_salda_consegnati='1', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if non_salda_consegnati == '1' %}active-tab-style-red{% endif %}">🚨 Non Pagati ({{ counters.non_salda }})</a>
+                <a href="{{ url_for('admin.index', active_tab='orders', non_salda_consegnati='1', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if non_salda_consegnati == '1' %}active-tab-style-red{% endif %}">🚨 Da Saldare ({{ counters.non_salda }})</a>
             </div>
 
+            <!-- Orders Table Sheet Matrix -->
             <div class="table-responsive">
                 <table class="order-table">
                     <thead>
@@ -131,7 +132,6 @@
                         </tr>
                     </thead>
                     <tbody>
-
                         {% for o in orders %}
                         <tr>
                             <td>
@@ -160,12 +160,20 @@
                             </td>
                             <td><strong style="font-size:14px; color:var(--text-dark);">€ {{ '%.2f'|format(o.total) }}</strong></td>
                             <td>
+                                <!-- Status Badges View (Pure UI Mapping Translations) -->
                                 <div style="margin-bottom:6px; display: flex; gap: 4px; flex-wrap: wrap;">
-                                    <span class="role-indicator {% if o.status=='In Ricezione' %}badge-admin{% elif o.status=='Annullato' %}badge-unpaid{% else %}badge-cliente{% endif %}">{{ o.status }}</span>
-                                    <span class="role-indicator" style="background-color:{% if o.payment_status=='Pagato' %}#dcfce7{% else %}#fee2e2{% endif %}; color:{% if o.payment_status=='Pagato' %}#15803d{% else %}#991b1b{% endif %}; border: 1px solid {% if o.payment_status=='Pagato' %}#bbf7d0{% else %}#fca5a5{% endif %};">{{ o.payment_status }}</span>
+                                    <span class="role-indicator {% if o.status=='In Ricezione' %}badge-admin{% elif o.status=='Annullato' %}badge-unpaid{% else %}badge-cliente{% endif %}">
+                                        {% if o.status == 'In Ricezione' %}Ordinato{% else %}{{ o.status }}{% endif %}
+                                    </span>
+                                    <span class="role-indicator" style="background-color:{% if o.payment_status=='Pagato' %}#dcfce7{% else %}#fee2e2{% endif %}; color:{% if o.payment_status=='Pagato' %}#15803d{% else %}#991b1b{% endif %}; border: 1px solid {% if o.payment_status=='Pagato' %}#bbf7d0{% else %}#fca5a5{% endif %};">
+                                        {% if o.payment_status == 'Pagato' %}Saldato{% else %}{{ o.payment_status }}{% endif %}
+                                    </span>
                                 </div>
 
+                                <!-- Sequential Action Workflow Engine Matrix -->
                                 <div style="display:flex; flex-direction:column; gap:4px; max-width:220px;">
+                                    
+                                    <!-- Step 1: Ordinato (In Ricezione) -> Propose Conferma and Annulla -->
                                     {% if o.status == 'In Ricezione' %}
                                     <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="display:flex; gap:4px; align-items:center; width: 100%;">
                                         <input type="hidden" name="order_id" value="{{ o.id }}">
@@ -175,8 +183,18 @@
                                         <input type="hidden" name="date_from" value="{{ current_date_from or '' }}">
                                         <input type="hidden" name="date_to" value="{{ current_date_to or '' }}">
                                         <input type="text" name="delivery_time" placeholder="Ora (es. 08:30)" style="width:90px;" required>
-                                        <button type="submit" class="btn btn-success">✅ Approva</button>
+                                        <button type="submit" class="btn btn-success">✅ Conferma</button>
                                     </form>
+                                    <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Vuoi annullare l\'ordine #{{ o.id }}?');">
+                                        <input type="hidden" name="order_id" value="{{ o.id }}">
+                                        <input type="hidden" name="status" value="{{ current_status or '' }}">
+                                        <input type="hidden" name="client_id" value="{{ current_client_id or '' }}">
+                                        <input type="hidden" name="date_from" value="{{ current_date_from or '' }}">
+                                        <input type="hidden" name="date_to" value="{{ current_date_to or '' }}">
+                                        <button type="submit" class="btn btn-danger" style="width:100%;">❌ Annulla</button>
+                                    </form>
+                                    
+                                    <!-- Step 2: Confermato -> Propose Pronto and Annulla -->
                                     {% elif o.status == 'Confermato' %}
                                     <form action="{{ url_for('admin.update_order_status') }}" method="POST">
                                         <input type="hidden" name="order_id" value="{{ o.id }}">
@@ -187,6 +205,16 @@
                                         <input type="hidden" name="date_to" value="{{ current_date_to or '' }}">
                                         <button type="submit" class="btn btn-primary" style="width:100%;">📦 Pronto</button>
                                     </form>
+                                    <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Vuoi annullare l\'ordine #{{ o.id }}?');">
+                                        <input type="hidden" name="order_id" value="{{ o.id }}">
+                                        <input type="hidden" name="status" value="{{ current_status or '' }}">
+                                        <input type="hidden" name="client_id" value="{{ current_client_id or '' }}">
+                                        <input type="hidden" name="date_from" value="{{ current_date_from or '' }}">
+                                        <input type="hidden" name="date_to" value="{{ current_date_to or '' }}">
+                                        <button type="submit" class="btn btn-danger" style="width:100%;">❌ Annulla</button>
+                                    </form>
+                                    
+                                    <!-- Step 3: Pronto -> Propose Consegnato Only (Locked from cancellation) -->
                                     {% elif o.status == 'Pronto' %}
                                     <form action="{{ url_for('admin.update_order_status') }}" method="POST">
                                         <input type="hidden" name="order_id" value="{{ o.id }}">
@@ -197,9 +225,9 @@
                                         <input type="hidden" name="date_to" value="{{ current_date_to or '' }}">
                                         <button type="submit" class="btn btn-success" style="width:100%;">🚚 Consegnato</button>
                                     </form>
-                                    {% endif %}
-
-                                    {% if o.payment_status != 'Pagato' and o.status != 'Annullato' %}
+                                    
+                                    <!-- Step 4: Consegnato -> Propose Salda Only if not already paid -->
+                                    {% elif o.status == 'Consegnato' and o.payment_status != 'Pagato' %}
                                     <form action="{{ url_for('admin.mark_order_paid') }}" method="POST" style="width:100%;">
                                         <input type="hidden" name="order_id" value="{{ o.id }}">
                                         <input type="hidden" name="status" value="{{ current_status or '' }}">
@@ -210,16 +238,6 @@
                                     </form>
                                     {% endif %}
 
-                                    {% if o.status in ['In Ricezione', 'Confermato', 'Pronto'] %}
-                                    <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Sei sicuro di voler annullare questo ordine?');">
-                                        <input type="hidden" name="order_id" value="{{ o.id }}">
-                                        <input type="hidden" name="status" value="{{ current_status or '' }}">
-                                        <input type="hidden" name="client_id" value="{{ current_client_id or '' }}">
-                                        <input type="hidden" name="date_from" value="{{ current_date_from or '' }}">
-                                        <input type="hidden" name="date_to" value="{{ current_date_to or '' }}">
-                                        <button type="submit" class="btn btn-danger" style="width:100%;">❌ Annulla</button>
-                                    </form>
-                                    {% endif %}
                                 </div>
                             </td>
                         </tr>
@@ -233,6 +251,9 @@
             </div>
         </div>
         {% endif %}
+
+
+
 
 
         <!-- ================= CONFIGURA LISTINO ACTIVE TAB ================= -->
