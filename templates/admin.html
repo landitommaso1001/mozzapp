@@ -227,28 +227,36 @@
     <div class="tab-content">
         <h2>⚙ Configurazione Listino Prodotti</h2>
         {% if products %}
-            <form action="{{ url_for('admin.save_all_products') }}" method="POST">
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                    <thead>
-                        <tr style="background: #eee; text-align: left;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Nome Prodotto</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Prezzo Base / Kg (€)</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Formati & Overrides (Separati da virgola)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for prod in products %}
-                        <tr>
-                            <input type="hidden" name="product_id[]" value="{{ prod.id }}">
-                            <td style="padding: 8px; border: 1px solid #ddd;"><input type="text" name="name[]" value="{{ prod.name }}" required style="width: 95%; padding: 6px;"></td>
-                            <td style="padding: 8px; border: 1px solid #ddd;"><input type="number" step="0.01" name="price[]" value="{{ '%.2f'|format(prod.price_per_kg) }}" required style="width: 90%; padding: 6px;"></td>
-                            <td style="padding: 8px; border: 1px solid #ddd;"><input type="text" name="formats[]" value="{{ prod.sizes_raw or '' }}" style="width: 98%; padding: 6px;" placeholder="Es: Standard (200g), Piccolo:4.50"></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <button type="submit" style="background: #5cb85c; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer;">💾 Salva Tutte le Modifiche del Listino</button>
-            </form>
+<form action="{{ url_for('admin.save_all_products') }}" method="POST">
+    <table>
+        <thead>
+            <tr>
+                <th>Nome Prodotto</th>
+                <th>Prezzo Base / Kg (€)</th>
+                <th>Formati & Overrides</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prod in products %}
+            <tr>
+                <td>
+                    <!-- Hidden input to supply the product ID -->
+                    <input type="hidden" name="product_id" value="{{ prod.id }}">
+                    <input type="text" name="name" value="{{ prod.name }}" style="width: 100%;">
+                </td>
+                <td>
+                    <input type="number" step="0.01" name="price" value="{{ prod.price_per_kg }}">
+                </td>
+                <td>
+                    <input type="text" name="formats" value="{{ prod.sizes_raw or '' }}" style="width: 100%;">
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-success">💾 Salva Tutte le Modifiche del Listino</button>
+</form>
+
 
             <h4 style="margin-top: 30px; color: #d9534f;">🗑 Eliminazione Rapida Prodotti</h4>
             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px;">
