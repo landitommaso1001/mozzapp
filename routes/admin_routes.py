@@ -362,22 +362,40 @@ def parse_admin_format_price(full_item_name, product_obj):
 @admin_required
 def save_all_products():
     try:
+        # Strategy A: Extract arrays using standard flat list fields
         product_ids = request.form.getlist('product_id')
         names = request.form.getlist('name')
         prices = request.form.getlist('price')
         formats_list = request.form.getlist('formats')
         
-        for i in range(len(product_ids)):
-            p_id = int(product_ids[i])
-            product = Product.query.get(p_id)
-            if product:
-                product.name = names[i].strip()
-                product.price_per_kg = float(prices[i]) if prices[i] else 0.0
-                product.sizes_raw = formats_list[i].strip()
+        if product_ids and len(product_ids) > 0:
+            # Execute standard flat array synchronization mapping loop
+            for i in range(len(product_ids)):
+                p_id = int(product_ids[i])
+                product = Product.query.get(p_id)
+                if product:
+                    if i < len(names): product.name = names[i].strip()
+                    if i < len(prices): product.price_per_kg = float(prices[i]) if prices[i] else 0.0
+                    if i < len(formats_list): product.sizes_raw = formats_list[i].strip()
+                    db.session.add(product)
+        else:
+            # Strategy B: Fallback method if your HTML forms use row-indexed fields (e.g., name="name_{{id}}")
+            all_products = Product.query.all()
+            for product in all_products:
+                form_name = request.form.get(f'name_{product.id}')
+                form_price = request.form.get(f'price_{product.id}')
+                form_formats = request.form.get(f'formats_{product.id}')
                 
-                # 🌟 FIX: Explicitly mark the model as modified/dirty so SQLAlchemy tracks the changes
+                # Update only if fields are present in the form submission
+                if form_name is not None:
+                    product.name = form_name.strip()
+                if form_price is not None:
+                    product.price_per_kg = float(form_price) if form_price else 0.0
+                if form_formats is not None:
+                    product.sizes_raw = form_formats.strip()
+                    
                 db.session.add(product)
-                
+
         db.session.commit()
         flash("Tutti i prodotti del catalogo sono stati aggiornati con successo!", "success")
     except Exception as e:
