@@ -366,6 +366,7 @@ def save_all_products():
         names = request.form.getlist('name')
         prices = request.form.getlist('price')
         formats_list = request.form.getlist('formats')
+        
         for i in range(len(product_ids)):
             p_id = int(product_ids[i])
             product = Product.query.get(p_id)
@@ -373,6 +374,10 @@ def save_all_products():
                 product.name = names[i].strip()
                 product.price_per_kg = float(prices[i]) if prices[i] else 0.0
                 product.sizes_raw = formats_list[i].strip()
+                
+                # 🌟 FIX: Explicitly mark the model as modified/dirty so SQLAlchemy tracks the changes
+                db.session.add(product)
+                
         db.session.commit()
         flash("Tutti i prodotti del catalogo sono stati aggiornati con successo!", "success")
     except Exception as e:
