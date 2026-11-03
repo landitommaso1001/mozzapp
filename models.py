@@ -40,5 +40,5 @@ class Order(db.Model):
     items = db.Column(db.String(500), nullable=True)
     total = db.Column(db.Float, default=0.0)
     time = db.Column(db.String(20), nullable=True)
-    status = db.Column(db.String(20), default='In Ricezione')
+    status = db.Column(db.String(20), default='Da Confermare') # 🌟 Unified term base default
     payment_status = db.Column(db.String(20), default='Da Saldare')

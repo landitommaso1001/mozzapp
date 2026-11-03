@@ -4,7 +4,6 @@ from flask import Blueprint, render_template, request, url_for, redirect, flash,
 from extensions import db
 from models import User, Product, Order
 
-# Define the blueprint object before initializing routes to prevent NameError
 client_bp = Blueprint('client_bp', __name__)
 
 def parse_format_details(format_string, price_per_kg):
@@ -29,18 +28,16 @@ def login():
         phone = request.form.get('phone')
         password = request.form.get('password')
         
-        # 1. Check against Static Admin Credentials Configuration
         static_admin_phone = current_app.config.get('ADMIN_PHONE')
         static_admin_password = current_app.config.get('ADMIN_PASSWORD')
         
         if phone == static_admin_phone and password == static_admin_password:
-            session['user_id'] = 0  # Hardcoded placeholder ID for static admin
+            session['user_id'] = 0  
             session['user_name'] = current_app.config.get('ADMIN_NAME', 'Admin')
             session['user_role'] = 'admin'
             flash(f"Accesso Amministratore Eseguito. Benvenuto {session['user_name']}!", "success")
             return redirect(url_for('admin.index'))
             
-        # 2. Check standard client users database table
         user = User.query.filter_by(phone=phone).first()
         if user and user.check_password(password):
             if user.role == 'admin':
@@ -90,7 +87,6 @@ def index():
     user_id = session['user_id']
     is_admin = (session.get('user_role') == 'admin')
     
-    # 🌟 FIX: Safely extract selected client identifier across both input payload strategies
     if request.method == 'POST':
         raw_selected_id = request.form.get('admin_target_client_id', '0')
     else:
@@ -124,7 +120,7 @@ def index():
                 selected_client_id = 0
         else:
             order_user_id = user_id
-            # Retrieve the phone number dynamically from the logged-in User instance
+            # 🌟 Fixed core sync: Append phone details for normal clients
             current_user_obj = User.query.get(user_id)
             if current_user_obj:
                 order_client_name = f"{current_user_obj.name} ({current_user_obj.phone})"
@@ -167,7 +163,7 @@ def index():
             date=chosen_delivery_date,
             items=", ".join(item_strings),
             total=calculated_total,
-            status='In Ricezione',
+            status='Da Confermare', # 🌟 Updated alignment keyword
             payment_status='Da Saldare',
             time=""
         )
@@ -179,7 +175,6 @@ def index():
             return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
         return redirect(url_for('client_bp.index'))
 
-    # Reorder parser
     prefilled_items = {}
     reorder_id = request.args.get('reorder')
     if reorder_id:
@@ -202,14 +197,10 @@ def index():
                 if f_name: parsed_formats.append({'name': f_name, 'price': f_price})
         enriched_products.append({'id': product.id, 'name': product.name, 'price_per_kg': product.price_per_kg, 'parsed_formats': parsed_formats})
 
-       # 🌟 CUSTOMIZED SCOPE LAYER: Admins view everything across all accounts; clients see only their own profile records
     if is_admin:
-        # Master Admin visibility list across all system accounts
         my_orders = Order.query.order_by(Order.serial_id.desc()).all()
     else:
-        # Standard customer view locked into their active profile identity context
         my_orders = Order.query.filter_by(user_id=user_id).order_by(Order.serial_id.desc()).all()
-
     
     return render_template(
         'client.html', 
@@ -233,7 +224,7 @@ def cancel_order(order_id):
     else:
         order = Order.query.filter_by(id=order_id, user_id=session['user_id']).first_or_404()
         
-    if order.status == 'In Ricezione':
+    if order.status == 'Da Confermare': # 🌟 Updated status alignment keyword
         order.status = 'Annullato'
         order.payment_status = 'Annullato'
         db.session.commit()

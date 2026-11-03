@@ -7,7 +7,6 @@ import random
 
 admin_bp = Blueprint('admin', __name__)
 
-# Security Decorator: Lock out non-admin accounts
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -22,27 +21,19 @@ def admin_required(f):
 def index():
     active_tab = request.args.get('active_tab', 'orders')
     
-    # Standard Date Range / Dashboard parameters (keep these)
     filter_status = request.args.get('status', '')  
     filter_client_id = request.args.get('client_id', '') 
     filter_date_from = request.args.get('date_from', '') 
     filter_date_to = request.args.get('date_to', '')     
     
-    # Analytics-specific Tab query options
     filter_start_date = request.args.get('start_date', '')
     filter_end_date = request.args.get('end_date', '')
     filter_product = request.args.get('product_name', '')
-
     filter_unpaid_delivered = request.args.get('non_salda_consegnati', '')
     
-    # --- NEW PARAMETERS FOR ANALYTICS FILTERING ---
     analytics_client_id = request.args.get('analytics_client_id', '')
     analytics_payment_status = request.args.get('analytics_payment_status', '')
-    # -----------------------------------------------
-    
-    filter_format = "" # Neutralized from previous hotfix
 
-    # Base query for orders
     order_query = Order.query
     if filter_status:
         order_query = order_query.filter_by(status=filter_status)
@@ -62,7 +53,6 @@ def index():
 
     admin_orders = order_query.order_by(Order.serial_id.desc()).all()
     
-    # 🌟 NEW: Format names and phone records to force vertical structural line breaks
     for o in admin_orders:
         if o.client and "(" in o.client and ")" in o.client:
             try:
@@ -77,11 +67,9 @@ def index():
             o.formatted_client_name = o.client if o.client else "Vendita Diretta / Banco"
             o.formatted_client_phone = ""
 
-
     catalog_products = Product.query.order_by(Product.id.asc()).all()
     client_list = User.query.filter_by(role='client').all()
     
-    # Catalog compilation logic (including our string correction step)
     catalog_map = {}
     for p in catalog_products:
         if p.sizes_raw:
@@ -96,7 +84,6 @@ def index():
         else:
             catalog_map[p.name] = []
 
-    # Financial card calculations (remains global / unfiltered)
     total_revenue = 0.0
     paid_revenue = 0.0
     unpaid_revenue = 0.0
@@ -105,23 +92,20 @@ def index():
         if o.status == 'Annullato':
             continue
         total_revenue += o.total
-        if o.payment_status == 'Pagato':
+        if o.payment_status == 'Saldato':
             paid_revenue += o.total
         else:
             unpaid_revenue += o.total
 
-    # Secondary calculation structures
     product_summary = {}
     grand_total_qty = 0
     grand_total_kg = 0.0
     grand_total_revenue = 0.0
 
-    # Secondary loop for rendering dynamic metrics items matching filters
     for o in admin_orders:
         if o.status == 'Annullato':
             continue
             
-        # 1. Evaluate Date Range criteria constraints
         order_date_valid = True
         if filter_start_date or filter_end_date:
             try:
@@ -135,18 +119,15 @@ def index():
         if not order_date_valid:
             continue
 
-        # 2. NEW: Evaluate Analytics Client Dropdown constraint
         if analytics_client_id:
             if analytics_client_id == 'banco' and o.user_id is not None:
                 continue
             elif analytics_client_id != 'banco' and o.user_id != int(analytics_client_id):
                 continue
 
-        # 3. NEW: Evaluate Analytics Payment Status Dropdown constraint
         if analytics_payment_status and o.payment_status != analytics_payment_status:
             continue
 
-        # Parse valid order entries matching requirements
         if o.items:
             for item in o.items.split(','):
                 item = item.strip()
@@ -186,8 +167,6 @@ def index():
                 except ValueError: 
                     continue
 
-    # 🌟 NEW: Calculate dynamic order counters for sub-filter badges
-    # We apply the same client and date range filters so counters stay accurate to your view
     count_query = Order.query
     if filter_date_from:
         count_query = count_query.filter(Order.date >= filter_date_from)
@@ -203,13 +182,12 @@ def index():
     
     counters = {
         'all': len([o for o in all_current_orders if o.status != 'Annullato']),
-        'ricezione': len([o for o in all_current_orders if o.status == 'In Ricezione']),
+        'ricezione': len([o for o in all_current_orders if o.status == 'Da Confermare']),
         'confermato': len([o for o in all_current_orders if o.status == 'Confermato']),
         'pronto': len([o for o in all_current_orders if o.status == 'Pronto']),
-        'consegnato': len([o for o in all_current_orders if o.status == 'Consegnato' and o.payment_status == 'Pagato']),
+        'consegnato': len([o for o in all_current_orders if o.status == 'Consegnato' and o.payment_status == 'Saldato']),
         'non_salda': len([o for o in all_current_orders if o.status == 'Consegnato' and o.payment_status == 'Da Saldare'])
     }
-
 
     return render_template(
         'admin.html',
@@ -230,7 +208,6 @@ def index():
         end_date=filter_end_date,
         product_name=filter_product,
         format_name="",
-        # Pass new variables to retain dropdown choices on page render
         analytics_client_id=analytics_client_id,
         analytics_payment_status=analytics_payment_status,
         catalog_map=catalog_map,
@@ -240,14 +217,9 @@ def index():
         current_date_from=filter_date_from, 
         current_date_to=filter_date_to
     )
-
-
-
-
 @admin_bp.route('/order/update_status', methods=['POST'])
 @admin_required
 def update_order_status():
-    # Read state metrics directly from secure form body inputs
     order_id = request.form.get('order_id')
     new_status = request.form.get('new_status')
     
@@ -262,7 +234,7 @@ def update_order_status():
             order.time = request.form.get('delivery_time')
         order.status = new_status
         db.session.commit()
-        flash(f"Ordine #{order_id} aggiornato a '{new_status}'!", "success")
+        flash(f"Ordine #{order_id} aggiornato!", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Errore: {str(e)}", "danger")
@@ -281,9 +253,9 @@ def mark_order_paid():
     
     order = Order.query.filter_by(id=order_id).first_or_404()
     try:
-        order.payment_status = 'Pagato'
+        order.payment_status = 'Saldato'
         db.session.commit()
-        flash(f"Pagamento per l'ordine #{order_id} registrato!", "success")
+        flash(f"Pagamento per l'ordine #{order_id} registrato come Saldato!", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Errore: {str(e)}", "danger")
@@ -311,8 +283,6 @@ def cancel_order():
         flash(f"Errore: {str(e)}", "danger")
         
     return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=date_from, date_to=date_to))
-
-
 @admin_bp.route('/client/create', methods=['POST'])
 @admin_required
 def create_client():
@@ -362,46 +332,27 @@ def parse_admin_format_price(full_item_name, product_obj):
 @admin_required
 def save_all_products():
     try:
-        # Fetch all current catalog entries from the database
         all_products = Product.query.all()
-        changes_detected = False
-        
         for product in all_products:
-            # 🌟 DYNAMIC MATRIX SCAN: Read parameters using explicit product row indices
             form_name = request.form.get(f'name_{product.id}')
             form_price = request.form.get(f'price_{product.id}')
             form_formats = request.form.get(f'formats_{product.id}')
             
-            # If the row indexed fields are not found, fall back to matching by plain names
-            if form_name is None:
-                product_ids = request.form.getlist('product_id')
-                names = request.form.getlist('name')
-                prices = request.form.getlist('price')
-                formats_list = request.form.getlist('formats')
-                
-                if product_ids and str(product.id) in product_ids:
-                    idx = product_ids.index(str(product.id))
-                    if idx < len(names): product.name = names[idx].strip()
-                    if idx < len(prices): product.price_per_kg = float(prices[idx]) if prices[idx] else 0.0
-                    if idx < len(formats_list): product.sizes_raw = formats_list[idx].strip()
-                    db.session.add(product)
-                    changes_detected = True
-            else:
-                # Update records cleanly using row-indexed form fields
+            if form_name is not None:
                 product.name = form_name.strip()
+            if form_price is not None:
                 product.price_per_kg = float(form_price) if form_price else 0.0
+            if form_formats is not None:
                 product.sizes_raw = form_formats.strip()
                 
-                db.session.add(product)
-                changes_detected = True
-
+            db.session.add(product)
+            
         db.session.commit()
         flash("Tutti i prodotti del catalogo sono stati aggiornati con successo!", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Errore durante il salvataggio collettivo: {str(e)}", "danger")
     return redirect(url_for('admin.index', active_tab='catalog'))
-
 
 @admin_bp.route('/product/add', methods=['POST'])
 @admin_required
@@ -455,8 +406,6 @@ def reset_clients():
         db.session.rollback()
         flash(f"Errore durante l'eliminazione dei clienti: {str(e)}", "danger")
     return redirect(url_for('admin.index', active_tab='reset_data'))
-
-
 
 @admin_bp.route('/profile/admin/password', methods=['POST'])
 @admin_required
