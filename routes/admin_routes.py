@@ -78,7 +78,7 @@ def index():
             o.formatted_client_phone = ""
 
 
-    catalog_products = Product.query.all()
+    catalog_products = Product.query.order_by(Product.id.asc()).all()
     client_list = User.query.filter_by(role='client').all()
     
     # Catalog compilation logic (including our string correction step)
