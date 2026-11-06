@@ -12,7 +12,7 @@
         {% if is_admin %}
         <div class="card" style="background: var(--bg-neutral); margin-bottom: 16px; border-left: 4px solid var(--ocean-blue) !important;">
             <label for="admin_target_client_id_pc" style="display: block; font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px;">👤 Seleziona Cliente per Ordine:</label>
-            <select name="admin_target_client_id" id="admin_target_client_id_pc" style="font-size: 14px; padding: 8px; width: 100%; max-width: 400px;">
+            <select name="admin_target_client_id" id="admin_target_client_id_pc" style="font-size: 14px; padding: 8px; width: 100%; max-width: 400px;" onchange="window.location.href='{{ url_for(\'client_bp.index\') }}?selected_client_id=' + this.value">
                 <option value="0" {% if selected_client_id == 0 %}selected{% endif %}>-- Vendita Diretta al Banco / Ordine Interno --</option>
                 {% for c in all_clients %}
                     <option value="{{ c.id }}" {% if selected_client_id == c.id %}selected{% endif %}>{{ c.name }} (📞 {{ c.phone }})</option>
@@ -21,7 +21,7 @@
         </div>
         {% endif %}
 
-        <div class="card">
+                <div class="card">
             <h3>🛒 Nuovo Ordine Caseificio (Desktop Browser)</h3>
             <table>
                 <thead>
@@ -35,10 +35,11 @@
                     {% for prod in products %}
                         {% if prod.parsed_formats %}
                             {% for fmt in prod.parsed_formats %}
+                                <!-- 🌟 DESKTOP WRAPPER: Hides options when filtered by the backend -->
                                 {% if fmt.name %}
                                 <tr>
                                     <td><strong>{{ prod.name }}</strong></td>
-                                    <td>{{ fmt.name }} (€ {{"%.2f"|format(fmt.price)}})</td>
+                                    <td>{{ fmt.name }} <span style="font-weight: 700; color: #16a34a;">(€ {{"%.2f"|format(fmt.price)}})</span></td>
                                     <td>
                                         {% set lookup_key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
                                         <select name="qty_{{ prod.id }}_{{ fmt.name }}">
@@ -77,7 +78,8 @@
             </div>
         </div>
     </form>    
-    <div class="card" style="margin-top: 20px;">
+
+     <div class="card" style="margin-top: 20px;">
         <h3>📋 {% if is_admin %} Storico Ordini Globale {% else %} Storico Dei Tuoi Ordini {% endif %}</h3>
         <table class="table-responsive">
             <thead>
@@ -108,7 +110,7 @@
                         <a href="{{ url_for('client_bp.index', reorder=order.id) }}" class="btn">🔄 Ripeti</a>
                         {% if order.status == 'Da Confermare' %}
                         <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="display: inline;" onsubmit="return confirm('Annullare l\'ordine?');">
-                             <button type="submit" class="btn" style="background: #ef4444; color: white; border: none;">❌ Annulla</button>
+                            <button type="submit" class="btn" style="background: #ef4444; color: white; border: none;">❌ Annulla</button>
                         </form>
                         {% endif %}
                     </td>
@@ -120,6 +122,7 @@
         </table>
     </div>
 </div>
+
 <!-- 📱 SMARTPHONE PRESENTATION INTERFACE -->
 <div class="smartphone-layout">
     <div class="mobile-view-tabs">
@@ -150,10 +153,11 @@
                         {% for prod in products %}
                             {% if prod.parsed_formats %}
                                 {% for fmt in prod.parsed_formats %}
+                                    <!-- 🌟 SMARTPHONE WRAPPER: Hides options when filtered by the backend -->
                                     {% if fmt.name %}
                                     <tr>
                                         <td><strong>{{ prod.name }}</strong> ({{ fmt.name }})</td>
-                                        <td>€ {{"%.2f"|format(fmt.price)}} / conf</td>
+                                        <td style="font-weight: 700; color: #16a34a;">€ {{"%.2f"|format(fmt.price)}}</td>
                                         <td>
                                             {% set lookup_key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
                                             <select name="qty_{{ prod.id }}_{{ fmt.name }}">
@@ -190,7 +194,7 @@
         </div>
     </div>
 
-    <div id="section-order-history" class="client-split-section">
+        <div id="section-order-history" class="client-split-section">
         {% for order in orders %}
         <div class="card" style="border-left: 4px solid var(--ocean-blue) !important;">
             <div style="display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 6px;">
@@ -214,9 +218,9 @@
             <div style="display: flex; gap: 6px;">
                 <a href="{{ url_for('client_bp.index', reorder=order.id) }}" class="btn" style="flex: 1; text-align: center;">🔄 Ripeti</a>
                 {% if order.status == 'Da Confermare' %}
-                   <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="flex: 1;" onsubmit="return confirm('Annullare l\'ordine?');">
-                     <button type="submit" class="btn" style="background: #ef4444; color: white; border: none; width: 100%;">❌ Annulla</button>
-                   </form>
+                <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="flex: 1;" onsubmit="return confirm('Annullare l\'ordine?');">
+                    <button type="submit" class="btn" style="background: #ef4444; color: white; border: none; width: 100%;">❌ Annulla</button>
+                </form>
                 {% endif %}
             </div>
         </div>
@@ -227,7 +231,6 @@
 </div>
 
 <script>
-/* 🌟 FIXED MOBILE TOGGLE METHOD */
 function switchClientTab(tabName) {
     document.querySelectorAll('.mobile-tab-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('btn-' + tabName).classList.add('active');
@@ -235,12 +238,11 @@ function switchClientTab(tabName) {
     
     let targetSection = document.getElementById('section-' + tabName);
     if(targetSection) {
-        targetSection.classList.add('active-section'); // Fixed from classWith
+        targetSection.classList.add('active-section');
     }
 }
 </script>
 <script>
-    // Automatically set the default delivery option values to today's date
     const today = new Date();
     const offset = today.getTimezoneOffset();
     const localToday = new Date(today.getTime() - (offset * 60 * 1000));
