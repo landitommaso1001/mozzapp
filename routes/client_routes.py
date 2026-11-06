@@ -52,6 +52,8 @@ def parse_format_details(format_string, price_per_kg, client_category='Privato')
 
     return clean_fmt, price_per_kg
 
+# 📂 Replace the top authentication block in routes/client_routes.py with this complete block:
+
 @client_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -61,13 +63,16 @@ def login():
         static_admin_phone = current_app.config.get('ADMIN_PHONE')
         static_admin_password = current_app.config.get('ADMIN_PASSWORD')
         
+        # 1. Check for Admin credentials
         if phone == static_admin_phone and password == static_admin_password:
             session['user_id'] = 0  
             session['user_name'] = current_app.config.get('ADMIN_NAME', 'Admin')
             session['user_role'] = 'admin'
+            session['user_category'] = 'Admin'
             flash(f"Accesso Amministratore Eseguito. Benvenuto {session['user_name']}!", "success")
             return redirect(url_for('admin.index'))
             
+        # 2. Check for Standard Customer credentials
         user = User.query.filter_by(phone=phone).first()
         if user and user.check_password(password):
             if user.role == 'admin':
@@ -77,14 +82,16 @@ def login():
             session['user_id'] = user.id
             session['user_name'] = user.name
             session['user_role'] = 'client'
-            session['user_category'] = user.price_category # 🌟 Inject Category to Browser Session
-
+            session['user_category'] = user.price_category # 🌟 Injects Category to Session
             
             flash(f"Bentornato, {user.name}!", "success")
             return redirect(url_for('client_bp.index'))
             
         flash("Credenziali non valide. Riprova.", "error")
-        return render_template('login.html')
+        
+    # This return MUST be cleanly outside the POST block to handle the initial page load (GET)
+    return render_template('login.html')
+
 
 @client_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -97,19 +104,23 @@ def register():
             flash("Questo numero di telefono è già registrato.", "error")
             return redirect(url_for('client_bp.register'))
             
-        new_user = User(name=name, phone=phone, role='client')
+        # 🌟 Defaults new profiles strictly to 'Privato' tier as requested
+        new_user = User(name=name, phone=phone, role='client', price_category='Privato')
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
         flash("Registrazione completata! Effettua il login.", "success")
         return redirect(url_for('client_bp.login'))
+        
     return render_template('register.html')
+
 
 @client_bp.route('/logout')
 def logout():
     session.clear()
     flash("Sessione chiusa correttamente.", "success")
     return redirect(url_for('client_bp.login'))
+
 
 @client_bp.route('/', methods=['GET', 'POST'])
 def index():
