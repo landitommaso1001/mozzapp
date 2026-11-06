@@ -130,6 +130,7 @@ def index():
     user_id = session['user_id']
     is_admin = (session.get('user_role') == 'admin')
     
+    # 🌟 Resolve exactly which client account the Admin selected from the dropdown
     if request.method == 'POST':
         raw_selected_id = request.form.get('admin_target_client_id', '0')
     else:
@@ -140,12 +141,17 @@ def index():
     catalog_products = Product.query.filter_by(available=True).all()
     all_clients = User.query.filter_by(role='client').all() if is_admin else []
 
-    # 🌟 NEW: Resolve active client category for pricing tier routing
-    if is_admin and selected_client_id > 0:
-        active_client_obj = User.query.get(selected_client_id)
-        current_category = active_client_obj.price_category if active_client_obj else 'Privato'
+    # 🌟 DYNAMIC RESOLUTION ENGINE FOR DROPDOWN AND CLIENT LOGIN
+    if is_admin:
+        if selected_client_id > 0:
+            # An Admin has chosen a specific client from the dropdown -> use their specific category!
+            active_client_obj = User.query.get(selected_client_id)
+            current_category = active_client_obj.price_category if active_client_obj else 'Privato'
+        else:
+            # An Admin left the selector on "Vendita Diretta al Banco" -> fall back to base weight calculation
+            current_category = 'Banco'
     else:
-        # Fallback to the session category if regular client, default to 'Privato'
+        # A normal client logged in directly -> look up their assigned category layer
         current_category = session.get('user_category', 'Privato')
 
     if request.method == 'POST':
