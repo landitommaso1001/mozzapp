@@ -283,16 +283,20 @@ def cancel_order():
         flash(f"Errore: {str(e)}", "danger")
         
     return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=date_from, date_to=date_to))
+
 @admin_bp.route('/client/create', methods=['POST'])
 @admin_required
 def create_client():
     name = request.form.get('name')
     phone = request.form.get('phone')
     password = request.form.get('password')
+    category = request.form.get('price_category', 'Privato') # 🌟 Capture form category
+    
     if User.query.filter_by(phone=phone).first():
         flash("Errore: Questo numero di telefono appartiene già ad un utente registrato.", "danger")
         return redirect(url_for('admin.index', active_tab='users_management'))
-    new_client = User(name=name, phone=phone, role='client')
+        
+    new_client = User(name=name, phone=phone, role='client', price_category=category)
     new_client.set_password(password)
     db.session.add(new_client)
     db.session.commit()
@@ -474,9 +478,13 @@ def update_client(client_id):
     new_name = request.form.get('name')
     new_phone = request.form.get('phone')
     new_password = request.form.get('password')
+    new_category = request.form.get('price_category') # 🌟 Capture layout dropdown category
+    
     try:
         if new_name and new_name.strip(): 
             client.name = new_name.strip()
+        if new_category:
+            client.price_category = new_category.strip() # 🌟 Update model tier state
         if new_phone and new_phone.strip() != client.phone:
             existing = User.query.filter_by(phone=new_phone.strip()).first()
             if existing:
@@ -487,12 +495,7 @@ def update_client(client_id):
             clean_pass = new_password.strip()
             if len(clean_pass) >= 4:
                 client.set_password(clean_pass)
-                from sqlalchemy.orm.attributes import flag_modified
-                flag_modified(client, "password_hash")
-                flash(f"Password per '{client.name}' modificata con successo!", "success")
-            else:
-                flash(f"Modifica Fallita: Almeno 4 caratteri richiesta.", "danger")
-                return redirect(url_for('admin.index', active_tab='users_management'))
+        
         db.session.commit()
         flash(f"Dati anagrafici di '{client.name}' salvati correttamente.", "success")
     except Exception as e:

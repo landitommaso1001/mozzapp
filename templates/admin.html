@@ -352,16 +352,18 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Nome Cliente</th>
-                            <th>Recapito Telefonico</th>
-                            <th>Nuova Password</th>
-                            <th>Azioni Operative</th>
+                            <th style="width: 25%;">Nome Cliente</th>
+                            <th style="width: 20%;">Recapito Telefonico</th>
+                            <th style="width: 20%;">Categoria Prezzi</th>
+                            <th style="width: 20%;">Nuova Password</th>
+                            <th style="width: 15%;">Azioni Operative</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for c in clients %}
                         <tr>
-                            <form action="{{ url_for('admin.update_client', client_id=c.id) }}" method="POST" style="display:inline;">
+                            <!-- 🌟 ONE UNIFIED FORM PER ROW ENCLOSING ALL INPUTS AND THE SAVE BUTTON -->
+                            <form action="{{ url_for('admin.update_client', client_id=c.id) }}" method="POST">
                                 <td><input type="text" name="name" value="{{ c.name }}" style="width:100%;" required></td>
                                 <td><input type="text" name="phone" value="{{ c.phone }}" style="width:100%;" required></td>
                                 <td>
@@ -371,13 +373,18 @@
                                         <option value="Alimentari" {% if c.price_category == 'Alimentari' %}selected{% endif %}>Alimentari</option>
                                     </select>
                                 </td>
-                                <td><input type="text" name="password" placeholder="Nuova Password" style="width:100%;"></td>
-                                    <div style="display:flex; gap:4px;">
-                                    <button type="submit" class="btn btn-primary">💾 Salva</button>
-                            </form>
-                            <form action="{{ url_for('admin.delete_client', client_id=c.id) }}" method="POST" onsubmit="return confirm('Eliminare il cliente {{ c.name }}?');" style="display:inline;">
-                                <button type="submit" class="btn btn-danger">🗑️ Rimuovi</button>
-                            </form>
+                                <td><input type="text" name="password" placeholder="Lascia vuoto per non cambiare" style="width:100%;"></td>
+                                <td>
+                                    <div style="display:flex; gap:4px; width: 100%;">
+                                        <button type="submit" class="btn btn-primary" style="flex: 1; padding: 4px 6px !important;">💾 Salva</button>
+                            </form> <!-- Close Save Form Cleanly here -->
+                                        
+                                        <!-- SEPARATE INDEPENDENT REMOVE FORM -->
+                                        <form action="{{ url_for('admin.delete_client', client_id=c.id) }}" method="POST" onsubmit="return confirm('Eliminare il cliente {{ c.name }}?');" style="display:inline; flex: 1;">
+                                            <button type="submit" class="btn btn-danger" style="width: 100%; padding: 4px 6px !important;">🗑️ Rimuovi</button>
+                                        </form>
+                                    </div>
+                                </td>
                         </tr>
                         {% endfor %}
                     </tbody>
