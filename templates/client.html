@@ -35,18 +35,20 @@
                     {% for prod in products %}
                         {% if prod.parsed_formats %}
                             {% for fmt in prod.parsed_formats %}
-                            <tr>
-                                <td><strong>{{ prod.name }}</strong></td>
-                                <td>{{ fmt.name }} (€ {{"%.2f"|format(fmt.price)}})</td>
-                                <td>
-                                    {% set lookup_key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
-                                    <select name="qty_{{ prod.id }}_{{ fmt.name }}">
-                                        {% for i in range(0, 51) %}
-                                            <option value="{{ i }}" {% if prefilled_items.get(lookup_key, 0)|int == i %}selected{% endif %}>{{ i }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </td>
-                            </tr>
+                                {% if fmt.name %}
+                                <tr>
+                                    <td><strong>{{ prod.name }}</strong></td>
+                                    <td>{{ fmt.name }} (€ {{"%.2f"|format(fmt.price)}})</td>
+                                    <td>
+                                        {% set lookup_key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
+                                        <select name="qty_{{ prod.id }}_{{ fmt.name }}">
+                                            {% for i in range(0, 51) %}
+                                                <option value="{{ i }}" {% if prefilled_items.get(lookup_key, 0)|int == i %}selected{% endif %}>{{ i }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                </tr>
+                                {% endif %}
                             {% endfor %}
                         {% else %}
                             <tr>
@@ -148,18 +150,20 @@
                         {% for prod in products %}
                             {% if prod.parsed_formats %}
                                 {% for fmt in prod.parsed_formats %}
-                                <tr>
-                                    <td><strong>{{ prod.name }}</strong> ({{ fmt.name }})</td>
-                                    <td>€ {{"%.2f"|format(fmt.price)}} / conf</td>
-                                    <td>
-                                        {% set lookup_key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
-                                        <select name="qty_{{ prod.id }}_{{ fmt.name }}">
-                                            {% for i in range(0, 51) %}
-                                                <option value="{{ i }}" {% if prefilled_items.get(lookup_key, 0)|int == i %}selected{% endif %}>{{ i }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </td>
-                                </tr>
+                                    {% if fmt.name %}
+                                    <tr>
+                                        <td><strong>{{ prod.name }}</strong> ({{ fmt.name }})</td>
+                                        <td>€ {{"%.2f"|format(fmt.price)}} / conf</td>
+                                        <td>
+                                            {% set lookup_key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
+                                            <select name="qty_{{ prod.id }}_{{ fmt.name }}">
+                                                {% for i in range(0, 51) %}
+                                                    <option value="{{ i }}" {% if prefilled_items.get(lookup_key, 0)|int == i %}selected{% endif %}>{{ i }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
                                 {% endfor %}
                             {% else %}
                                 <tr>
