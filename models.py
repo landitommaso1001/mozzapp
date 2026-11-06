@@ -9,6 +9,9 @@ class User(db.Model):
     password_hash = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), default='client', nullable=False) # 'client' or 'admin'
     
+    # 🌟 NEW: Dynamic category assignment (Default is always 'Privato')
+    price_category = db.Column(db.String(50), default='Privato', nullable=False)
+    
     # Relationship to cleanly pull orders associated with this user
     orders = db.relationship('Order', backref='customer', lazy=True)
 

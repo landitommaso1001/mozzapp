@@ -332,13 +332,20 @@
 
             <h4 style="border-top:1px solid var(--border-hairline); padding-top:14px; margin-bottom:10px;">➕ Registra Nuovo Cliente</h4>
             <form action="{{ url_for('admin.create_client') }}" method="POST" style="margin-bottom:20px;">
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:10px;">
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:10px;">
                     <input type="text" name="name" placeholder="Nome / Ragione Sociale" required>
                     <input type="text" name="phone" placeholder="Numero di Telefono" required>
                     <input type="password" name="password" placeholder="Password Iniziale" required>
+                    
+                    <select name="price_category" required>
+                        <option value="Privato">Privato</option>
+                        <option value="Ristorante">Ristorante</option>
+                        <option value="Alimentari">Alimentari</option>
+                    </select>
                 </div>
                 <button type="submit" class="btn btn-success">Salva Account Cliente</button>
             </form>
+
 
             <h4 style="border-top:1px solid var(--border-hairline); padding-top:14px; margin-bottom:10px;">📋 Registro Anagrafica Clienti</h4>
             <div class="table-responsive">
@@ -357,16 +364,20 @@
                             <form action="{{ url_for('admin.update_client', client_id=c.id) }}" method="POST" style="display:inline;">
                                 <td><input type="text" name="name" value="{{ c.name }}" style="width:100%;" required></td>
                                 <td><input type="text" name="phone" value="{{ c.phone }}" style="width:100%;" required></td>
-                                <td><input type="text" name="password" placeholder="Lascia vuoto per non cambiare" style="width:100%;"></td>
                                 <td>
-                                    <div style="display:flex; gap:4px;">
-                                        <button type="submit" class="btn btn-primary">💾 Salva</button>
-                            </form>
-                                        <form action="{{ url_for('admin.delete_client', client_id=c.id) }}" method="POST" onsubmit="return confirm('Eliminare il cliente {{ c.name }}?');" style="display:inline;">
-                                            <button type="submit" class="btn btn-danger">🗑️ Rimuovi</button>
-                                        </form>
-                                    </div>
+                                    <select name="price_category" style="width:100%;">
+                                        <option value="Privato" {% if c.price_category == 'Privato' %}selected{% endif %}>Privato</option>
+                                        <option value="Ristorante" {% if c.price_category == 'Ristorante' %}selected{% endif %}>Ristorante</option>
+                                        <option value="Alimentari" {% if c.price_category == 'Alimentari' %}selected{% endif %}>Alimentari</option>
+                                    </select>
                                 </td>
+                                <td><input type="text" name="password" placeholder="Nuova Password" style="width:100%;"></td>
+                                    <div style="display:flex; gap:4px;">
+                                    <button type="submit" class="btn btn-primary">💾 Salva</button>
+                            </form>
+                            <form action="{{ url_for('admin.delete_client', client_id=c.id) }}" method="POST" onsubmit="return confirm('Eliminare il cliente {{ c.name }}?');" style="display:inline;">
+                                <button type="submit" class="btn btn-danger">🗑️ Rimuovi</button>
+                            </form>
                         </tr>
                         {% endfor %}
                     </tbody>

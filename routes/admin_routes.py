@@ -301,32 +301,61 @@ def create_client():
 
 def parse_format_weight_kg(item_string, qty):
     lower_str = item_string.lower()
-    if 'g' in lower_str or 'gr' in lower_str:
-        digits = "".join([c for c in lower_str if c.isdigit()])
-        if digits:
-            grams = float(digits)
-            if grams >= 100 and grams <= 5000: return (grams / 1000.0) * qty
+    
+    # Extract structural digit or decimals
+    digits = "".join([c for c in lower_str if c.isdigit() or c == '.'])
+    if digits:
+        try:
+            weight_val = float(digits)
+            if 'kg' in lower_str:
+                return weight_val * qty
+            if 'g' in lower_str or 'gr' in lower_str:
+                return (weight_val / 1000.0) * qty
+        except ValueError:
+            pass
+            
     if 'piccolo' in lower_str or 'vaschetta' in lower_str: return 0.25 * qty
     elif 'grande' in lower_str: return 1.0 * qty
     return 1.0 * qty
 
-def parse_admin_format_price(full_item_name, product_obj):
-    if not product_obj or not product_obj.sizes_raw: return product_obj.price_per_kg if product_obj else 0.0
+def parse_admin_format_price(full_item_name, product_obj, client_category='Privato'):
+    if not product_obj or not product_obj.sizes_raw: 
+        return product_obj.price_per_kg if product_obj else 0.0
+        
     for fmt in product_obj.sizes_raw.split(','):
         clean_fmt = fmt.strip()
         if not clean_fmt: continue
+        
         if ":" in clean_fmt:
             try:
-                fmt_label, raw_price = clean_fmt.split(":")
-                if fmt_label.strip().lower() in full_item_name.lower(): return float(raw_price)
+                fmt_label, pricing_rules = clean_fmt.split(":", 1)
+                if fmt_label.strip().lower() in full_item_name.lower():
+                    # Parse category configurations if present
+                    if "," in pricing_rules or ":" in pricing_rules:
+                        rules_dict = {}
+                        for rule in pricing_rules.split(","):
+                            if ":" in rule:
+                                k, v = rule.split(":", 1)
+                                rules_dict[k.strip().lower()] = float(v.strip())
+                        
+                        target_key = client_category.lower()
+                        if target_key in rules_dict: return rules_dict[target_key]
+                        if 'privato' in rules_dict: return rules_dict['privato']
+                    return float(pricing_rules.strip())
             except ValueError: continue
         else:
             if clean_fmt.lower() in full_item_name.lower():
-                weight_str = "".join([c for c in clean_fmt if c.isdigit()])
-                if weight_str and ('g' in clean_fmt.lower() or 'gr' in clean_fmt.lower()):
-                    grams = float(weight_str)
-                    return (grams / 1000.0) * product_obj.price_per_kg
+                lower_str = clean_fmt.lower()
+                weight_str = "".join([c for c in lower_str if c.isdigit() or c == '.'])
+                if weight_str:
+                    try:
+                        weight_val = float(weight_str)
+                        if 'kg' in lower_str: return weight_val * product_obj.price_per_kg
+                        if 'g' in lower_str or 'gr' in lower_str: return (weight_val / 1000.0) * product_obj.price_per_kg
+                    except ValueError: pass
+                    
     return product_obj.price_per_kg
+
 
 @admin_bp.route('/product/save_all', methods=['POST'])
 @admin_required

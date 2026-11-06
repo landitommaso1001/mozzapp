@@ -6,20 +6,50 @@ from models import User, Product, Order
 
 client_bp = Blueprint('client_bp', __name__)
 
-def parse_format_details(format_string, price_per_kg):
+def parse_format_details(format_string, price_per_kg, client_category='Privato'):
     clean_fmt = format_string.strip()
     if not clean_fmt:
         return None, 0.0
+        
+    # 🌟 Step A: Check for structured category explicit overrides
+    # format rule example: "Bulk al Kg : Privato:10.00, Ristorante:8.50, Alimentari:7.50"
     if ":" in clean_fmt:
         try:
-            name, raw_price = clean_fmt.split(":")
-            return name.strip(), float(raw_price)
+            name, pricing_rules = clean_fmt.split(":", 1)
+            name = name.strip()
+            
+            if "," in pricing_rules or ":" in pricing_rules:
+                rules_dict = {}
+                for rule in pricing_rules.split(","):
+                    if ":" in rule:
+                        k, v = rule.split(":", 1)
+                        rules_dict[k.strip().lower()] = float(v.strip())
+                
+                target_key = str(client_category).strip().lower()
+                if target_key in rules_dict:
+                    return name, rules_dict[target_key]
+                elif 'privato' in rules_dict:
+                    return name, rules_dict['privato']
+                    
+            # Fallback if colon is present but no key-value commas exist
+            return name, float(pricing_rules.strip())
         except ValueError:
-            return clean_fmt, 0.0
-    weight_str = "".join([c for c in clean_fmt if c.isdigit()])
-    if weight_str and ("g" in clean_fmt.lower() or "gr" in clean_fmt.lower()):
-        grams = float(weight_str)
-        return clean_fmt, (grams / 1000.0) * price_per_kg
+            return clean_fmt, price_per_kg
+
+    # 🌟 Step B: Automated Metric Quantities Weight Math Engine (Handles gr, g, kg, Kg)
+    lower_str = clean_fmt.lower()
+    weight_digits = "".join([c for c in lower_str if c.isdigit() or c == '.'])
+    
+    if weight_digits:
+        try:
+            weight_val = float(weight_digits)
+            if "kg" in lower_str:
+                return clean_fmt, weight_val * price_per_kg
+            if "gr" in lower_str or "g" in lower_str:
+                return clean_fmt, (weight_val / 1000.0) * price_per_kg
+        except ValueError:
+            pass
+
     return clean_fmt, price_per_kg
 
 @client_bp.route('/login', methods=['GET', 'POST'])
@@ -47,12 +77,14 @@ def login():
             session['user_id'] = user.id
             session['user_name'] = user.name
             session['user_role'] = 'client'
+            session['user_category'] = user.price_category # 🌟 Inject Category to Browser Session
+
             
             flash(f"Bentornato, {user.name}!", "success")
             return redirect(url_for('client_bp.index'))
             
         flash("Credenziali non valide. Riprova.", "error")
-    return render_template('login.html')
+        return render_template('login.html')
 
 @client_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -97,6 +129,14 @@ def index():
     catalog_products = Product.query.filter_by(available=True).all()
     all_clients = User.query.filter_by(role='client').all() if is_admin else []
 
+    # 🌟 NEW: Resolve active client category for pricing tier routing
+    if is_admin and selected_client_id > 0:
+        active_client_obj = User.query.get(selected_client_id)
+        current_category = active_client_obj.price_category if active_client_obj else 'Privato'
+    else:
+        # Fallback to the session category if regular client, default to 'Privato'
+        current_category = session.get('user_category', 'Privato')
+
     if request.method == 'POST':
         item_strings = []
         calculated_total = 0.0
@@ -120,7 +160,6 @@ def index():
                 selected_client_id = 0
         else:
             order_user_id = user_id
-            # 🌟 Fixed core sync: Append phone details for normal clients
             current_user_obj = User.query.get(user_id)
             if current_user_obj:
                 order_client_name = f"{current_user_obj.name} ({current_user_obj.phone})"
@@ -131,7 +170,8 @@ def index():
             if product.sizes_raw:
                 formats = product.sizes_raw.split(',')
                 for fmt in formats:
-                    fmt_name, fmt_price = parse_format_details(fmt, product.price_per_kg)
+                    # 🌟 Updated parsing call containing dynamic user price category criteria
+                    fmt_name, fmt_price = parse_format_details(fmt, product.price_per_kg, current_category)
                     if not fmt_name: continue
                     
                     qty_key = f"qty_{product.id}_{fmt_name}"
@@ -163,7 +203,7 @@ def index():
             date=chosen_delivery_date,
             items=", ".join(item_strings),
             total=calculated_total,
-            status='Da Confermare', # 🌟 Updated alignment keyword
+            status='Da Confermare', 
             payment_status='Da Saldare',
             time=""
         )
@@ -193,7 +233,8 @@ def index():
         parsed_formats = []
         if product.sizes_raw:
             for fmt in product.sizes_raw.split(','):
-                f_name, f_price = parse_format_details(fmt, product.price_per_kg)
+                # 🌟 Updated parsing call containing dynamic user price category criteria
+                f_name, f_price = parse_format_details(fmt, product.price_per_kg, current_category)
                 if f_name: parsed_formats.append({'name': f_name, 'price': f_price})
         enriched_products.append({'id': product.id, 'name': product.name, 'price_per_kg': product.price_per_kg, 'parsed_formats': parsed_formats})
 
