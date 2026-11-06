@@ -10,6 +10,26 @@ from datetime import timedelta
 
 app = Flask(__name__)
 
+from datetime import datetime, timedelta
+import os
+from flask import Flask
+from extensions import db
+# ... other imports ...
+
+app = Flask(__name__)
+
+# 🌟 Add this filter helper right here
+@app.template_filter('format_euro_date')
+def format_euro_date(date_str):
+    if not date_str:
+        return ""
+    try:
+        # Converts 'YYYY-MM-DD' into 'dd.mm.yyyy'
+        return datetime.strptime(date_str, "%Y-%m-%d").strftime("%d.%m.%Y")
+    except ValueError:
+        return date_str # Fallback in case of custom manual entries
+
+
 # 🔒 Core Security & Production Configuration
 app.secret_key = os.environ.get("SECRET_KEY", "fallback_secret_mozzarella")
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "sqlite:///dairy.db")

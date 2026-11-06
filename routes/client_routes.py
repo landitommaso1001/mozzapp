@@ -4,7 +4,6 @@ from flask import Blueprint, render_template, request, url_for, redirect, flash,
 from extensions import db
 from models import User, Product, Order
 
-# Define the blueprint object before initializing routes to prevent NameError
 client_bp = Blueprint('client_bp', __name__)
 
 def parse_format_details(format_string, price_per_kg):
@@ -29,18 +28,16 @@ def login():
         phone = request.form.get('phone')
         password = request.form.get('password')
         
-        # 1. Check against Static Admin Credentials Configuration
         static_admin_phone = current_app.config.get('ADMIN_PHONE')
         static_admin_password = current_app.config.get('ADMIN_PASSWORD')
         
         if phone == static_admin_phone and password == static_admin_password:
-            session['user_id'] = 0  # Hardcoded placeholder ID for static admin
+            session['user_id'] = 0  
             session['user_name'] = current_app.config.get('ADMIN_NAME', 'Admin')
             session['user_role'] = 'admin'
             flash(f"Accesso Amministratore Eseguito. Benvenuto {session['user_name']}!", "success")
             return redirect(url_for('admin.index'))
             
-        # 2. Check standard client users database table
         user = User.query.filter_by(phone=phone).first()
         if user and user.check_password(password):
             if user.role == 'admin':
@@ -82,7 +79,6 @@ def logout():
     flash("Sessione chiusa correttamente.", "success")
     return redirect(url_for('client_bp.login'))
 
-
 @client_bp.route('/', methods=['GET', 'POST'])
 def index():
     if 'user_id' not in session:
@@ -91,9 +87,12 @@ def index():
     user_id = session['user_id']
     is_admin = (session.get('user_role') == 'admin')
     
-    # Safe initialization of selected_client_id at the top level
-    raw_selected_id = request.args.get('selected_client_id', '0')
-    selected_client_id = int(raw_selected_id) if raw_selected_id.isdigit() else 0
+    if request.method == 'POST':
+        raw_selected_id = request.form.get('admin_target_client_id', '0')
+    else:
+        raw_selected_id = request.args.get('selected_client_id', '0')
+        
+    selected_client_id = int(raw_selected_id) if str(raw_selected_id).isdigit() else 0
     
     catalog_products = Product.query.filter_by(available=True).all()
     all_clients = User.query.filter_by(role='client').all() if is_admin else []
@@ -121,7 +120,12 @@ def index():
                 selected_client_id = 0
         else:
             order_user_id = user_id
-            order_client_name = session['user_name']
+            # 🌟 Fixed core sync: Append phone details for normal clients
+            current_user_obj = User.query.get(user_id)
+            if current_user_obj:
+                order_client_name = f"{current_user_obj.name} ({current_user_obj.phone})"
+            else:
+                order_client_name = session['user_name']
         
         for product in catalog_products:
             if product.sizes_raw:
@@ -147,15 +151,19 @@ def index():
             if is_admin:
                 return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
             return redirect(url_for('client_bp.index'))
+
+        chosen_delivery_date = request.form.get('delivery_date')
+        if not chosen_delivery_date:
+            chosen_delivery_date = date.today().strftime("%Y-%m-%d")
             
         new_order = Order(
             id=f"ORD-{random.randint(1000, 9999)}",
             user_id=order_user_id,
             client=order_client_name,
-            date=date.today().strftime("%Y-%m-%d"),
+            date=chosen_delivery_date,
             items=", ".join(item_strings),
             total=calculated_total,
-            status='In Ricezione',
+            status='Da Confermare', # 🌟 Updated alignment keyword
             payment_status='Da Saldare',
             time=""
         )
@@ -167,7 +175,6 @@ def index():
             return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
         return redirect(url_for('client_bp.index'))
 
-    # Reorder functionality parser
     prefilled_items = {}
     reorder_id = request.args.get('reorder')
     if reorder_id:
@@ -191,10 +198,7 @@ def index():
         enriched_products.append({'id': product.id, 'name': product.name, 'price_per_kg': product.price_per_kg, 'parsed_formats': parsed_formats})
 
     if is_admin:
-        if selected_client_id > 0:
-            my_orders = Order.query.filter_by(user_id=selected_client_id).order_by(Order.serial_id.desc()).all()
-        else:
-            my_orders = Order.query.filter(Order.user_id == None).order_by(Order.serial_id.desc()).all()
+        my_orders = Order.query.order_by(Order.serial_id.desc()).all()
     else:
         my_orders = Order.query.filter_by(user_id=user_id).order_by(Order.serial_id.desc()).all()
     
@@ -220,18 +224,16 @@ def cancel_order(order_id):
     else:
         order = Order.query.filter_by(id=order_id, user_id=session['user_id']).first_or_404()
         
-    if order.status == 'In Ricezione':
+    if order.status == 'Da Confermare': # 🌟 Updated status alignment keyword
         order.status = 'Annullato'
-        order.payment_status = 'Annullato'  # Align billing records simultaneously
+        order.payment_status = 'Annullato'
         db.session.commit()
         flash(f"Ordine {order_id} annullato con successo.", "success")
     else:
         flash("Impossibile annullare l'ordine.", "error")
         
     if is_admin:
-        # 🌟 FIXED: Read state context parameters cleanly from hidden input payload fields
         selected_client = request.form.get('hidden_selected_client_id', '0')
         return redirect(url_for('client_bp.index', selected_client_id=selected_client))
         
     return redirect(url_for('client_bp.index'))
-

@@ -1,9 +1,9 @@
-{% extends "layout.html" %}
+{% extends 'layout.html' %}
 {% block content %}
 
-<div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+<div class="user-session-bar" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
     <span>👤 Utente: <strong>{{ session['user_name'] }}</strong></span>
-    <a href="{{ url_for('client_bp.logout') }}" class="btn" style="background: #ef4444; color: white; border: none; padding: 6px 12px;">🚪 Esci</a>
+    <a href="{{ url_for('client_bp.logout') }}" class="btn logout-btn-fixed" style="background: #ef4444; color: white; border: none; padding: 6px 12px;">🚪 Esci</a>
 </div>
 
 <!-- 🖥️ DESKTOP PRESENTATION INTERFACE -->
@@ -11,7 +11,6 @@
     <form method="POST" action="{{ url_for('client_bp.index') }}">
         {% if is_admin %}
         <div class="card" style="background: var(--bg-neutral); margin-bottom: 16px; border-left: 4px solid var(--ocean-blue) !important;">
-            <!-- 🖥️ Highlighted Desktop Label & Selection -->
             <label for="admin_target_client_id_pc" style="display: block; font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px;">👤 Seleziona Cliente per Ordine:</label>
             <select name="admin_target_client_id" id="admin_target_client_id_pc" style="font-size: 14px; padding: 8px; width: 100%; max-width: 400px;">
                 <option value="0" {% if selected_client_id == 0 %}selected{% endif %}>-- Vendita Diretta al Banco / Ordine Interno --</option>
@@ -65,19 +64,26 @@
                     {% endfor %}
                 </tbody>
             </table>
+            <div style="margin-top: 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
+                <label for="delivery_date_pc" style="font-weight: 700; color: var(--text-dark); font-size: 13px;">📅 Data Consegna:</label>
+                <input type="date" name="delivery_date" id="delivery_date_pc" required style="width: auto; padding: 6px 10px; font-size: 13px;">
+            </div>
+
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px;">
                 <button type="reset" class="btn">🗑 Svuota</button>
                 <button type="submit" class="btn" style="background: var(--ocean-blue); color: white; border: none;">Invia Ordine</button>
             </div>
         </div>
-    </form>
-
+    </form>    
     <div class="card" style="margin-top: 20px;">
-        <h3>📋 {% if is_admin %} Storico Ordini Filtrato {% else %} Storico Dei Tuoi Ordini {% endif %}</h3>
+        <h3>📋 {% if is_admin %} Storico Ordini Globale {% else %} Storico Dei Tuoi Ordini {% endif %}</h3>
         <table class="table-responsive">
             <thead>
                 <tr>
                     <th>ID Ordine (Data)</th>
+                    {% if is_admin %}
+                        <th>Cliente</th>
+                    {% endif %}
                     <th>Stato</th>
                     <th>Pagamento</th>
                     <th>Dettagli Articoli</th>
@@ -88,7 +94,10 @@
             <tbody>
                 {% for order in orders %}
                 <tr>
-                    <td><strong>{{ order.id }}</strong><br><small>{{ order.date }} {% if order.time %}⏰ {{ order.time }}{% endif %}</small></td>
+                    <td><strong>{{ order.id }}</strong><br><small>{{ order.date|format_euro_date }} {% if order.time %}⏰ {{ order.time }}{% endif %}</small></td>
+                    {% if is_admin %}
+                        <td><span style="font-weight: 600; color: #1e293b;">👤 {{ order.client }}</span></td>
+                    {% endif %}
                     <td>{{ order.status }}</td>
                     <td>{{ order.payment_status }}</td>
                     <td style="white-space: normal;">{{ order.items }}</td>
@@ -103,14 +112,12 @@
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Nessun ordine presente in archivio.</td></tr>
+                <tr><td colspan="{% if is_admin %}7{% else %}6{% endif %}" style="text-align: center; color: var(--text-muted);">Nessun ordine presente in archivio.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
-
-
 <!-- 📱 SMARTPHONE PRESENTATION INTERFACE -->
 <div class="smartphone-layout">
     <div class="mobile-view-tabs">
@@ -170,6 +177,10 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                <div style="margin-top: 12px; margin-bottom: 6px; width: 100%;">
+                    <label for="delivery_date_mobile" style="display: block !important; font-size: 14px !important; font-weight: 700 !important; color: var(--text-dark) !important; margin-bottom: 6px !important; text-align: left !important;">📅 Data Consegna:</label>
+                    <input type="date" name="delivery_date" id="delivery_date_mobile" required style="width: 100% !important; box-sizing: border-box !important; padding: 10px !important; font-size: 16px !important; height: 42px !important; display: block !important;">
+                </div>
                 <button type="submit" class="btn" style="background: var(--ocean-blue); color: white; border: none; width: 100%; margin-top: 12px;">Invia Ordine</button>
             </form>
         </div>
@@ -182,8 +193,15 @@
                 <span>#{{ order.id }}</span>
                 <span>€ {{ "%.2f"|format(order.total) }}</span>
             </div>
+            
+            {% if is_admin %}
+                <div style="font-weight: bold; font-size: 12px; color: #334155; margin-bottom: 4px;">
+                    👤 Cliente: {{ order.client }}
+                </div>
+            {% endif %}
+
             <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
-                📅 {{ order.date }} {% if order.time %} ⏰ Consegna: {{ order.time }} {% endif %}<br>
+                📅 {{ order.date|format_euro_date }} {% if order.time %} ⏰ Consegna: {{ order.time }} {% endif %}<br>
                 📦 {{ order.status }} | 💰 {{ order.payment_status }}
             </div>
             <div style="font-size: 13px; background: var(--bg-neutral); padding: 8px; border-radius: 4px; margin-bottom: 8px;">
@@ -205,14 +223,31 @@
 </div>
 
 <script>
+/* 🌟 FIXED MOBILE TOGGLE METHOD */
 function switchClientTab(tabName) {
     document.querySelectorAll('.mobile-tab-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('btn-' + tabName).classList.add('active');
     document.querySelectorAll('.client-split-section').forEach(sec => sec.classList.remove('active-section'));
-    document.getElementById('section-' + tabName).classList.add('active-section');
+    
+    let targetSection = document.getElementById('section-' + tabName);
+    if(targetSection) {
+        targetSection.classList.add('active-section'); // Fixed from classWith
+    }
 }
+</script>
+<script>
+    // Automatically set the default delivery option values to today's date
+    const today = new Date();
+    const offset = today.getTimezoneOffset();
+    const localToday = new Date(today.getTime() - (offset * 60 * 1000));
+    const todayISO = localToday.toISOString().split('T')[0];
+    
+    if(document.getElementById('delivery_date_pc')) {
+        document.getElementById('delivery_date_pc').value = todayISO;
+    }
+    if(document.getElementById('delivery_date_mobile')) {
+        document.getElementById('delivery_date_mobile').value = todayISO;
+    }
 </script>
 
 {% endblock %}
-
-
