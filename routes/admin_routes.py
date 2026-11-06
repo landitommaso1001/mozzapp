@@ -102,6 +102,7 @@ def index():
     grand_total_kg = 0.0
     grand_total_revenue = 0.0
 
+    # 📂 Find this specific loop block under 'if o.items:' inside your admin.index() route:
     for o in admin_orders:
         if o.status == 'Annullato':
             continue
@@ -128,6 +129,13 @@ def index():
         if analytics_payment_status and o.payment_status != analytics_payment_status:
             continue
 
+        # 🌟 NEW: Pull the buyer's category for this specific order
+        order_client_category = 'Privato' # Fallback for banco / direct selling
+        if o.user_id:
+            buyer_user = User.query.get(o.user_id)
+            if buyer_user:
+                order_client_category = buyer_user.price_category
+
         if o.items:
             for item in o.items.split(','):
                 item = item.strip()
@@ -150,7 +158,9 @@ def index():
                         
                     if prod_matched:
                         computed_weight = parse_format_weight_kg(full_name, qty)
-                        unit_price = parse_admin_format_price(full_name, matched_prod_obj)
+                        
+                        # 🌟 PASS THE SPECIFIC CLIENT CATEGORY INTO THE PRICING RESOLVER
+                        unit_price = parse_admin_format_price(full_name, matched_prod_obj, order_client_category)
                         computed_revenue = unit_price * qty
                         
                         if full_name not in product_summary:
@@ -334,7 +344,7 @@ def parse_admin_format_price(full_item_name, product_obj, client_category='Priva
             try:
                 fmt_label, pricing_rules = clean_fmt.split(":", 1)
                 if fmt_label.strip().lower() in full_item_name.lower():
-                    # Parse category configurations if present
+                    # Check if there are category-specific comma rules: Privato:5.00, Ristorante:4.00
                     if "," in pricing_rules or ":" in pricing_rules:
                         rules_dict = {}
                         for rule in pricing_rules.split(","):
@@ -342,11 +352,15 @@ def parse_admin_format_price(full_item_name, product_obj, client_category='Priva
                                 k, v = rule.split(":", 1)
                                 rules_dict[k.strip().lower()] = float(v.strip())
                         
-                        target_key = client_category.lower()
-                        if target_key in rules_dict: return rules_dict[target_key]
-                        if 'privato' in rules_dict: return rules_dict['privato']
+                        target_key = str(client_category).strip().lower()
+                        if target_key in rules_dict: 
+                            return rules_dict[target_key]
+                        if 'privato' in rules_dict: 
+                            return rules_dict['privato']
+                            
                     return float(pricing_rules.strip())
-            except ValueError: continue
+            except ValueError: 
+                continue
         else:
             if clean_fmt.lower() in full_item_name.lower():
                 lower_str = clean_fmt.lower()
@@ -354,12 +368,14 @@ def parse_admin_format_price(full_item_name, product_obj, client_category='Priva
                 if weight_str:
                     try:
                         weight_val = float(weight_str)
-                        if 'kg' in lower_str: return weight_val * product_obj.price_per_kg
-                        if 'g' in lower_str or 'gr' in lower_str: return (weight_val / 1000.0) * product_obj.price_per_kg
-                    except ValueError: pass
+                        if 'kg' in lower_str: 
+                            return weight_val * product_obj.price_per_kg
+                        if 'g' in lower_str or 'gr' in lower_str: 
+                            return (weight_val / 1000.0) * product_obj.price_per_kg
+                    except ValueError: 
+                        pass
                     
     return product_obj.price_per_kg
-
 
 @admin_bp.route('/product/save_all', methods=['POST'])
 @admin_required
