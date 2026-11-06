@@ -75,9 +75,26 @@ def seed_data():
 
 
 # 🚀 Automated Schema Staging & Thread-Safe Initialisation Execution
+# 📂 Locate this at the bottom of app.py
+
+# 噫 Automated Schema Staging & Thread-Safe Initialisation Execution
 with app.app_context():
+    try:
+        from sqlalchemy import text
+        # Safely attempts to append the missing column to your existing production table
+        db.session.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS price_category VARCHAR(50) DEFAULT 'Privato' NOT NULL;"))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(f"Migration note (can be ignored if column already exists): {e}")
+
+    # Your existing startup sequence remains unchanged
     db.create_all()
     seed_data()
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
 
 
 if __name__ == '__main__':
