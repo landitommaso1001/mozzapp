@@ -11,8 +11,35 @@ def parse_format_details(format_string, price_per_kg, client_category='Privato')
     if not clean_fmt:
         return None, 0.0
         
-    # 🌟 Step A: Check for structured category explicit overrides
-    # format rule example: "Bulk al Kg : Privato:10.00, Ristorante:8.50, Alimentari:7.50"
+    # 🏛️ Step A: Absolute Fallback for Over-The-Counter Sales (Vendita Diretta / Banco)
+    if client_category == 'Banco':
+        if ":" in clean_fmt:
+            try:
+                name, pricing_rules = clean_fmt.split(":", 1)
+                name = name.strip()
+                if "," in pricing_rules or ":" in pricing_rules:
+                    rules_dict = {}
+                    for rule in pricing_rules.split(","):
+                        if ":" in rule:
+                            k, v = rule.split(":", 1)
+                            rules_dict[k.strip().lower()] = float(v.strip())
+                    return name, rules_dict.get('privato', price_per_kg)
+                return name, float(pricing_rules.strip())
+            except ValueError:
+                pass
+        
+        # Metric Weights Engine Fallback
+        lower_str = clean_fmt.lower()
+        weight_digits = "".join([c for c in lower_str if c.isdigit() or c == '.'])
+        if weight_digits:
+            try:
+                weight_val = float(weight_digits)
+                if "kg" in lower_str: return clean_fmt, weight_val * price_per_kg
+                if "gr" in lower_str or "g" in lower_str: return clean_fmt, (weight_val / 1000.0) * price_per_kg
+            except ValueError: pass
+        return clean_fmt, price_per_kg
+
+    # 🛒 Step B: Active Logged-In Customer Selective Filtering
     if ":" in clean_fmt:
         try:
             name, pricing_rules = clean_fmt.split(":", 1)
@@ -26,34 +53,29 @@ def parse_format_details(format_string, price_per_kg, client_category='Privato')
                         rules_dict[k.strip().lower()] = float(v.strip())
                 
                 target_key = str(client_category).strip().lower()
+                
+                # 🌟 SELECTION GATE: Return name and price ONLY if category matches
                 if target_key in rules_dict:
                     return name, rules_dict[target_key]
-                elif 'privato' in rules_dict:
-                    return name, rules_dict['privato']
-                    
-            # Fallback if colon is present but no key-value commas exist
+                
+                # If rule has colon tiers but this customer category is NOT listed, return None to hide it!
+                return None, 0.0
+            
             return name, float(pricing_rules.strip())
         except ValueError:
             return clean_fmt, price_per_kg
 
-    # 🌟 Step B: Automated Metric Quantities Weight Math Engine (Handles gr, g, kg, Kg)
+    # Step C: Standard weight sizing strings with no colons (Visible to all)
     lower_str = clean_fmt.lower()
     weight_digits = "".join([c for c in lower_str if c.isdigit() or c == '.'])
-    
     if weight_digits:
         try:
             weight_val = float(weight_digits)
-            if "kg" in lower_str:
-                return clean_fmt, weight_val * price_per_kg
-            if "gr" in lower_str or "g" in lower_str:
-                return clean_fmt, (weight_val / 1000.0) * price_per_kg
-        except ValueError:
-            pass
+            if "kg" in lower_str: return clean_fmt, weight_val * price_per_kg
+            if "gr" in lower_str or "g" in lower_str: return clean_fmt, (weight_val / 1000.0) * price_per_kg
+        except ValueError: pass
 
     return clean_fmt, price_per_kg
-
-# 📂 Replace the top authentication block in routes/client_routes.py with this complete block:
-
 @client_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -63,7 +85,6 @@ def login():
         static_admin_phone = current_app.config.get('ADMIN_PHONE')
         static_admin_password = current_app.config.get('ADMIN_PASSWORD')
         
-        # 1. Check for Admin credentials
         if phone == static_admin_phone and password == static_admin_password:
             session['user_id'] = 0  
             session['user_name'] = current_app.config.get('ADMIN_NAME', 'Admin')
@@ -72,7 +93,6 @@ def login():
             flash(f"Accesso Amministratore Eseguito. Benvenuto {session['user_name']}!", "success")
             return redirect(url_for('admin.index'))
             
-        # 2. Check for Standard Customer credentials
         user = User.query.filter_by(phone=phone).first()
         if user and user.check_password(password):
             if user.role == 'admin':
@@ -82,14 +102,12 @@ def login():
             session['user_id'] = user.id
             session['user_name'] = user.name
             session['user_role'] = 'client'
-            session['user_category'] = user.price_category # 🌟 Injects Category to Session
+            session['user_category'] = user.price_category
             
             flash(f"Bentornato, {user.name}!", "success")
             return redirect(url_for('client_bp.index'))
             
         flash("Credenziali non valide. Riprova.", "error")
-        
-    # This return MUST be cleanly outside the POST block to handle the initial page load (GET)
     return render_template('login.html')
 
 
@@ -104,14 +122,12 @@ def register():
             flash("Questo numero di telefono è già registrato.", "error")
             return redirect(url_for('client_bp.register'))
             
-        # 🌟 Defaults new profiles strictly to 'Privato' tier as requested
         new_user = User(name=name, phone=phone, role='client', price_category='Privato')
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
         flash("Registrazione completata! Effettua il login.", "success")
         return redirect(url_for('client_bp.login'))
-        
     return render_template('register.html')
 
 
@@ -120,8 +136,6 @@ def logout():
     session.clear()
     flash("Sessione chiusa correttamente.", "success")
     return redirect(url_for('client_bp.login'))
-
-
 @client_bp.route('/', methods=['GET', 'POST'])
 def index():
     if 'user_id' not in session:
@@ -130,7 +144,6 @@ def index():
     user_id = session['user_id']
     is_admin = (session.get('user_role') == 'admin')
     
-    # 🌟 Resolve exactly which client account the Admin selected from the dropdown
     if request.method == 'POST':
         raw_selected_id = request.form.get('admin_target_client_id', '0')
     else:
@@ -141,17 +154,14 @@ def index():
     catalog_products = Product.query.filter_by(available=True).all()
     all_clients = User.query.filter_by(role='client').all() if is_admin else []
 
-    # 🌟 DYNAMIC RESOLUTION ENGINE FOR DROPDOWN AND CLIENT LOGIN
+    # 🌟 Resolve exact category context
     if is_admin:
         if selected_client_id > 0:
-            # An Admin has chosen a specific client from the dropdown -> use their specific category!
             active_client_obj = User.query.get(selected_client_id)
             current_category = active_client_obj.price_category if active_client_obj else 'Privato'
         else:
-            # An Admin left the selector on "Vendita Diretta al Banco" -> fall back to base weight calculation
             current_category = 'Banco'
     else:
-        # A normal client logged in directly -> look up their assigned category layer
         current_category = session.get('user_category', 'Privato')
 
     if request.method == 'POST':
@@ -187,7 +197,6 @@ def index():
             if product.sizes_raw:
                 formats = product.sizes_raw.split(',')
                 for fmt in formats:
-                    # 🌟 Updated parsing call containing dynamic user price category criteria
                     fmt_name, fmt_price = parse_format_details(fmt, product.price_per_kg, current_category)
                     if not fmt_name: continue
                     
@@ -231,7 +240,6 @@ def index():
         if is_admin:
             return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
         return redirect(url_for('client_bp.index'))
-
     prefilled_items = {}
     reorder_id = request.args.get('reorder')
     if reorder_id:
@@ -250,9 +258,10 @@ def index():
         parsed_formats = []
         if product.sizes_raw:
             for fmt in product.sizes_raw.split(','):
-                # 🌟 Updated parsing call containing dynamic user price category criteria
                 f_name, f_price = parse_format_details(fmt, product.price_per_kg, current_category)
-                if f_name: parsed_formats.append({'name': f_name, 'price': f_price})
+                # 🌟 SECURITY GATEWAY: Only append formats that successfully resolve a name
+                if f_name:
+                    parsed_formats.append({'name': f_name, 'price': f_price})
         enriched_products.append({'id': product.id, 'name': product.name, 'price_per_kg': product.price_per_kg, 'parsed_formats': parsed_formats})
 
     if is_admin:
@@ -282,7 +291,7 @@ def cancel_order(order_id):
     else:
         order = Order.query.filter_by(id=order_id, user_id=session['user_id']).first_or_404()
         
-    if order.status == 'Da Confermare': # 🌟 Updated status alignment keyword
+    if order.status == 'Da Confermare': 
         order.status = 'Annullato'
         order.payment_status = 'Annullato'
         db.session.commit()
