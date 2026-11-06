@@ -94,7 +94,7 @@
             <tbody>
                 {% for order in orders %}
                 <tr>
-                    <td><strong>{{ order.id }}</strong><br><small>{{ order.date }} {% if order.time %}⏰ {{ order.time }}{% endif %}</small></td>
+                    <td><strong>{{ order.id }}</strong><br><small>{{ order.date|format_euro_date }} {% if order.time %}⏰ {{ order.time }}{% endif %}</small></td>
                     {% if is_admin %}
                         <td><span style="font-weight: 600; color: #1e293b;">👤 {{ order.client }}</span></td>
                     {% endif %}
@@ -201,7 +201,7 @@
             {% endif %}
 
             <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
-                📅 {{ order.date }} {% if order.time %} ⏰ Consegna: {{ order.time }} {% endif %}<br>
+                📅 {{ order.date|format_euro_date }} {% if order.time %} ⏰ Consegna: {{ order.time }} {% endif %}<br>
                 📦 {{ order.status }} | 💰 {{ order.payment_status }}
             </div>
             <div style="font-size: 13px; background: var(--bg-neutral); padding: 8px; border-radius: 4px; margin-bottom: 8px;">

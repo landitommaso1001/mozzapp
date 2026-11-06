@@ -139,7 +139,7 @@
                         <tr>
                             <td>
                                 <strong>{{ o.id }}</strong>
-                                <div style="font-size:11px; color:var(--text-muted);">Data: {{ o.date }}</div>
+                                <div style="font-size:11px; color:var(--text-muted);">Data: {{ o.date|format_euro_date }}</div>
                                 {% if o.time %}
                                 <div style="display:inline-block; margin-top:2px; font-weight:700; background:#fef9c3; color:#854d0e; padding:1px 4px; border-radius:3px; font-size:10px;">🕒 Ore: {{ o.time }}</div>
                                 {% endif %}
