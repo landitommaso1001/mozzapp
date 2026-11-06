@@ -104,9 +104,9 @@
                     <td><strong>€ {{ "%.2f"|format(order.total) }}</strong></td>
                     <td>
                         <a href="{{ url_for('client_bp.index', reorder=order.id) }}" class="btn">🔄 Ripeti</a>
-                        {% if order.status == 'In Ricezione' %}
+                        {% if order.status == 'Da Confermare' %}
                         <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="display: inline;" onsubmit="return confirm('Annullare l\'ordine?');">
-                            <button type="submit" class="btn" style="background: #ef4444; color: white; border: none;">❌ Annulla</button>
+                             <button type="submit" class="btn" style="background: #ef4444; color: white; border: none;">❌ Annulla</button>
                         </form>
                         {% endif %}
                     </td>
@@ -209,10 +209,10 @@
             </div>
             <div style="display: flex; gap: 6px;">
                 <a href="{{ url_for('client_bp.index', reorder=order.id) }}" class="btn" style="flex: 1; text-align: center;">🔄 Ripeti</a>
-                {% if order.status == 'In Ricezione' %}
-                <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="flex: 1;" onsubmit="return confirm('Annullare l\'ordine?');">
-                    <button type="submit" class="btn" style="background: #ef4444; color: white; border: none; width: 100%;">❌ Annulla</button>
-                </form>
+                {% if order.status == 'Da Confermare' %}
+                   <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="flex: 1;" onsubmit="return confirm('Annullare l\'ordine?');">
+                     <button type="submit" class="btn" style="background: #ef4444; color: white; border: none; width: 100%;">❌ Annulla</button>
+                   </form>
                 {% endif %}
             </div>
         </div>
