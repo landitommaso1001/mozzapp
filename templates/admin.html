@@ -183,7 +183,13 @@
         <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="display:flex; gap:4px; align-items:center; width: 100%;">
             <input type="hidden" name="order_id" value="{{ o.id }}">
             <input type="hidden" name="new_status" value="Confermato">
-            <input type="text" name="delivery_time" placeholder="Ora (es. 08:30)" style="width:90px;" required>
+                <select name="delivery_time" style="width:105px; text-align:center;" required>
+                    <option value="" disabled selected>Ora...</option>
+                    {% for hour in range(7, 20) %}
+                        {% set formatted_hour = "%02d:00" | format(hour) %}
+                        <option value="{{ formatted_hour }}">{{ formatted_hour }}</option>
+                    {% endfor %}
+                </select>
             <button type="submit" class="btn btn-success">✅ Conferma</button>
         </form>
         <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Annullare l\'ordine?');">
