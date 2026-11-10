@@ -243,7 +243,7 @@ button span.smartphone-layout, .btn span.smartphone-layout {
         display: inline !important;
     }
 
-        /* 🎯 TARGETED RESPONSIVE FILTER ROW ENGINE */
+    /* 🎯 ULTRA-SPECIFIC SMARTPHONE FILTER GRID ENGINE */
     form[method="GET"], 
     .card form:has(select[name="client_id"]),
     main form:has(input[name="date_from"]) {
@@ -253,14 +253,14 @@ button span.smartphone-layout, .btn span.smartphone-layout {
         width: 100% !important;
     }
 
-    /* Row 1: Force Client Dropdown to occupy the entire width */
+    /* Row 1: Force Client Dropdown to 100% grid space width */
     form[method="GET"] select[name="client_id"],
     form[method="GET"] select {
         grid-column: span 2 !important;
         width: 100% !important;
     }
 
-    /* Row 2: Let Date Inputs naturally split 50/50 side by side */
+    /* Row 2: Break the 100% override so Date fields can sit side-by-side */
     form[method="GET"] input[type="date"],
     form[method="GET"] input[name="date_from"],
     form[method="GET"] input[name="date_to"] {
@@ -268,13 +268,14 @@ button span.smartphone-layout, .btn span.smartphone-layout {
         width: 100% !important;
     }
 
-    /* Row 3: Buttons automatically fill the remaining 50/50 block space */
+    /* Row 3: Break the 100% override so buttons can sit side-by-side */
     form[method="GET"] button,
     form[method="GET"] .btn,
-    form[method="GET"] a.btn-warning {
+    form[method="GET"] a[href*="reset"] {
         grid-column: span 1 !important;
         width: 100% !important;
         height: 42px !important;
+        margin: 0 !important;
     }
 }
 
