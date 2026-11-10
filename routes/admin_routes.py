@@ -332,34 +332,32 @@ def parse_format_weight_kg(item_string, qty):
     elif 'grande' in lower_str: return 1.0 * qty
     return 1.0 * qty
 
+
 def parse_admin_format_price(full_item_name, product_obj, client_category='Privato'):
     if not product_obj or not product_obj.sizes_raw: 
         return 0.0
         
-    for fmt in product_obj.sizes_raw.split(','):
-        clean_fmt = fmt.strip()
-        if not clean_fmt: continue
+    try:
+        # 🌟 THE CORRECTION: Bypasses the nested label search and directly parses the pricing dictionary
+        rules_dict = {}
+        for rule in product_obj.sizes_raw.split(","):
+            if ":" in rule:
+                k, v = rule.split(":", 1)
+                rules_dict[k.strip().lower()] = float(v.strip())
         
-        if ":" in clean_fmt:
-            try:
-                fmt_label, pricing_rules = clean_fmt.split(":", 1)
-                if fmt_label.strip().lower() in full_item_name.lower():
-                    if "," in pricing_rules or ":" in pricing_rules:
-                        rules_dict = {}
-                        for rule in pricing_rules.split(","):
-                            if ":" in rule:
-                                k, v = rule.split(":", 1)
-                                rules_dict[k.strip().lower()] = float(v.strip())
-                        
-                        target_key = str(client_category).strip().lower()
-                        if target_key in rules_dict: 
-                            return rules_dict[target_key]
-                        if 'privato' in rules_dict: 
-                            return rules_dict['privato']
-                    return float(pricing_rules.strip())
-            except ValueError: 
-                continue
+        target_key = str(client_category).strip().lower()
+        
+        # Pull the category price directly
+        if target_key in rules_dict: 
+            return rules_dict[target_key]
+        if 'privato' in rules_dict: 
+            return rules_dict['privato']
+            
+    except Exception:
+        pass
+        
     return 0.0
+
 
 
 # 📂 Overwrite these three catalog management routes inside routes/admin_routes.py:
