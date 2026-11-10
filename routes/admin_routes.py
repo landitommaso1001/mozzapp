@@ -136,7 +136,6 @@ def index():
             if buyer_user:
                 order_client_category = buyer_user.price_category
 
-# 📂 Replace ONLY the "if o.items:" string token looping segment inside routes/admin_routes.py:
 
         if o.items:
             for item in o.items.split(','):
@@ -147,24 +146,25 @@ def index():
                     qty = int(qty_str.strip())
                     full_name = full_name.strip()
                     
-                    # 🌟 MATCH RECOVERY: Find the exact catalog row reference safely
+                    # 🌟 FIX 1: Sort by name length descending so "Mozzarella Cassa" is checked before "Mozzarella"
+                    sorted_catalog = sorted(catalog_products, key=lambda x: len(x.name), reverse=True)
+                    
                     matched_prod_obj = None
-                    for p in catalog_products:
-                        # Match 'Mozzarella' whether the string says Cassa, Vaschetta, or standard names
+                    for p in sorted_catalog:
                         if p.name.lower() in full_name.lower():
                             matched_prod_obj = p
                             break
                     
-                    # If we can't map the item to a product row, use the text fallback metrics safely
                     p_name = matched_prod_obj.name if matched_prod_obj else full_name
                     
                     if not filter_product or filter_product.lower() in p_name.lower():
                         computed_weight = parse_format_weight_kg(full_name, qty)
                         
-                        # 🧮 DIRECT MATRIX EXTRACT: Pull rules directly from the object fields bypass safely
+                        # 🌟 FIX 2: Direct matrix parsing from the actual matched database item row object rules string
                         unit_price = 0.0
                         if matched_prod_obj and matched_prod_obj.sizes_raw:
                             rules_dict = {}
+                            # Clear whitespace and parse category options cleanly
                             for rule in matched_prod_obj.sizes_raw.split(","):
                                 if ":" in rule:
                                     k, v = rule.split(":", 1)
@@ -176,14 +176,29 @@ def index():
                             elif 'privato' in rules_dict:
                                 unit_price = rules_dict['privato']
                         
-                        # If extraction completely fails, use a clean placeholder rule mapping
+                        # Dynamic fallback if pricing extraction returns zero
                         if unit_price == 0.0:
-                            unit_price = 5.0  # Fallback constant
+                            # 🧮 Fallback calculations attempt to extract price if it was saved inside pricing rules as a single numeric flat price string
+                            if matched_prod_obj and matched_prod_obj.sizes_raw and ":" not in matched_prod_obj.sizes_raw:
+                                try:
+                                    unit_price = float(matched_prod_obj.sizes_raw.strip())
+                                except ValueError:
+                                    unit_price = 5.0
+                            else:
+                                unit_price = 5.0  
                             
                         computed_revenue = unit_price * qty
                         
-                        # Save results to dashboard tables under the correct display name string
-                        display_row_name = f"{p_name} ({matched_prod_obj.price_per_kg if matched_prod_obj else ''})"
+                        # 🌟 FIX 3: Extract the layout size label text straight out of parentheses inside full_name 
+                        # This ensures it shows "(12 Kg)" instead of defaulting to product.price_per_kg text labels
+                        fmt_label_extracted = ""
+                        if "(" in full_name and ")" in full_name:
+                            fmt_label_extracted = full_name.split("(")[-1].split(")")[0].strip()
+                        else:
+                            fmt_label_extracted = matched_prod_obj.price_per_kg if matched_prod_obj else ""
+                            
+                        display_row_name = f"{p_name} ({fmt_label_extracted})"
+                        
                         if display_row_name not in product_summary:
                             product_summary[display_row_name] = {'qty': 0, 'kg': 0.0, 'revenue': 0.0}
                         
