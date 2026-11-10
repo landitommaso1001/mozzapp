@@ -20,14 +20,14 @@
 }
 
 .badge-admin {
-    background-color: #e0f2fe !important; /* Soft sky blue background */
-    color: #0369a1 !important;            /* Deep ocean blue text */
-    border: 1px solid #bae6fd !important; /* Muted blue border */
+    background-color: #e0f2fe !important;
+    color: #0369a1 !important;            
+    border: 1px solid #bae6fd !important; 
 }
 
 .badge-cliente {
-    background-color: #dcfce7 !important; /* Soft Green background */
-    color: #15803d !important;            /* Forest Dark Green text */
+    background-color: #dcfce7 !important; 
+    color: #15803d !important;            
     border: 1px solid #bbf7d0 !important;
 }
 
@@ -106,13 +106,9 @@ button:hover { background: #e2e8f0; }
     font-weight: 700 !important;
 }
 
-/* Responsive Structural Defaults for Desktop Text Handling */
-button span.desktop-layout, .btn span.desktop-layout {
-    display: inline !important;
-}
-button span.smartphone-layout, .btn span.smartphone-layout {
-    display: none !important;
-}
+/* Base Desktop Text Logic */
+button span.desktop-layout, .btn span.desktop-layout { display: inline !important; }
+button span.smartphone-layout, .btn span.smartphone-layout { display: none !important; }
 /* ==========================================================================
    📱 HIGH-PRECISION MOBILE OVERRIDES (Viewport Width <= 768px)
    ========================================================================== */
@@ -127,7 +123,7 @@ button span.smartphone-layout, .btn span.smartphone-layout {
     nav ul li a { font-size: 11px !important; padding: 6px 10px !important; }
     form { display: flex !important; flex-direction: column !important; gap: 10px !important; width: 100% !important; }
     
-    /* 🍏 NEW MOBILE RESPONSIVE RULES: Prevent Clipping Overflow */
+    /* 🍏 Mobile Field Standard Dimensions */
     input, select, button, .btn { 
         width: 100% !important; 
         box-sizing: border-box !important; 
@@ -140,8 +136,7 @@ button span.smartphone-layout, .btn span.smartphone-layout {
         word-break: break-word !important;
     }
 
-    /* 🎯 ISOLATED SMARTPHONE FILTER MATRIX BLOCK */
-    main .card form[method="GET"],
+    /* 🎯 3-Row Filter Matrix Engine */
     form.filter-form-grid {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
@@ -149,24 +144,24 @@ button span.smartphone-layout, .btn span.smartphone-layout {
         width: 100% !important;
     }
 
-    /* Row 1: Expand Client Dropdown to full width */
-    main .card form[method="GET"] select[name="client_id"],
-    form.filter-form-grid select[name="client_id"] {
+    /* Row 1: Expand Client Dropdown to 100% width space */
+    form.filter-form-grid select[name="client_id"],
+    form.filter-form-grid select {
         grid-column: span 2 !important;
         width: 100% !important;
     }
 
-    /* Row 2: Keep Date Pickers perfectly split 50/50 side-by-side */
-    main .card form[method="GET"] input[type="date"],
-    form.filter-form-grid input[type="date"] {
+    /* Row 2: Force width overrides so individual date fields split 50/50 */
+    form.filter-form-grid input[type="date"],
+    form.filter-form-grid input[name="date_from"],
+    form.filter-form-grid input[name="date_to"] {
         grid-column: span 1 !important;
         width: 100% !important;
     }
 
-    /* Row 3: Force Filter Submission and Reset link triggers to sit side-by-side */
-    main .card form[method="GET"] button[type="submit"],
-    main .card form[method="GET"] a[href*="active_tab=orders"],
-    form.filter-form-grid button, 
+    /* Row 3: Force width overrides so filter and reset buttons split 50/50 */
+    form.filter-form-grid button,
+    form.filter-form-grid .btn,
     form.filter-form-grid a.btn {
         grid-column: span 1 !important;
         width: 100% !important;
@@ -176,7 +171,7 @@ button span.smartphone-layout, .btn span.smartphone-layout {
         align-items: center !important;
         justify-content: center !important;
     }
-    /* Allow flexible wrapping to completely eliminate horizontal scrolling */
+    /* Responsive Content Wrapping Options */
     main table, .card table, .table-responsive { display: block !important; max-width: 100% !important; overflow-x: auto !important; white-space: normal !important; -webkit-overflow-scrolling: touch !important; }
     main table th, main table td { display: table-cell !important; width: auto !important; padding: 8px 10px !important; }
     main table td.items-cell-mobile, table td.items-cell-mobile, .table-responsive table td.items-cell-mobile { white-space: normal !important; word-wrap: break-word !important; overflow-wrap: break-word !important; word-break: break-word !important; min-width: 150px !important; max-width: 220px !important; }
@@ -241,7 +236,7 @@ button span.smartphone-layout, .btn span.smartphone-layout {
     .split-items-list { display: flex !important; flex-direction: column !important; gap: 5px !important; text-align: left !important; }
     .product-item-row { display: block !important; background: #f1f5f9 !important; padding: 3px 6px !important; border-radius: 4px !important; font-size: 12px !important; line-height: 1.3 !important; white-space: normal !important; border-left: 3px solid var(--ocean-blue) !important; }
 
-    /* Force action button spans to flip labels inside mobile viewport limits */
+    /* Mobile Text Flippers safely hidden within device scopes */
     button span.desktop-layout, .btn span.desktop-layout { display: none !important; }
     button span.smartphone-layout, .btn span.smartphone-layout { display: inline !important; }
 }
