@@ -101,7 +101,10 @@
                         <input type="date" name="date_to" value="{{ current_date_to }}" style="width: 100%;">
                     </div>
                     <div style="display: flex; gap: 4px;">
-                        <button type="submit" class="btn btn-primary">🔍 Applica Filtri</button>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="desktop-layout">🔍 Applica Filtri</span>
+                            <span class="smartphone-layout">🔍 Filtri</span>
+                        </button>
                         <a href="{{ url_for('admin.index', active_tab='orders') }}" class="btn">🔄 Reset</a>
                     </div>
                 </div>
@@ -190,11 +193,17 @@
                         <option value="{{ formatted_hour }}">{{ formatted_hour }}</option>
                     {% endfor %}
                 </select>
-            <button type="submit" class="btn btn-success">✅ Conferma</button>
+            <button type="submit" class="btn btn-success">
+                <span class="desktop-layout">✅ Conferma</span>
+                <span class="smartphone-layout">✅ Conferma</span>
+            </button>
         </form>
         <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Annullare l\'ordine?');">
             <input type="hidden" name="order_id" value="{{ o.id }}">
-            <button type="submit" class="btn btn-danger" style="width:100%;">❌ Annulla</button>
+            <button type="submit" class="btn btn-danger" style="width:100%;">
+                <span class="desktop-layout">❌ Annulla</span>
+                <span class="smartphone-layout">❌ Annulla</span>
+            </button>
         </form>
         
         <!-- Step 2: Confermato -->
@@ -202,11 +211,17 @@
         <form action="{{ url_for('admin.update_order_status') }}" method="POST">
             <input type="hidden" name="order_id" value="{{ o.id }}">
             <input type="hidden" name="new_status" value="Pronto">
-            <button type="submit" class="btn btn-primary" style="width:100%;">📦 Pronto</button>
+            <button type="submit" class="btn btn-primary" style="width:100%;">
+                <span class="desktop-layout">📦 Pronto</span>
+                <span class="smartphone-layout">📦 Pronto</span>
+            </button>
         </form>
         <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Annullare l\'ordine?');">
             <input type="hidden" name="order_id" value="{{ o.id }}">
-            <button type="submit" class="btn btn-danger" style="width:100%;">❌ Annulla</button>
+            <button type="submit" class="btn btn-danger" style="width:100%;">
+                <span class="desktop-layout">❌ Annulla</span>
+                <span class="smartphone-layout">❌ Annulla</span>
+            </button>
         </form>
         
         <!-- Step 3: Pronto -->
@@ -221,7 +236,10 @@
         {% elif o.status == 'Consegnato' and o.payment_status != 'Saldato' %}
         <form action="{{ url_for('admin.mark_order_paid') }}" method="POST" style="width:100%;">
             <input type="hidden" name="order_id" value="{{ o.id }}">
-            <button type="submit" class="btn btn-success" style="width:100%; font-weight:700;">💶 Salda</button>
+            <button type="submit" class="btn btn-success" style="width:100%; font-weight:700;">
+                <span class="desktop-layout">💶 Salda</span>
+                <span class="smartphone-layout">💶 Salda</span>
+            </button>
         </form>
         {% endif %}
     </div>
