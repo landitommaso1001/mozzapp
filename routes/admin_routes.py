@@ -316,9 +316,23 @@ def create_client():
 
 # 📂 Replace your admin view format parsers in routes/admin_routes.py with these:
 
+# 📂 Replace these helper functions at the bottom of routes/admin_routes.py
+
 def parse_format_weight_kg(item_string, qty):
+    """
+    Safely extracts only the package volume number inside parentheses 
+    to prevent quantity prefixes from corrupting the calculation loop arithmetic.
+    """
     lower_str = item_string.lower()
-    digits = "".join([c for c in lower_str if c.isdigit() or c == '.'])
+    
+    # Isolate only the text inside parentheses (e.g., "(12 kg)" -> "12 kg")
+    if "(" in lower_str and ")" in lower_str:
+        inner_content = lower_str.split("(")[-1].split(")")[0]
+    else:
+        inner_content = lower_str
+
+    # Extract digits cleanly from just that isolated section
+    digits = "".join([c for c in inner_content if c.isdigit() or c == '.'])
     if digits:
         try:
             weight_val = float(digits)
@@ -328,18 +342,23 @@ def parse_format_weight_kg(item_string, qty):
                 return (weight_val / 1000.0) * qty
         except ValueError:
             pass
+            
     if 'piccolo' in lower_str or 'vaschetta' in lower_str: return 0.25 * qty
     elif 'grande' in lower_str: return 1.0 * qty
     return 1.0 * qty
 
 
 def parse_admin_format_price(full_item_name, product_obj, client_category='Privato'):
+    """
+    Extracts the assigned single scalar value rule directly from 
+    the active matrix row configuration string layout.
+    """
     if not product_obj or not product_obj.sizes_raw: 
         return 0.0
         
     try:
-        # 🌟 THE CORRECTION: Bypasses the nested label search and directly parses the pricing dictionary
         rules_dict = {}
+        # Parse the comma rules string: e.g., "Privato:100.00, Ristorante:90.00"
         for rule in product_obj.sizes_raw.split(","):
             if ":" in rule:
                 k, v = rule.split(":", 1)
@@ -347,7 +366,6 @@ def parse_admin_format_price(full_item_name, product_obj, client_category='Priva
         
         target_key = str(client_category).strip().lower()
         
-        # Pull the category price directly
         if target_key in rules_dict: 
             return rules_dict[target_key]
         if 'privato' in rules_dict: 
