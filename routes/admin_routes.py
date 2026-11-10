@@ -226,6 +226,8 @@ def index():
         current_date_from=filter_date_from, 
         current_date_to=filter_date_to
     )
+
+
 @admin_bp.route('/order/update_status', methods=['POST'])
 @admin_required
 def update_order_status():
@@ -360,6 +362,8 @@ def parse_admin_format_price(full_item_name, product_obj, client_category='Priva
     return 0.0
 
 
+# 📂 Overwrite these three catalog management routes inside routes/admin_routes.py:
+
 @admin_bp.route('/product/save_all', methods=['POST'])
 @admin_required
 def save_all_products():
@@ -367,40 +371,43 @@ def save_all_products():
         all_products = Product.query.all()
         for product in all_products:
             form_name = request.form.get(f'name_{product.id}')
-            form_price = request.form.get(f'price_{product.id}')
-            form_formats = request.form.get(f'formats_{product.id}')
+            form_format_label = request.form.get(f'price_{product.id}') # 🌟 Captures the Formato label string
+            form_tier_rules = request.form.get(f'formats_{product.id}')   # Captures the categories price rules string
             
             if form_name is not None:
                 product.name = form_name.strip()
-            if form_price is not None:
-                product.price_per_kg = float(form_price) if form_price else 0.0
-            if form_formats is not None:
-                product.sizes_raw = form_formats.strip()
+            if form_format_label is not None:
+                product.price_per_kg = form_format_label.strip() # Saved as string
+            if form_tier_rules is not None:
+                product.sizes_raw = form_tier_rules.strip()
                 
             db.session.add(product)
             
         db.session.commit()
-        flash("Tutti i prodotti del catalogo sono stati aggiornati con successo!", "success")
+        flash("Tutti i prodotti e formati del listino sono stati aggiornati con successo!", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Errore durante il salvataggio collettivo: {str(e)}", "danger")
     return redirect(url_for('admin.index', active_tab='catalog'))
+
 
 @admin_bp.route('/product/add', methods=['POST'])
 @admin_required
 def add_product():
     try:
         name = request.form.get('name')
-        price = float(request.form.get('price', 0.0))
-        formats = request.form.get('formats', '')
-        new_product = Product(name=name, price_per_kg=price, sizes_raw=formats, available=True)
+        format_label = request.form.get('price') # 🌟 Formato text input
+        tier_rules = request.form.get('formats') # Rules text input
+        
+        new_product = Product(name=name, price_per_kg=format_label, sizes_raw=tier_rules, available=True)
         db.session.add(new_product)
         db.session.commit()
-        flash(f"Prodotto '{name}' aggiunto!", "success")
+        flash(f"Articolo '{name}' con formato '{format_label}' aggiunto con successo!", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Errore: {str(e)}", "danger")
     return redirect(url_for('admin.index', active_tab='catalog'))
+
 
 @admin_bp.route('/product/delete/<int:product_id>', methods=['POST'])
 @admin_required

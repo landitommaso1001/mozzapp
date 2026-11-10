@@ -25,13 +25,15 @@ class User(db.Model):
     def is_admin(self):
         return self.role == 'admin'
 
+
 class Product(db.Model):
     __tablename__ = 'products'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
-    price_per_kg = db.Column(db.Float, nullable=False)
+    price_per_kg = db.Column(db.String(50), nullable=False)
     sizes_raw = db.Column(db.String(200), nullable=True)
     available = db.Column(db.Boolean, default=True)
+
 
 class Order(db.Model):
     __tablename__ = 'orders'

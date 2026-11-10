@@ -242,20 +242,18 @@
 
 
 
-
-
         <!-- ================= CONFIGURA LISTINO ACTIVE TAB ================= -->
         {% if active_tab == 'catalog' %}
         <div class="card">
-            <h3 style="margin-bottom:12px;">⚙️ Configurazione Listino Prodotti</h3>
+            <h3 style="margin-bottom:12px;">⚙️ Configurazione Listino Prodotti & Matrice Prezzi</h3>
             <form action="{{ url_for('admin.save_all_products') }}" method="POST">
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th style="width: 35%;">Nome Prodotto</th>
-                                <th style="width: 25%;">Prezzo Base / Kg (€)</th>
-                                <th style="width: 40%;">Formati & Overrides</th>
+                                <th style="width: 30%;">Nome Prodotto</th>
+                                <th style="width: 25%;">Formato Articolo (es: 500 gr, 24 Kg)</th>
+                                <th style="width: 45%;">Listino Prezzi per Categoria (es: Privato:5.00, Ristorante:4.00)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -266,10 +264,12 @@
                                     <input type="text" name="name_{{ prod.id }}" value="{{ prod.name }}" style="width:100%; font-weight:700;" required>
                                 </td>
                                 <td>
-                                    <input type="number" step="0.01" name="price_{{ prod.id }}" value="{{ prod.price_per_kg }}" style="width:100%; font-weight:700;" required>
+                                    <!-- 🌟 NEW: Clean Dedicated Formato Field Name Input (Maps to old base column) -->
+                                    <input type="text" name="price_{{ prod.id }}" value="{{ prod.price_per_kg if prod.price_per_kg is string else '' }}" placeholder="es: 500 gr, Cassa 24 Kg" style="width:100%; font-weight:700;" required>
                                 </td>
                                 <td>
-                                    <input type="text" name="formats_{{ prod.id }}" value="{{ prod.sizes_raw or '' }}" style="width:100%;">
+                                    <!-- 🌟 NEW: Expanded Pricing Tiers String Context Field -->
+                                    <input type="text" name="formats_{{ prod.id }}" value="{{ prod.sizes_raw or '' }}" placeholder="Privato:5.00, Ristorante:4.00, Alimentari:4.20, Special:3.80" style="width:100%;">
                                 </td>
                             </tr>
                             {% endfor %}
@@ -291,24 +291,25 @@
             </div>
         </div>
 
+
         <div class="card" style="border-top: 3px solid var(--ocean-blue) !important;">
-            <h3>➕ Aggiungi Prodotto al Listino</h3>
+            <h3>➕ Aggiungi Articolo alla Matrice Listino</h3>
             <form action="{{ url_for('admin.add_product') }}" method="POST" style="margin-top:10px;">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:10px;">
                     <div>
                         <label style="font-size:11px; font-weight:600; display:block; margin-bottom:4px;">Nome Articolo</label>
-                        <input type="text" name="name" placeholder="Nome Prodotto" style="width:100%;" required>
+                        <input type="text" name="name" placeholder="es: Mozzarella, Provola" style="width:100%;" required>
                     </div>
                     <div>
-                        <label style="font-size:11px; font-weight:600; display:block; margin-bottom:4px;">Prezzo al Kg (€)</label>
-                        <input type="number" step="0.01" name="price" placeholder="Prezzo" style="width:100%;" required>
+                        <label style="font-size:11px; font-weight:600; display:block; margin-bottom:4px;">Formato Confezione</label>
+                        <input type="text" name="price" placeholder="es: 500 gr, Vaschetta, 24 Kg" style="width:100%;" required>
                     </div>
                     <div>
-                        <label style="font-size:11px; font-weight:600; display:block; margin-bottom:4px;">Formati Standard</label>
-                        <input type="text" name="formats" placeholder="es: 500 gr, 1000 gr" style="width:100%;">
+                        <label style="font-size:11px; font-weight:600; display:block; margin-bottom:4px;">Assegnazione Prezzi per Categoria</label>
+                        <input type="text" name="formats" placeholder="es: Privato:5.00, Ristorante:4.00, Special:3.50" style="width:100%;">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-success">Aggiungi al Listino</button>
+                <button type="submit" class="btn btn-success">Aggiungi alla Matrice</button>
             </form>
         </div>
         {% endif %}

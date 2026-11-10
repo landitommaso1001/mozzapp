@@ -6,38 +6,31 @@ from models import User, Product, Order
 
 client_bp = Blueprint('client_bp', __name__)
 
-def parse_format_details(format_string, price_per_kg, client_category):
-    clean_fmt = format_string.strip()
-    if not clean_fmt or not client_category:
+def parse_format_details(format_rules_string, format_label_name, client_category):
+    if not format_rules_string or not client_category:
         return None, 0.0
 
-    # Strict explicit parsing gateway: format example "500 gr : Privato:5.00, Ristorante:4.00"
-    if ":" in clean_fmt:
-        try:
-            name, pricing_rules = clean_fmt.split(":", 1)
-            name = name.strip()
+    try:
+        rules_dict = {}
+        # Parses the pricing field string rules: e.g., "Privato:5.00, Ristorante:4.00"
+        for rule in format_rules_string.split(","):
+            if ":" in rule:
+                k, v = rule.split(":", 1)
+                rules_dict[k.strip().lower()] = float(v.strip())
+        
+        target_key = str(client_category).strip().lower()
+        
+        # 🌟 STRICT EXPLICIT MATCH: Return the defined layout data ONLY if category matches
+        if target_key in rules_dict:
+            # Returns the custom Formato string text as the name layout identifier
+            return format_label_name, rules_dict[target_key]
             
-            if "," in pricing_rules or ":" in pricing_rules:
-                rules_dict = {}
-                for rule in pricing_rules.split(","):
-                    if ":" in rule:
-                        k, v = rule.split(":", 1)
-                        rules_dict[k.strip().lower()] = float(v.strip())
-                
-                target_key = str(client_category).strip().lower()
-                
-                # STRICT RESOLUTION: Return name and price ONLY if category explicitly exists
-                if target_key in rules_dict:
-                    return name, rules_dict[target_key]
-                
-                # Hidden automatically if not found
-                return None, 0.0
-            else:
-                return name, float(pricing_rules.strip())
-        except ValueError:
-            return None, 0.0
+    except Exception:
+        pass
 
+    # If the active tier is not defined inside this rules line, hide it entirely!
     return None, 0.0
+
 
 
 
@@ -151,9 +144,7 @@ def index():
             if product.sizes_raw:
                 formats = product.sizes_raw.split(',')
                 for fmt in formats:
-                    fmt_name, fmt_price = parse_format_details(fmt, product.price_per_kg, current_category)
-                    if not fmt_name: continue
-                    
+                    fmt_name, fmt_price = parse_format_details(product.sizes_raw, product.price_per_kg, current_category)
                     qty_key = f"qty_{product.id}_{fmt_name}"
                     qty = int(request.form.get(qty_key, 0)) if request.form.get(qty_key) else 0
                     if qty > 0:
