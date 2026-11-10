@@ -51,50 +51,55 @@ app.register_blueprint(client_bp)
 app.register_blueprint(admin_bp, url_prefix='/admin')
 
 
-# 🌱 Database Seeder Routine
-def seed_data():
-    """ Automatically sets up master credentials and sample catalog records if tables are empty. """
-    # 1. Sync and instantiate the master Admin profile securely using the environment configs
-    if User.query.count() == 0:
-        admin_user = User(
-            name=app.config['ADMIN_NAME'], 
-            phone=app.config['ADMIN_PHONE'], 
-            role="admin"
-        )
-        admin_user.set_password(app.config['ADMIN_PASSWORD'])
-        db.session.add(admin_user)
+def seed_system_accounts():
+    """
+    Safely creates the fallback generic blueprint customer categorizations
+    without attempting to load deprecated product lists or numeric weights.
+    """
+    from models import User
+    from extensions import db
+    
+    # Check if a client user profile already exists to prevent duplication
+    if not User.query.filter_by(role='client').first():
+        print("👥 Seeding clear framework system tier blueprints...")
         
-    # 2. Establish product baseline entries
-    if Product.query.count() == 0:
-        p1 = Product(name="Mozzarella", price_per_kg=10.0, sizes_raw="500 gr, 1000 gr", available=True)
-        p2 = Product(name="Provola", price_per_kg=10.0, sizes_raw="500 gr, 1000 gr", available=True)
-        db.session.add_all([p1, p2])
+        system_blueprints = [
+            {"name": "Vendite Privati Generiche", "phone": "1111", "cat": "Privato"},
+            {"name": "Ristoranti Generici / Banco", "phone": "2222", "cat": "Ristorante"},
+            {"name": "Alimentari Generici / Banco", "phone": "3333", "cat": "Alimentari"},
+            {"name": "Prezzi Speciali Generici", "phone": "4444", "cat": "Special"}
+        ]
         
-    # Commit changes permanently to db tracking files
-    db.session.commit()
-
-
-# 🚀 Automated Schema Staging & Thread-Safe Initialisation Execution
-# 📂 Locate this at the bottom of app.py
-
-# 噫 Automated Schema Staging & Thread-Safe Initialisation Execution
-with app.app_context():
-    try:
-        from sqlalchemy import text
-        # Safely attempts to append the missing column to your existing production table
-        db.session.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS price_category VARCHAR(50) DEFAULT 'Privato' NOT NULL;"))
+        for bp in system_blueprints:
+            user = User(
+                name=bp["name"],
+                phone=bp["phone"],
+                role='client',
+                price_category=bp["cat"]
+            )
+            user.set_password("password123")  # Replace with your secure default credentials
+            db.session.add(user)
+            
         db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        print(f"Migration note (can be ignored if column already exists): {e}")
+        print("✅ Blueprint customer rows registered securely.")
 
-    # Your existing startup sequence remains unchanged
-    db.create_all()
-    seed_data()
+
+
+with app.app_context():
+    try:       
+        print("🆕 Building fresh rule-based inventory matrix tables...")
+        db.create_all()  # Regenerates price_per_kg as a clean VARCHAR(50) String column
+        
+        # 🌟 Call your updated, safe seeding function (see Step 2 below)
+        seed_system_accounts() 
+        
+        print("✅ Fresh database initialization complete with zero baseline legacy data!")
+    except Exception as e:
+        print(f"⚠️ Initialization issue: {e}")
 
 if __name__ == '__main__':
     app.run(debug=True)
-
+    
 
 
 if __name__ == '__main__':
