@@ -136,7 +136,7 @@ button span.smartphone-layout, .btn span.smartphone-layout { display: none !impo
         word-break: break-word !important;
     }
 
-    /* 🎯 3-Row Filter Matrix Engine */
+
     form.filter-form-grid {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
@@ -144,25 +144,22 @@ button span.smartphone-layout, .btn span.smartphone-layout { display: none !impo
         width: 100% !important;
     }
 
-    /* Row 1: Expand Client Dropdown to 100% width space */
-    form.filter-form-grid select[name="client_id"],
-    form.filter-form-grid select {
+    /* Row 1: Expand dropdown element across full viewport container width */
+    form.filter-form-grid select[name="client_id"] {
         grid-column: span 2 !important;
         width: 100% !important;
     }
 
-    /* Row 2: Force width overrides so individual date fields split 50/50 */
-    form.filter-form-grid input[type="date"],
-    form.filter-form-grid input[name="date_from"],
-    form.filter-form-grid input[name="date_to"] {
+    /* Row 2: Force width overrides so individual date fields sit cleanly 50/50 */
+    form.filter-form-grid input[type="date"] {
         grid-column: span 1 !important;
         width: 100% !important;
     }
 
     /* Row 3: Force width overrides so filter and reset buttons split 50/50 */
-    form.filter-form-grid button,
-    form.filter-form-grid .btn,
-    form.filter-form-grid a.btn {
+    form.filter-form-grid button[type="submit"],
+    form.filter-form-grid a.btn-warning,
+    form.filter-form-grid a[href*="active_tab=orders"] {
         grid-column: span 1 !important;
         width: 100% !important;
         height: 42px !important;
