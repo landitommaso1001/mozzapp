@@ -140,17 +140,27 @@ def index():
             current_user_obj = User.query.get(user_id)
             order_client_name = f"{current_user_obj.name} ({current_user_obj.phone})" if current_user_obj else session['user_name']
         
+     # 📂 Replace the product form iteration loop inside routes/client_routes.py:
+
         for product in catalog_products:
-            if product.sizes_raw:
-                formats = product.sizes_raw.split(',')
-                for fmt in formats:
-                    fmt_name, fmt_price = parse_format_details(product.sizes_raw, product.price_per_kg, current_category)
-                    qty_key = f"qty_{product.id}_{fmt_name}"
-                    qty = int(request.form.get(qty_key, 0)) if request.form.get(qty_key) else 0
-                    if qty > 0:
-                        item_strings.append(f"{qty}x {product.name} ({fmt_name})")
-                        calculated_total += qty * fmt_price
-                        
+            # 🌟 FIX 1: Run the helper function ONCE per product using its standalone sizes_raw rules string
+            fmt_name, fmt_price = parse_format_details(product.sizes_raw, product.price_per_kg, current_category)
+            
+            # If the product isn't assigned a price for this category, skip it cleanly!
+            if not fmt_name or fmt_price <= 0.0:
+                continue
+                
+            # Construct the clean HTML input element key match
+            qty_key = f"qty_{product.id}_{fmt_name}"
+            qty = int(request.form.get(qty_key, 0)) if request.form.get(qty_key) else 0
+            
+            if qty > 0:
+                # 📝 FIX 2: Human-readable manifest builder -> Output: "2x Mozzarella (500 gr)"
+                item_strings.append(f"{qty}x {product.name} ({fmt_name})")
+                
+                # 🧮 FIX 3: Pure scalar calculation (Prevents the 3x-4x multiplication bug entirely)
+                calculated_total += qty * fmt_price
+
         if not item_strings:
             flash("Seleziona almeno un prodotto prima di inviare l'ordine.", "error")
             return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
