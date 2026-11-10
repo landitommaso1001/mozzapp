@@ -105,16 +105,18 @@ button:hover { background: #e2e8f0; }
     border-color: #dc2626 !important;
     font-weight: 700 !important;
 }
-/* ==========================================================================
-   📱 HIGH-PRECISION MOBILE OVERRIDES (Viewport Width <= 768px)
-   ========================================================================== */
+
+/* Responsive Structural Defaults for Desktop Text Handling */
 button span.desktop-layout, .btn span.desktop-layout {
     display: inline !important;
 }
 button span.smartphone-layout, .btn span.smartphone-layout {
     display: none !important;
 }
-   @media (max-width: 768px) {
+/* ==========================================================================
+   📱 HIGH-PRECISION MOBILE OVERRIDES (Viewport Width <= 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
     div.desktop-layout, .desktop-layout { display: none !important; }
     .smartphone-layout { display: block !important; }
     .mobile-view-tabs { display: flex !important; width: 100%; background: var(--bg-clean); border: 1px solid var(--border-hairline); border-radius: 6px; margin-bottom: 16px; padding: 4px; }
@@ -124,24 +126,57 @@ button span.smartphone-layout, .btn span.smartphone-layout {
     nav ul { flex-direction: row !important; justify-content: center !important; gap: 8px !important; }
     nav ul li a { font-size: 11px !important; padding: 6px 10px !important; }
     form { display: flex !important; flex-direction: column !important; gap: 10px !important; width: 100% !important; }
-    /* ❌ OLD RULES TO REPLACE:
-    input, select, button, .btn { width: 100% !important; box-sizing: border-box !important; padding: 10px 12px !important; font-size: 16px !important; margin: 0 !important; height: 42px !important; } 
-    */
-
-    /* 🍏 NEW RESPONSIVE RULES: */
+    
+    /* 🍏 NEW MOBILE RESPONSIVE RULES: Prevent Clipping Overflow */
     input, select, button, .btn { 
         width: 100% !important; 
         box-sizing: border-box !important; 
         padding: 10px 12px !important; 
         margin: 0 !important; 
-        min-height: 42px !important;              /* Changed from height to min-height so it can expand if needed */
-        font-size: clamp(12px, 3.5vw, 15px) !important; /* Smooth scaling between 12px and 15px depending on width */
-        line-height: 1.2 !important;              /* Keeps text multi-lines tight and centered */
-        white-space: normal !important;           /* Forces the text to break into lines instead of spilling out sideways */
+        min-height: 42px !important;
+        font-size: clamp(12px, 3.5vw, 15px) !important;
+        line-height: 1.2 !important;
+        white-space: normal !important;
         word-break: break-word !important;
     }
 
-    /* 🌟 ADJUSTED: Allow flexible wrapping to completely eliminate horizontal scrolling */
+    /* 🎯 ISOLATED SMARTPHONE FILTER MATRIX BLOCK */
+    main .card form[method="GET"],
+    form.filter-form-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    /* Row 1: Expand Client Dropdown to full width */
+    main .card form[method="GET"] select[name="client_id"],
+    form.filter-form-grid select[name="client_id"] {
+        grid-column: span 2 !important;
+        width: 100% !important;
+    }
+
+    /* Row 2: Keep Date Pickers perfectly split 50/50 side-by-side */
+    main .card form[method="GET"] input[type="date"],
+    form.filter-form-grid input[type="date"] {
+        grid-column: span 1 !important;
+        width: 100% !important;
+    }
+
+    /* Row 3: Force Filter Submission and Reset link triggers to sit side-by-side */
+    main .card form[method="GET"] button[type="submit"],
+    main .card form[method="GET"] a[href*="active_tab=orders"],
+    form.filter-form-grid button, 
+    form.filter-form-grid a.btn {
+        grid-column: span 1 !important;
+        width: 100% !important;
+        height: 42px !important;
+        margin: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    /* Allow flexible wrapping to completely eliminate horizontal scrolling */
     main table, .card table, .table-responsive { display: block !important; max-width: 100% !important; overflow-x: auto !important; white-space: normal !important; -webkit-overflow-scrolling: touch !important; }
     main table th, main table td { display: table-cell !important; width: auto !important; padding: 8px 10px !important; }
     main table td.items-cell-mobile, table td.items-cell-mobile, .table-responsive table td.items-cell-mobile { white-space: normal !important; word-wrap: break-word !important; overflow-wrap: break-word !important; word-break: break-word !important; min-width: 150px !important; max-width: 220px !important; }
@@ -180,7 +215,6 @@ button span.smartphone-layout, .btn span.smartphone-layout {
     }
     .admin-nav-item[href*="active_tab=reset_data"] { flex: 1 1 100% !important; width: 100% !important; max-width: 100% !important; }
     .admin-nav-item.active-tab-style { background: var(--ocean-blue) !important; color: white !important; border-color: var(--ocean-blue) !important; }
-
     /* ==========================================================================
        🏭 2. MOBILE STYLE ENGINE: UNIFIED SUB-FILTERS GRID
        ========================================================================== */
@@ -198,168 +232,31 @@ button span.smartphone-layout, .btn span.smartphone-layout {
     .sub-filter-item.active-tab-style { background: #22c55e !important; color: white !important; border-color: #16a34a !important; font-weight: 700 !important; }
     .admin-sub-filters a.active-tab-style-red { background: #ef4444 !important; color: white !important; border-color: #dc2626 !important; font-weight: 700 !important; }
 
-    /* Prevent the logout button from stretching to full width on mobile viewports */
-    .user-session-bar a.logout-btn-fixed {
-        width: auto !important;
-        display: inline-block !important;
-        height: auto !important;
-        padding: 6px 12px !important;
-        font-size: 12px !important;
-    }
-    
-    .smartphone-layout input[type="date"] {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        height: 42px !important;
-        padding: 8px 10px !important;
-    }
+    .user-session-bar a.logout-btn-fixed { width: auto !important; display: inline-block !important; height: auto !important; padding: 6px 12px !important; font-size: 12px !important; }
+    .smartphone-layout input[type="date"] { display: block !important; visibility: visible !important; opacity: 1 !important; height: 42px !important; padding: 8px 10px !important; }
 
     /* ==========================================================================
        🌟 3. NEW: COMPACTION STACK ENGINE FOR THE SPREADSHEET MATRIX
        ========================================================================== */
-    .split-items-list {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 5px !important;
-        text-align: left !important;
-    }
+    .split-items-list { display: flex !important; flex-direction: column !important; gap: 5px !important; text-align: left !important; }
+    .product-item-row { display: block !important; background: #f1f5f9 !important; padding: 3px 6px !important; border-radius: 4px !important; font-size: 12px !important; line-height: 1.3 !important; white-space: normal !important; border-left: 3px solid var(--ocean-blue) !important; }
 
-    .product-item-row {
-        display: block !important;
-        background: #f1f5f9 !important; /* Soft slate capsule box background */
-        padding: 3px 6px !important;
-        border-radius: 4px !important;
-        font-size: 12px !important;
-        line-height: 1.3 !important;
-        white-space: normal !important;
-        border-left: 3px solid var(--ocean-blue) !important; /* Ocean blue anchor border */
-    }
-    /* Force action button spans to flip layouts cleanly inside button boxes */
-    button span.desktop-layout, .btn span.desktop-layout {
-        display: none !important;
-    }
-    button span.smartphone-layout, .btn span.smartphone-layout {
-        display: inline !important;
-    }
-
-    /* 🎯 ULTRA-SPECIFIC SMARTPHONE FILTER GRID ENGINE */
-    form[method="GET"], 
-    .card form:has(select[name="client_id"]),
-    main form:has(input[name="date_from"]) {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 8px !important;
-        width: 100% !important;
-    }
-
-    /* Row 1: Force Client Dropdown to 100% grid space width */
-    form[method="GET"] select[name="client_id"],
-    form[method="GET"] select {
-        grid-column: span 2 !important;
-        width: 100% !important;
-    }
-
-    /* Row 2: Break the 100% override so Date fields can sit side-by-side */
-    form[method="GET"] input[type="date"],
-    form[method="GET"] input[name="date_from"],
-    form[method="GET"] input[name="date_to"] {
-        grid-column: span 1 !important;
-        width: 100% !important;
-    }
-
-    /* Row 3: Break the 100% override so buttons can sit side-by-side */
-    form[method="GET"] button,
-    form[method="GET"] .btn,
-    form[method="GET"] a[href*="reset"] {
-        grid-column: span 1 !important;
-        width: 100% !important;
-        height: 42px !important;
-        margin: 0 !important;
-    }
+    /* Force action button spans to flip labels inside mobile viewport limits */
+    button span.desktop-layout, .btn span.desktop-layout { display: none !important; }
+    button span.smartphone-layout, .btn span.smartphone-layout { display: inline !important; }
 }
 
 /* ==========================================================================
    🎨 SEMANTIC BUTTON VARIATIONS (Elegant Utility Extension)
    ========================================================================== */
+.btn-primary { background-color: var(--ocean-blue) !important; color: #ffffff !important; border-color: #0274ae !important; }
+.btn-primary:hover { background-color: #0369a1 !important; }
 
-/* Primary Action Button (e.g., Save, Submit, Principal Operations) */
-.btn-primary {
-    background-color: var(--ocean-blue) !important;
-    color: #ffffff !important;
-    border-color: #0274ae !important;
-}
-.btn-primary:hover {
-    background-color: #0369a1 !important;
-}
+.btn-success { background-color: #22c55e !important; color: #ffffff !important; border-color: #16a34a !important; }
+.btn-success:hover { background-color: #15803d !important; }
 
-/* Success Action Button (e.g., Mark Paid, Confirm Order, Complete) */
-.btn-success {
-    background-color: #22c55e !important; /* Vibrant Green */
-    color: #ffffff !important;
-    border-color: #16a34a !important;
-}
-.btn-success:hover {
-    background-color: #15803d !important;
-}
+.btn-danger { background-color: #ef4444 !important; color: #ffffff !important; border-color: #dc2626 !important; }
+.btn-danger:hover { background-color: #b91c1c !important; }
 
-/* Danger / Destructive Action Button (e.g., Cancel Order, Delete Product) */
-.btn-danger {
-    background-color: #ef4444 !important; /* High-Visibility Red */
-    color: #ffffff !important;
-    border-color: #dc2626 !important;
-}
-.btn-danger:hover {
-    background-color: #b91c1c !important;
-}
-
-/* Warning / Accent Action Button (e.g., Reset, Prefill, Special Alerts) */
-.btn-warning {
-    background-color: #f59e0b !important; /* Solid Amber / Orange */
-    color: #ffffff !important;
-    border-color: #d97706 !important;
-}
-.btn-warning:hover {
-    background-color: #b45309 !important;
-}
-
-/* ==========================================================================
-   📱 ISOLATED MOBILE FILTER ENGINE (DOES NOT TOUCH DESKTOP CORES)
-   ========================================================================== */
-@media (max-width: 768px) {
-    /* 1. Target the filter form ONLY when the browser screen matches smartphone size */
-    main .card form[method="GET"],
-    form:has(select[name="client_id"]):has(input[name="date_from"]) {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 10px !important;
-        width: 100% !important;
-    }
-
-    /* Row 1: Expand Client Dropdown to 100% mobile column width */
-    main .card form[method="GET"] select[name="client_id"] {
-        grid-column: span 2 !important;
-        width: 100% !important;
-    }
-
-    /* Row 2: Let both Date field entries sit 50/50 side by side */
-    main .card form[method="GET"] input[type="date"] {
-        grid-column: span 1 !important;
-        width: 100% !important;
-    }
-
-    /* Row 3: Split Filter Action Button and Reset Button 50/50 side by side */
-    main .card form[method="GET"] button[type="submit"],
-    main .card form[method="GET"] a[href*="active_tab=orders"] {
-        grid-column: span 1 !important;
-        width: 100% !important;
-        height: 42px !important;
-        margin: 0 !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-
-        
-}
-
+.btn-warning { background-color: #f59e0b !important; color: #ffffff !important; border-color: #d97706 !important; }
+.btn-warning:hover { background-color: #b45309 !important; }
