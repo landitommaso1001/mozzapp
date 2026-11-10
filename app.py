@@ -85,17 +85,27 @@ def seed_system_accounts():
 
 
 
+# 📂 Place this structural correction block at the bottom of app.py
+
 with app.app_context():
-    try:       
-        print("🆕 Building fresh rule-based inventory matrix tables...")
-        db.create_all()  # Regenerates price_per_kg as a clean VARCHAR(50) String column
+    try:
+        from sqlalchemy import text
+        print("🔧 Dropping legacy column metrics constraints on Postgres...")
         
-        # 🌟 Call your updated, safe seeding function (see Step 2 below)
-        seed_system_accounts() 
+        # 🌟 SURGICAL TYPE-CAST: Switches the column type to text string characters permanently
+        db.session.execute(text("ALTER TABLE products ALTER COLUMN price_per_kg TYPE VARCHAR(50);"))
         
-        print("✅ Fresh database initialization complete with zero baseline legacy data!")
+        # Ensure your custom category column is explicitly initialized
+        db.session.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS price_category VARCHAR(50) DEFAULT 'Privato' NOT NULL;"))
+        db.session.commit()
+        print("✅ Postgres string columns adjusted successfully!")
     except Exception as e:
-        print(f"⚠️ Initialization issue: {e}")
+        db.session.rollback()
+        print(f"💡 Database tuning notice: {e}")
+
+    # Standard safe schema builder remains here
+    db.create_all()
+
 
 if __name__ == '__main__':
     app.run(debug=True)
