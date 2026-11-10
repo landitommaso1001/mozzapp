@@ -86,6 +86,7 @@
                 <input type="hidden" name="active_tab" value="orders">
                 <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end;">
                     <div style="flex: 1; min-width: 140px;">
+                        <form method="GET" action="" class="filter-form-grid"></form>
                         <select name="client_id" style="width: 100%;">
                             <option value="">Tutti i clienti registrati</option>
                             <option value="banco" {% if current_client_id == 'banco' %}selected{% endif %}>Vendita Diretta / Banco</option>
@@ -101,7 +102,10 @@
                         <input type="date" name="date_to" value="{{ current_date_to }}" style="width: 100%;">
                     </div>
                     <div style="display: flex; gap: 4px;">
-                        <button type="submit" class="btn btn-primary">🔍 Applica Filtri</button>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="desktop-layout">🔍 Applica Filtri</span>
+                            <span class="smartphone-layout">🔍 Filtri</span>
+                        </button>
                         <a href="{{ url_for('admin.index', active_tab='orders') }}" class="btn">🔄 Reset</a>
                     </div>
                 </div>
@@ -183,12 +187,24 @@
         <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="display:flex; gap:4px; align-items:center; width: 100%;">
             <input type="hidden" name="order_id" value="{{ o.id }}">
             <input type="hidden" name="new_status" value="Confermato">
-            <input type="text" name="delivery_time" placeholder="Ora (es. 08:30)" style="width:90px;" required>
-            <button type="submit" class="btn btn-success">✅ Conferma</button>
+                <select name="delivery_time" style="width:105px; text-align:center;" required>
+                    <option value="" disabled selected>Ora...</option>
+                    {% for hour in range(7, 20) %}
+                        {% set formatted_hour = "%02d:00" | format(hour) %}
+                        <option value="{{ formatted_hour }}">{{ formatted_hour }}</option>
+                    {% endfor %}
+                </select>
+            <button type="submit" class="btn btn-success">
+                <span class="desktop-layout">✅ Conferma</span>
+                <span class="smartphone-layout">✅ Conferma</span>
+            </button>
         </form>
         <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Annullare l\'ordine?');">
             <input type="hidden" name="order_id" value="{{ o.id }}">
-            <button type="submit" class="btn btn-danger" style="width:100%;">❌ Annulla</button>
+            <button type="submit" class="btn btn-danger" style="width:100%;">
+                <span class="desktop-layout">❌ Annulla</span>
+                <span class="smartphone-layout">❌ Annulla</span>
+            </button>
         </form>
         
         <!-- Step 2: Confermato -->
@@ -196,11 +212,17 @@
         <form action="{{ url_for('admin.update_order_status') }}" method="POST">
             <input type="hidden" name="order_id" value="{{ o.id }}">
             <input type="hidden" name="new_status" value="Pronto">
-            <button type="submit" class="btn btn-primary" style="width:100%;">📦 Pronto</button>
+            <button type="submit" class="btn btn-primary" style="width:100%;">
+                <span class="desktop-layout">📦 Pronto</span>
+                <span class="smartphone-layout">📦 Pronto</span>
+            </button>
         </form>
         <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Annullare l\'ordine?');">
             <input type="hidden" name="order_id" value="{{ o.id }}">
-            <button type="submit" class="btn btn-danger" style="width:100%;">❌ Annulla</button>
+            <button type="submit" class="btn btn-danger" style="width:100%;">
+                <span class="desktop-layout">❌ Annulla</span>
+                <span class="smartphone-layout">❌ Annulla</span>
+            </button>
         </form>
         
         <!-- Step 3: Pronto -->
@@ -215,7 +237,10 @@
         {% elif o.status == 'Consegnato' and o.payment_status != 'Saldato' %}
         <form action="{{ url_for('admin.mark_order_paid') }}" method="POST" style="width:100%;">
             <input type="hidden" name="order_id" value="{{ o.id }}">
-            <button type="submit" class="btn btn-success" style="width:100%; font-weight:700;">💶 Salda</button>
+            <button type="submit" class="btn btn-success" style="width:100%; font-weight:700;">
+                <span class="desktop-layout">💶 Salda</span>
+                <span class="smartphone-layout">💶 Salda</span>
+            </button>
         </form>
         {% endif %}
     </div>
@@ -236,20 +261,18 @@
 
 
 
-
-
         <!-- ================= CONFIGURA LISTINO ACTIVE TAB ================= -->
         {% if active_tab == 'catalog' %}
         <div class="card">
-            <h3 style="margin-bottom:12px;">⚙️ Configurazione Listino Prodotti</h3>
+            <h3 style="margin-bottom:12px;">⚙️ Configurazione Listino Prodotti & Matrice Prezzi</h3>
             <form action="{{ url_for('admin.save_all_products') }}" method="POST">
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th style="width: 35%;">Nome Prodotto</th>
-                                <th style="width: 25%;">Prezzo Base / Kg (€)</th>
-                                <th style="width: 40%;">Formati & Overrides</th>
+                                <th style="width: 30%;">Nome Prodotto</th>
+                                <th style="width: 25%;">Formato Articolo (es: 500 gr, 24 Kg)</th>
+                                <th style="width: 45%;">Listino Prezzi per Categoria (es: Privato:5.00, Ristorante:4.00)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -260,10 +283,12 @@
                                     <input type="text" name="name_{{ prod.id }}" value="{{ prod.name }}" style="width:100%; font-weight:700;" required>
                                 </td>
                                 <td>
-                                    <input type="number" step="0.01" name="price_{{ prod.id }}" value="{{ prod.price_per_kg }}" style="width:100%; font-weight:700;" required>
+                                    <!-- 🌟 NEW: Clean Dedicated Formato Field Name Input (Maps to old base column) -->
+                                    <input type="text" name="price_{{ prod.id }}" value="{{ prod.price_per_kg if prod.price_per_kg is string else '' }}" placeholder="es: 500 gr, Cassa 24 Kg" style="width:100%; font-weight:700;" required>
                                 </td>
                                 <td>
-                                    <input type="text" name="formats_{{ prod.id }}" value="{{ prod.sizes_raw or '' }}" style="width:100%;">
+                                    <!-- 🌟 NEW: Expanded Pricing Tiers String Context Field -->
+                                    <input type="text" name="formats_{{ prod.id }}" value="{{ prod.sizes_raw or '' }}" placeholder="Privato:5.00, Ristorante:4.00, Alimentari:4.20, Special:3.80" style="width:100%;">
                                 </td>
                             </tr>
                             {% endfor %}
@@ -285,24 +310,25 @@
             </div>
         </div>
 
+
         <div class="card" style="border-top: 3px solid var(--ocean-blue) !important;">
-            <h3>➕ Aggiungi Prodotto al Listino</h3>
+            <h3>➕ Aggiungi Articolo alla Matrice Listino</h3>
             <form action="{{ url_for('admin.add_product') }}" method="POST" style="margin-top:10px;">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:10px;">
                     <div>
                         <label style="font-size:11px; font-weight:600; display:block; margin-bottom:4px;">Nome Articolo</label>
-                        <input type="text" name="name" placeholder="Nome Prodotto" style="width:100%;" required>
+                        <input type="text" name="name" placeholder="es: Mozzarella, Provola" style="width:100%;" required>
                     </div>
                     <div>
-                        <label style="font-size:11px; font-weight:600; display:block; margin-bottom:4px;">Prezzo al Kg (€)</label>
-                        <input type="number" step="0.01" name="price" placeholder="Prezzo" style="width:100%;" required>
+                        <label style="font-size:11px; font-weight:600; display:block; margin-bottom:4px;">Formato Confezione</label>
+                        <input type="text" name="price" placeholder="es: 500 gr, Vaschetta, 24 Kg" style="width:100%;" required>
                     </div>
                     <div>
-                        <label style="font-size:11px; font-weight:600; display:block; margin-bottom:4px;">Formati Standard</label>
-                        <input type="text" name="formats" placeholder="es: 500 gr, 1000 gr" style="width:100%;">
+                        <label style="font-size:11px; font-weight:600; display:block; margin-bottom:4px;">Assegnazione Prezzi per Categoria</label>
+                        <input type="text" name="formats" placeholder="es: Privato:5.00, Ristorante:4.00, Special:3.50" style="width:100%;">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-success">Aggiungi al Listino</button>
+                <button type="submit" class="btn btn-success">Aggiungi alla Matrice</button>
             </form>
         </div>
         {% endif %}
@@ -324,33 +350,53 @@
                 <button type="submit" class="btn btn-primary">Aggiorna Password Admin</button>
             </form>
 
+
             <h4 style="border-top:1px solid var(--border-hairline); padding-top:14px; margin-bottom:10px;">➕ Registra Nuovo Cliente</h4>
             <form action="{{ url_for('admin.create_client') }}" method="POST" style="margin-bottom:20px;">
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:10px;">
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:10px;">
                     <input type="text" name="name" placeholder="Nome / Ragione Sociale" required>
                     <input type="text" name="phone" placeholder="Numero di Telefono" required>
                     <input type="password" name="password" placeholder="Password Iniziale" required>
+                    
+                    <select name="price_category" required>
+                        <option value="Privato">Privato</option>
+                        <option value="Ristorante">Ristorante</option>
+                        <option value="Alimentari">Alimentari</option>
+                        <option value="Special">Special</option>
+                    </select>
                 </div>
                 <button type="submit" class="btn btn-success">Salva Account Cliente</button>
             </form>
+
+
 
             <h4 style="border-top:1px solid var(--border-hairline); padding-top:14px; margin-bottom:10px;">📋 Registro Anagrafica Clienti</h4>
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
-                            <th>Nome Cliente</th>
-                            <th>Recapito Telefonico</th>
-                            <th>Nuova Password</th>
-                            <th>Azioni Operative</th>
+                            <th style="width: 25%;">Nome Cliente</th>
+                            <th style="width: 20%;">Recapito Telefonico</th>
+                            <th style="width: 20%;">Categoria Prezzi</th>
+                            <th style="width: 20%;">Nuova Password</th>
+                            <th style="width: 15%;">Azioni Operative</th>
                         </tr>
                     </thead>
                     <tbody>
+
                         {% for c in clients %}
                         <tr>
                             <form action="{{ url_for('admin.update_client', client_id=c.id) }}" method="POST" style="display:inline;">
                                 <td><input type="text" name="name" value="{{ c.name }}" style="width:100%;" required></td>
                                 <td><input type="text" name="phone" value="{{ c.phone }}" style="width:100%;" required></td>
+                                <td>
+                                    <select name="price_category" style="width:100%;">
+                                        <option value="Privato" {% if c.price_category == 'Privato' %}selected{% endif %}>Privato</option>
+                                        <option value="Ristorante" {% if c.price_category == 'Ristorante' %}selected{% endif %}>Ristorante</option>
+                                        <option value="Alimentari" {% if c.price_category == 'Alimentari' %}selected{% endif %}>Alimentari</option>
+                                        <option value="Special" {% if c.price_category == 'Special' %}selected{% endif %}>Special</option>
+                                    </select>
+                                </td>
                                 <td><input type="text" name="password" placeholder="Lascia vuoto per non cambiare" style="width:100%;"></td>
                                 <td>
                                     <div style="display:flex; gap:4px;">
@@ -363,6 +409,7 @@
                                 </td>
                         </tr>
                         {% endfor %}
+
                     </tbody>
                 </table>
             </div>

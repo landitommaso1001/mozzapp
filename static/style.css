@@ -322,3 +322,43 @@ button span.smartphone-layout, .btn span.smartphone-layout {
 .btn-warning:hover {
     background-color: #b45309 !important;
 }
+
+    /* ==========================================================================
+       🎯 SMARTPHONE FILTER BLOCK ENGINE: 3-ROW BALANCED MATRIX
+       ========================================================================== */
+    @media (max-width: 768px) {
+        /* ... place this inside your existing @media block ... */
+
+        /* Force our specific filter form to bypass the global single-column flex rules */
+        form.filter-form-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+            width: 100% !important;
+        }
+
+        /* 🟦 Row 1: Expand Client Search Dropdown to 100% width */
+        form.filter-form-grid select[name="client_id"] {
+            grid-column: span 2 !important;
+            width: 100% !important;
+        }
+
+        /* 📅 Row 2: Let Start Date and End Date split 50/50 side-by-side */
+        form.filter-form-grid input[type="date"] {
+            grid-column: span 1 !important;
+            width: 100% !important;
+        }
+
+        /* 🔘 Row 3: Split Filter Action Button and Reset Button 50/50 side-by-side */
+        form.filter-form-grid button[type="submit"],
+        form.filter-form-grid a[href*="active_tab=orders"] {
+            grid-column: span 1 !important;
+            width: 100% !important;
+            height: 42px !important;
+            margin: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+    }
+
