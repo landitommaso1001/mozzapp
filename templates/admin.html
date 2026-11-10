@@ -330,6 +330,7 @@
                 <button type="submit" class="btn btn-primary">Aggiorna Password Admin</button>
             </form>
 
+
             <h4 style="border-top:1px solid var(--border-hairline); padding-top:14px; margin-bottom:10px;">➕ Registra Nuovo Cliente</h4>
             <form action="{{ url_for('admin.create_client') }}" method="POST" style="margin-bottom:20px;">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:10px;">
@@ -341,10 +342,12 @@
                         <option value="Privato">Privato</option>
                         <option value="Ristorante">Ristorante</option>
                         <option value="Alimentari">Alimentari</option>
+                        <option value="Special">Special</option>
                     </select>
                 </div>
                 <button type="submit" class="btn btn-success">Salva Account Cliente</button>
             </form>
+
 
 
             <h4 style="border-top:1px solid var(--border-hairline); padding-top:14px; margin-bottom:10px;">📋 Registro Anagrafica Clienti</h4>
@@ -360,10 +363,10 @@
                         </tr>
                     </thead>
                     <tbody>
+
                         {% for c in clients %}
                         <tr>
-                            <!-- 🌟 ONE UNIFIED FORM PER ROW ENCLOSING ALL INPUTS AND THE SAVE BUTTON -->
-                            <form action="{{ url_for('admin.update_client', client_id=c.id) }}" method="POST">
+                            <form action="{{ url_for('admin.update_client', client_id=c.id) }}" method="POST" style="display:inline;">
                                 <td><input type="text" name="name" value="{{ c.name }}" style="width:100%;" required></td>
                                 <td><input type="text" name="phone" value="{{ c.phone }}" style="width:100%;" required></td>
                                 <td>
@@ -371,22 +374,22 @@
                                         <option value="Privato" {% if c.price_category == 'Privato' %}selected{% endif %}>Privato</option>
                                         <option value="Ristorante" {% if c.price_category == 'Ristorante' %}selected{% endif %}>Ristorante</option>
                                         <option value="Alimentari" {% if c.price_category == 'Alimentari' %}selected{% endif %}>Alimentari</option>
+                                        <option value="Special" {% if c.price_category == 'Special' %}selected{% endif %}>Special</option>
                                     </select>
                                 </td>
                                 <td><input type="text" name="password" placeholder="Lascia vuoto per non cambiare" style="width:100%;"></td>
                                 <td>
-                                    <div style="display:flex; gap:4px; width: 100%;">
-                                        <button type="submit" class="btn btn-primary" style="flex: 1; padding: 4px 6px !important;">💾 Salva</button>
-                            </form> <!-- Close Save Form Cleanly here -->
-                                        
-                                        <!-- SEPARATE INDEPENDENT REMOVE FORM -->
-                                        <form action="{{ url_for('admin.delete_client', client_id=c.id) }}" method="POST" onsubmit="return confirm('Eliminare il cliente {{ c.name }}?');" style="display:inline; flex: 1;">
-                                            <button type="submit" class="btn btn-danger" style="width: 100%; padding: 4px 6px !important;">🗑️ Rimuovi</button>
+                                    <div style="display:flex; gap:4px;">
+                                        <button type="submit" class="btn btn-primary">💾 Salva</button>
+                            </form>
+                                        <form action="{{ url_for('admin.delete_client', client_id=c.id) }}" method="POST" onsubmit="return confirm('Eliminare il cliente {{ c.name }}?');" style="display:inline;">
+                                            <button type="submit" class="btn btn-danger">🗑️ Rimuovi</button>
                                         </form>
                                     </div>
                                 </td>
                         </tr>
                         {% endfor %}
+
                     </tbody>
                 </table>
             </div>

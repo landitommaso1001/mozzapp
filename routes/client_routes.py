@@ -6,40 +6,12 @@ from models import User, Product, Order
 
 client_bp = Blueprint('client_bp', __name__)
 
-def parse_format_details(format_string, price_per_kg, client_category='Privato'):
+def parse_format_details(format_string, price_per_kg, client_category):
     clean_fmt = format_string.strip()
-    if not clean_fmt:
+    if not clean_fmt or not client_category:
         return None, 0.0
-        
-    # 🏛️ Step A: Absolute Fallback for Over-The-Counter Sales (Vendita Diretta / Banco)
-    if client_category == 'Banco':
-        if ":" in clean_fmt:
-            try:
-                name, pricing_rules = clean_fmt.split(":", 1)
-                name = name.strip()
-                if "," in pricing_rules or ":" in pricing_rules:
-                    rules_dict = {}
-                    for rule in pricing_rules.split(","):
-                        if ":" in rule:
-                            k, v = rule.split(":", 1)
-                            rules_dict[k.strip().lower()] = float(v.strip())
-                    return name, rules_dict.get('privato', price_per_kg)
-                return name, float(pricing_rules.strip())
-            except ValueError:
-                pass
-        
-        # Metric Weights Engine Fallback
-        lower_str = clean_fmt.lower()
-        weight_digits = "".join([c for c in lower_str if c.isdigit() or c == '.'])
-        if weight_digits:
-            try:
-                weight_val = float(weight_digits)
-                if "kg" in lower_str: return clean_fmt, weight_val * price_per_kg
-                if "gr" in lower_str or "g" in lower_str: return clean_fmt, (weight_val / 1000.0) * price_per_kg
-            except ValueError: pass
-        return clean_fmt, price_per_kg
 
-    # 🛒 Step B: Active Logged-In Customer Selective Filtering
+    # Strict explicit parsing gateway: format example "500 gr : Privato:5.00, Ristorante:4.00"
     if ":" in clean_fmt:
         try:
             name, pricing_rules = clean_fmt.split(":", 1)
@@ -54,28 +26,21 @@ def parse_format_details(format_string, price_per_kg, client_category='Privato')
                 
                 target_key = str(client_category).strip().lower()
                 
-                # 🌟 SELECTION GATE: Return name and price ONLY if category matches
+                # STRICT RESOLUTION: Return name and price ONLY if category explicitly exists
                 if target_key in rules_dict:
                     return name, rules_dict[target_key]
                 
-                # If rule has colon tiers but this customer category is NOT listed, return None to hide it!
+                # Hidden automatically if not found
                 return None, 0.0
-            
-            return name, float(pricing_rules.strip())
+            else:
+                return name, float(pricing_rules.strip())
         except ValueError:
-            return clean_fmt, price_per_kg
+            return None, 0.0
 
-    # Step C: Standard weight sizing strings with no colons (Visible to all)
-    lower_str = clean_fmt.lower()
-    weight_digits = "".join([c for c in lower_str if c.isdigit() or c == '.'])
-    if weight_digits:
-        try:
-            weight_val = float(weight_digits)
-            if "kg" in lower_str: return clean_fmt, weight_val * price_per_kg
-            if "gr" in lower_str or "g" in lower_str: return clean_fmt, (weight_val / 1000.0) * price_per_kg
-        except ValueError: pass
+    return None, 0.0
 
-    return clean_fmt, price_per_kg
+
+
 @client_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -136,6 +101,8 @@ def logout():
     session.clear()
     flash("Sessione chiusa correttamente.", "success")
     return redirect(url_for('client_bp.login'))
+
+
 @client_bp.route('/', methods=['GET', 'POST'])
 def index():
     if 'user_id' not in session:
@@ -145,53 +112,40 @@ def index():
     is_admin = (session.get('user_role') == 'admin')
     
     if request.method == 'POST':
-        raw_selected_id = request.form.get('admin_target_client_id', '0')
+        raw_selected_id = request.form.get('admin_target_client_id', '-1')
     else:
-        raw_selected_id = request.args.get('selected_client_id', '0')
+        raw_selected_id = request.args.get('selected_client_id', '-1')
         
-    selected_client_id = int(raw_selected_id) if str(raw_selected_id).isdigit() else 0
+    selected_client_id = int(raw_selected_id) if str(raw_selected_id).replace('-', '').isdigit() else -1
     
     catalog_products = Product.query.filter_by(available=True).all()
     all_clients = User.query.filter_by(role='client').all() if is_admin else []
 
-    # 🌟 Resolve exact category context
+    current_category = None
     if is_admin:
         if selected_client_id > 0:
             active_client_obj = User.query.get(selected_client_id)
-            current_category = active_client_obj.price_category if active_client_obj else 'Privato'
-        else:
-            current_category = 'Banco'
+            if active_client_obj:
+                current_category = active_client_obj.price_category
     else:
         current_category = session.get('user_category', 'Privato')
 
     if request.method == 'POST':
+        if is_admin and selected_client_id <= 0:
+            flash("Errore: Seleziona un cliente specifico o una categoria generica prima di inviare l'ordine.", "error")
+            return redirect(url_for('client_bp.index'))
+
         item_strings = []
         calculated_total = 0.0
         
-        raw_target_id = request.form.get('admin_target_client_id')
-        
         if is_admin:
-            if raw_target_id and str(raw_target_id).isdigit() and int(raw_target_id) > 0:
-                target_user = User.query.get(int(raw_target_id))
-                if target_user:
-                    order_user_id = target_user.id
-                    order_client_name = f"{target_user.name} ({target_user.phone})"
-                    selected_client_id = target_user.id
-                else:
-                    order_user_id = None
-                    order_client_name = "Vendita Diretta / Banco"
-                    selected_client_id = 0
-            else:
-                order_user_id = None
-                order_client_name = "Vendita Diretta / Banco"
-                selected_client_id = 0
+            target_user = User.query.get(selected_client_id)
+            order_user_id = target_user.id if target_user else None
+            order_client_name = f"{target_user.name} ({target_user.phone})" if target_user else "Cliente Banco"
         else:
             order_user_id = user_id
             current_user_obj = User.query.get(user_id)
-            if current_user_obj:
-                order_client_name = f"{current_user_obj.name} ({current_user_obj.phone})"
-            else:
-                order_client_name = session['user_name']
+            order_client_name = f"{current_user_obj.name} ({current_user_obj.phone})" if current_user_obj else session['user_name']
         
         for product in catalog_products:
             if product.sizes_raw:
@@ -205,22 +159,12 @@ def index():
                     if qty > 0:
                         item_strings.append(f"{qty}x {product.name} ({fmt_name})")
                         calculated_total += qty * fmt_price
-            else:
-                qty_key = f"qty_{product.id}_default"
-                qty = int(request.form.get(qty_key, 0)) if request.form.get(qty_key) else 0
-                if qty > 0:
-                    item_strings.append(f"{qty}x {product.name}")
-                    calculated_total += qty * product.price_per_kg
-        
+                        
         if not item_strings:
             flash("Seleziona almeno un prodotto prima di inviare l'ordine.", "error")
-            if is_admin:
-                return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
-            return redirect(url_for('client_bp.index'))
+            return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
 
-        chosen_delivery_date = request.form.get('delivery_date')
-        if not chosen_delivery_date:
-            chosen_delivery_date = date.today().strftime("%Y-%m-%d")
+        chosen_delivery_date = request.form.get('delivery_date') or date.today().strftime("%Y-%m-%d")
             
         new_order = Order(
             id=f"ORD-{random.randint(1000, 9999)}",
@@ -236,10 +180,8 @@ def index():
         db.session.add(new_order)
         db.session.commit()
         flash(f"Ordine inoltrato con successo per '{order_client_name}'!", 'success')
-        
-        if is_admin:
-            return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
-        return redirect(url_for('client_bp.index'))
+        return redirect(url_for('client_bp.index', selected_client_id=selected_client_id) if is_admin else url_for('client_bp.index'))
+
     prefilled_items = {}
     reorder_id = request.args.get('reorder')
     if reorder_id:
@@ -254,20 +196,18 @@ def index():
                 except ValueError: continue
 
     enriched_products = []
-    for product in catalog_products:
-        parsed_formats = []
-        if product.sizes_raw:
-            for fmt in product.sizes_raw.split(','):
-                f_name, f_price = parse_format_details(fmt, product.price_per_kg, current_category)
-                # 🌟 SECURITY GATEWAY: Only append formats that successfully resolve a name
-                if f_name:
-                    parsed_formats.append({'name': f_name, 'price': f_price})
-        enriched_products.append({'id': product.id, 'name': product.name, 'price_per_kg': product.price_per_kg, 'parsed_formats': parsed_formats})
+    if current_category:
+        for product in catalog_products:
+            parsed_formats = []
+            if product.sizes_raw:
+                for fmt in product.sizes_raw.split(','):
+                    f_name, f_price = parse_format_details(fmt, product.price_per_kg, current_category)
+                    if f_name:
+                        parsed_formats.append({'name': f_name, 'price': f_price})
+            if parsed_formats:
+                enriched_products.append({'id': product.id, 'name': product.name, 'price_per_kg': product.price_per_kg, 'parsed_formats': parsed_formats})
 
-    if is_admin:
-        my_orders = Order.query.order_by(Order.serial_id.desc()).all()
-    else:
-        my_orders = Order.query.filter_by(user_id=user_id).order_by(Order.serial_id.desc()).all()
+    my_orders = Order.query.order_by(Order.serial_id.desc()).all() if is_admin else Order.query.filter_by(user_id=user_id).order_by(Order.serial_id.desc()).all()
     
     return render_template(
         'client.html', 
@@ -284,12 +224,8 @@ def index():
 def cancel_order(order_id):
     if 'user_id' not in session: 
         return redirect(url_for('client_bp.login'))
-    
     is_admin = (session.get('user_role') == 'admin')
-    if is_admin:
-        order = Order.query.filter_by(id=order_id).first_or_404()
-    else:
-        order = Order.query.filter_by(id=order_id, user_id=session['user_id']).first_or_404()
+    order = Order.query.filter_by(id=order_id).first_or_404() if is_admin else Order.query.filter_by(id=order_id, user_id=session['user_id']).first_or_404()
         
     if order.status == 'Da Confermare': 
         order.status = 'Annullato'
@@ -298,9 +234,5 @@ def cancel_order(order_id):
         flash(f"Ordine {order_id} annullato con successo.", "success")
     else:
         flash("Impossibile annullare l'ordine.", "error")
-        
-    if is_admin:
-        selected_client = request.form.get('hidden_selected_client_id', '0')
-        return redirect(url_for('client_bp.index', selected_client_id=selected_client))
-        
-    return redirect(url_for('client_bp.index'))
+    return redirect(url_for('client_bp.index', selected_client_id=request.form.get('hidden_selected_client_id', '0')) if is_admin else url_for('client_bp.index'))
+
