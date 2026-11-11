@@ -200,7 +200,16 @@ def index():
         db.session.add(new_order)
         db.session.commit()
         flash(f"Ordine inoltrato con successo per '{order_client_name}'!", 'success')
-        return redirect(url_for('client_bp.index', selected_client_id=selected_client_id) if is_admin else url_for('client_bp.index'))
+                db.session.add(new_order)
+        db.session.commit()
+        
+        # 🌟 FIX: Inject parameters so client.html knows a new order was created
+        flash(f"Ordine inoltrato con successo per '{order_client_name}'!", 'success')
+        
+        if is_admin:
+            return redirect(url_for('client_bp.index', selected_client_id=selected_client_id, whatsapp_notify='1', last_order_id=custom_meaningful_id))
+        else:
+            return redirect(url_for('client_bp.index', whatsapp_notify='1', last_order_id=custom_meaningful_id))
 
     prefilled_items = {}
     reorder_id = request.args.get('reorder')
