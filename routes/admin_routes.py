@@ -161,7 +161,7 @@ def index():
                     
                     p_name = matched_prod_obj.name if matched_prod_obj else full_name
                     
-                    if not filter_product or filter_product.lower() in p_name.lower():
+                    if not filter_product or filter_product.strip().lower() == p_name.strip().lower():
                         computed_weight = parse_format_weight_kg(full_name, qty)
                         
                         # 🌟 FIX 2: Direct matrix parsing from the actual matched database item row object rules string
