@@ -357,3 +357,19 @@ table th {
         font-size: 14px !important;
     }
 }
+/* ==========================================================================
+   🔒 FIX LOGIN ALIGNMENT INDEPENDENT OVERRIDE
+   ========================================================================== */
+.login-card-fixed {
+    max-width: 400px !important;
+    width: 100% !important;
+    margin: 40px auto !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+    .login-card-fixed {
+        margin: 20px auto !important;
+        max-width: calc(100% - 16px) !important; /* Retains safe screen margins on mobile screens */
+    }
+}
