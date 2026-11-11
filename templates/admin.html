@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caseificio Vicedomini - Pannello Admin</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=115">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=116">
 </head>
 <body>
 
@@ -299,6 +299,21 @@
         {% endif %}
         <!-- ================= GESTIONE UTENTI ACTIVE TAB ================= -->
         {% if active_tab == 'users_management' %}
+        <div class="card" style="border-top: 3px solid #25D366 !important; margin-bottom: 20px;">
+            <h3 style="color: var(--text-dark); display: flex; align-items: center; gap: 6px;">📲 Configurazione Linee Notifiche WhatsApp</h3>
+            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px;">Inserisci i numeri di telefono completi di prefisso internazionale (es: 39 per Italia) separati da una virgola.</p>
+            
+            <form action="{{ url_for('admin.save_notification_settings') }}" method="POST">
+                <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px;">
+                    <label style="font-weight: 700; font-size: 12px;">Numeri WhatsApp Riceventi (es: 393331111111, 393472222222):</label>
+                    <input type="text" name="whatsapp_numbers" value="{{ whatsapp_numbers_config_string }}" style="width: 100%; font-weight: 600; font-family: monospace; letter-spacing: 0.5px; height: 38px;" placeholder="Nessun numero salvato. Verrà usato il supporto di default.">
+                </div>
+                <div style="text-align: right;">
+                    <button type="submit" class="btn btn-success" style="background-color: #25D366 !important; border-color: #128C7E !important; color: white !important; font-weight: 700;">💾 Salva Contatti Notifica</button>
+                </div>
+            </form>
+        </div>
+
         <div class="card">
             <h3>👥 Pannello Gestione Utenti & Credenziali</h3>
             <h4 style="margin-top:14px; margin-bottom:6px;">🔒 Sicurezza Account Admin</h4>

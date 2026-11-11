@@ -235,6 +235,13 @@ def index():
 
     my_orders = Order.query.order_by(Order.serial_id.desc()).all() if is_admin else Order.query.filter_by(user_id=user_id).order_by(Order.serial_id.desc()).all()
     
+    # 🌟 LOAD ACTIVE WHATSAPP LINE Blueprints FOR CONFIRMATION BUTTONS
+    whatsapp_row = User.query.filter_by(phone='_whatsapp_config').first()
+    active_notification_lines = []
+    if whatsapp_row and whatsapp_row.name:
+        # Split items cleanly by comma while dropping accidental spacing gaps
+        active_notification_lines = [n.strip() for n in whatsapp_row.name.split(',') if n.strip()]
+
     return render_template(
         'client.html', 
         orders=my_orders, 
@@ -244,6 +251,7 @@ def index():
         is_admin=is_admin,
         all_clients=all_clients,
         selected_client_id=selected_client_id
+        active_notification_lines=active_notification_lines
     )
 
 @client_bp.route('/order/cancel/<path:order_id>', methods=['POST'])

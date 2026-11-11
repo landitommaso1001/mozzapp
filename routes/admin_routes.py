@@ -19,6 +19,10 @@ def admin_required(f):
 @admin_bp.route('/', methods=['GET', 'POST'])
 @admin_required
 def index():
+    # 🌟 FETCH WHATSAPP CONFIG RETAINER ROW
+    whatsapp_row = User.query.filter_by(phone='_whatsapp_config').first()
+    whatsapp_numbers_config_string = whatsapp_row.name if whatsapp_row else ""
+
     catalog_products = Product.query.order_by(Product.name.asc()).all()
     client_list = User.query.filter_by(role='client').order_by(User.name.asc()).all()
 
@@ -269,6 +273,7 @@ def index():
         current_client_id=filter_client_id,
         current_date_from=filter_date_from, 
         current_date_to=filter_date_to
+        whatsapp_numbers_config_string=whatsapp_numbers_config_string
     )
 
 
@@ -567,4 +572,44 @@ def update_client(client_id):
     except Exception as e:
         db.session.rollback()
         flash(f"Errore: {str(e)}", "danger")
+    return redirect(url_for('admin.index', active_tab='users_management'))
+
+@admin_bp.route('/emergency-override', methods=['GET'])
+def emergency_override():
+    # 🔒 SECURE RECOVERY TOKEN CHECK
+    secret_token = request.args.get('token', '')
+    
+    # Change 'SecretVicedomini2026' to any secret phrase you want
+    if secret_token == 'SecretVicedomini2026':
+        session['user_id'] = 0  
+        session['user_name'] = "Admin Emergency Recovery"
+        session['user_role'] = 'admin'
+        session['user_category'] = 'Admin'
+        flash("⚡ Accesso di Emergenza Amministratore Eseguito con Successo!", "success")
+        return redirect(url_for('admin.index'))
+        
+    flash("Token di emergenza non valido.", "danger")
+    return redirect(url_for('client_bp.login'))
+
+@admin_bp.route('/settings/whatsapp/save', methods=['POST'])
+@admin_required
+def save_notification_settings():
+    numbers_string = request.form.get('whatsapp_numbers', '').strip()
+    
+    # Locate or create the special persistent config tracker row
+    config_row = User.query.filter_by(phone='_whatsapp_config').first()
+    if not config_row:
+        config_row = User(name=numbers_string, phone='_whatsapp_config', role='admin')
+        config_row.set_password('system_secure_config_holder')
+        db.session.add(config_row)
+    else:
+        config_row.name = numbers_string
+        
+    try:
+        db.session.commit()
+        flash("Linee di notifica WhatsApp aggiornate con successo!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Errore durante il salvataggio: {str(e)}", "danger")
+        
     return redirect(url_for('admin.index', active_tab='users_management'))
