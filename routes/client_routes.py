@@ -1,5 +1,5 @@
 import random
-from datetime import date
+from datetime import date, datetime
 from flask import Blueprint, render_template, request, url_for, redirect, flash, session, current_app
 from extensions import db
 from models import User, Product, Order
