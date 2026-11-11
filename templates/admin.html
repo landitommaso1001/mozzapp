@@ -482,14 +482,64 @@
         {% endif %}
 
 
+        <!-- ================= RESET ARCHIVIO ACTIVE TAB ================= -->
         {% if active_tab == 'reset_data' %}
         <div class="card" style="border: 2px solid #ef4444 !important;">
-            <h3 style="color:#ef4444;">⚠️ Pannello Manutenzione Avanzata Database</h3>
-            <form action="{{ url_for('admin.reset_orders') }}" method="POST">
-                <button type="submit" class="btn btn-danger">Azzera Storico Ordini</button>
-            </form>
+            <h3 style="color: #ef4444; margin-bottom: 6px;">⚠️ Pannello Manutenzione Avanzata Database</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+                Attenzione: Le operazioni eseguite in questa sezione sono definitive e non possono essere annullate.
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+                
+                <!-- 1. Clear Cancelled Orders -->
+                <div style="background: var(--bg-neutral); padding: 12px; border-radius: 6px; border: 1px solid var(--border-hairline); display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                    <div>
+                        <strong style="display: block; color: var(--text-dark); margin-bottom: 4px;">🧹 Pulisci Ordini Annullati</strong>
+                        <span style="font-size: 11px; color: var(--text-muted);">Rimuove solo gli ordini con stato "Annullato", mantenendo intatti gli ordini attivi e completati.</span>
+                    </div>
+                    <form action="{{ url_for('admin.reset_cancelled') }}" method="POST" onsubmit="return confirm('Eliminare definitivamente tutti gli ordini annullati?');">
+                        <button type="submit" class="btn" style="width: 100%; background: #fef3c7 !important; color: #92400e !important; border-color: #fde68a !important;">Elimina Annullati</button>
+                    </form>
+                </div>
+
+                <!-- 2. Clear Completed & Paid Orders -->
+                <div style="background: var(--bg-neutral); padding: 12px; border-radius: 6px; border: 1px solid var(--border-hairline); display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                    <div>
+                        <strong style="display: block; color: var(--text-dark); margin-bottom: 4px;">📦 Archivia Ordini Saldati</strong>
+                        <span style="font-size: 11px; color: var(--text-muted);">Elimina solo gli ordini già "Consegnati" e "Saldati". Gli ordini da saldare restano salvati.</span>
+                    </div>
+                    <form action="{{ url_for('admin.reset_completed') }}" method="POST" onsubmit="return confirm('Eliminare tutti gli ordini già consegnati e saldati?');">
+                        <button type="submit" class="btn" style="width: 100%; background: #e0f2fe !important; color: #075985 !important; border-color: #bae6fd !important;">Pulisci Saldati</button>
+                    </form>
+                </div>
+
+                <!-- 3. Reset All Orders -->
+                <div style="background: #fef2f2; padding: 12px; border-radius: 6px; border: 1px solid #fecaca; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                    <div>
+                        <strong style="display: block; color: #991b1b; margin-bottom: 4px;">🗑️ Svuota Storico Ordini</strong>
+                        <span style="font-size: 11px; color: #7f1d1d;">Cancella l'intero registro degli ordini (attivi, consegnati e da saldare). L'anagrafica clienti resta intatta.</span>
+                    </div>
+                    <form action="{{ url_for('admin.reset_orders') }}" method="POST" onsubmit="return confirm('ATTENZIONE: Vuoi davvero cancellare TUTTI gli ordini dal database?');">
+                        <button type="submit" class="btn btn-danger" style="width: 100%;">Azzera Storico Ordini</button>
+                    </form>
+                </div>
+
+                <!-- 4. Reset All Clients -->
+                <div style="background: #fef2f2; padding: 12px; border-radius: 6px; border: 1px solid #fecaca; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                    <div>
+                        <strong style="display: block; color: #991b1b; margin-bottom: 4px;">👥 Svuota Anagrafica Clienti</strong>
+                        <span style="font-size: 11px; color: #7f1d1d;">Rimuove tutti gli account cliente registrati. L'account Amministratore e il listino prodotti non vengono toccati.</span>
+                    </div>
+                    <form action="{{ url_for('admin.reset_clients') }}" method="POST" onsubmit="return confirm('ATTENZIONE: Vuoi davvero eliminare TUTTI i clienti registrati?');">
+                        <button type="submit" class="btn btn-danger" style="width: 100%;">Rimuovi Tutti i Clienti</button>
+                    </form>
+                </div>
+
+            </div>
         </div>
         {% endif %}
+
     </main>
 
     <footer style="margin-top:20px; text-align:center; font-size:11px; color:var(--text-muted); padding-bottom:12px;">
