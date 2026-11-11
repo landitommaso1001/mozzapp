@@ -490,10 +490,47 @@
         {% if active_tab == 'monthly_ledger' %}
         <style>
             @media print {
-                header, nav, .admin-main-nav, .no-print, footer, .card:first-of-type { display: none !important; }
-                body, main, .card { background: white !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
-                #printable-ledger { display: block !important; width: 100% !important; }
-                table th, table td { border: 1px solid #94a3b8 !important; padding: 4px 8px !important; font-size: 11px !important; }
+                @page {
+                    size: A4 portrait;
+                    margin: 8mm;
+                }
+                /* Hide header, navigation, filter forms, footer, and the top financial KPI cards */
+                header, nav, .admin-main-nav, .no-print, footer,
+                main > div:first-of-type {
+                    display: none !important;
+                }
+                body, main, .card {
+                    background: white !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    width: 100% !important;
+                }
+                /* Hide the card title outside the printable wrapper */
+                .card > h3 {
+                    display: none !important;
+                }
+                #printable-ledger {
+                    display: block !important;
+                    width: 100% !important;
+                }
+                #printable-ledger h4 {
+                    font-size: 13px !important;
+                    margin-bottom: 2px !important;
+                }
+                /* Compact row height so all 31 days fit on 1 A4 page */
+                #printable-ledger table {
+                    margin: 4px 0 !important;
+                    width: 100% !important;
+                }
+                #printable-ledger table th,
+                #printable-ledger table td {
+                    border: 1px solid #94a3b8 !important;
+                    padding: 2.5px 6px !important;
+                    font-size: 10px !important;
+                    line-height: 1.15 !important;
+                }
             }
         </style>
 

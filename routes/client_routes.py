@@ -234,6 +234,21 @@ def index():
     if whatsapp_row and whatsapp_row.name:
         active_notification_lines = [n.strip() for n in whatsapp_row.name.split(',') if n.strip()]
 
+    whatsapp_message_text = ""
+    last_order_id = request.args.get('last_order_id')
+    if request.args.get('whatsapp_notify') == '1' and last_order_id:
+        recent_order = Order.query.filter_by(id=last_order_id).first()
+        if recent_order:
+            items_lines = "\n".join([f"- {item.strip()}" for item in recent_order.items.split(',') if item.strip()])
+            whatsapp_message_text = (
+                f"*Nuovo Ordine MozzApp*\n"
+                f"*ID:* {recent_order.id}\n"
+                f"*Cliente:* {recent_order.client}\n"
+                f"*Data Consegna:* {recent_order.date}\n"
+                f"*Prodotti:*\n{items_lines}\n"
+                f"*Totale:* EUR {recent_order.total:.2f}"
+            )
+
     return render_template(
         'client.html', 
         orders=my_orders, 
@@ -243,7 +258,8 @@ def index():
         is_admin=is_admin,
         all_clients=all_clients,
         selected_client_id=selected_client_id,
-        active_notification_lines=active_notification_lines
+        active_notification_lines=active_notification_lines,
+        whatsapp_message_text=whatsapp_message_text
     )
 
 
