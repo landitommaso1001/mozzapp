@@ -19,6 +19,9 @@ def admin_required(f):
 @admin_bp.route('/', methods=['GET', 'POST'])
 @admin_required
 def index():
+    catalog_products = Product.query.order_by(Product.name.asc()).all()
+    client_list = User.query.filter_by(role='client').order_by(User.name.asc()).all()
+
     active_tab = request.args.get('active_tab', 'orders')
     
     filter_status = request.args.get('status', '')  
@@ -67,11 +70,6 @@ def index():
             o.formatted_client_name = o.client if o.client else "Vendita Diretta / Banco"
             o.formatted_client_phone = ""
 
-            # 🌟 UPDATE: Sort catalog products and client profiles alphabetically by name
-            catalog_products = Product.query.order_by(Product.name.asc()).all()
-            client_list = User.query.filter_by(role='client').order_by(User.name.asc()).all()
-
-    
     catalog_map = {}
     for p in catalog_products:
         if p.sizes_raw:
