@@ -322,3 +322,38 @@ table th {
         text-align: center !important;
     }
 }
+/* ==========================================================================
+   🧱 DESKTOP WORKFLOW ACTION LAYOUT BALANCERS
+   ========================================================================== */
+.workflow-action-form-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; /* Perfect 50/50 horizontal split */
+    gap: 4px !important;
+    width: 100% !important;
+    max-width: 220px !important;
+}
+
+/* ==========================================================================
+   📱 MOBILE OVERRIDES TARGETING ONLY SMALL SCREEN CORES
+   ========================================================================== */
+@media (max-width: 768px) {
+    .desktop-badges-row {
+        flex-wrap: wrap !important; /* Permits standard stacking wrap rules on smart screen cards */
+        justify-content: flex-end !important;
+    }
+    
+    .workflow-action-form-grid {
+        display: flex !important;
+        flex-direction: column !important; /* Stacks the time picker cleanly above the confirm engine button */
+        gap: 6px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .workflow-select-time-split,
+    .workflow-btn-confirm-split {
+        width: 100% !important;
+        min-height: 42px !important; /* Enhanced touch target size */
+        font-size: 14px !important;
+    }
+}
