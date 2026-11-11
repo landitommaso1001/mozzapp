@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caseificio Vicedomini - Pannello Admin</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=42">
-</head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=101">
+ </head>
 <body>
 
     <header>
@@ -86,6 +86,7 @@
                 <input type="hidden" name="active_tab" value="orders">
                 <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end;">
                     <div style="flex: 1; min-width: 140px;">
+                        <form method="GET" action="" class="filter-form-grid"></form>
                         <select name="client_id" style="width: 100%;">
                             <option value="">Tutti i clienti registrati</option>
                             <option value="banco" {% if current_client_id == 'banco' %}selected{% endif %}>Vendita Diretta / Banco</option>
@@ -129,15 +130,11 @@
                             <th>ID Ordine / Data</th>
                             <th>Dettagli Cliente</th>
                             <th>Prodotti in Ordine</th>
-                            <th>Totale €</th>
-                            <th>Stato Operazione & Workflow</th>
+                            <th class="text-right" style="padding-right: 16px !important;">Totale €</th>
+                            <th class="text-right">Stato Operazione & Workflow</th>
                         </tr>
                     </thead>
                     <tbody>
-
-
-
-
                         {% for o in orders %}
                         <tr>
                             <td>
@@ -164,96 +161,80 @@
                                     {% endif %}
                                 </div>
                             </td>
-                            <td><strong style="font-size:14px; color:var(--text-dark);">€ {{ '%.2f'|format(o.total) }}</strong></td>
+                            <!-- Right-aligned financial cell -->
+                            <td class="text-right" style="padding-right: 16px !important;"><strong style="font-size:14px; color:var(--text-dark);">€ {{ '%.2f'|format(o.total) }}</strong></td>
+                            
+                            <td style="text-align: right; vertical-align: top;">
+                                <!-- 🎯 Flex container holding all operational actions flush to the right edge -->
+                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; width: 100%;">
+                                    
+                                    <!-- Status Badges View Layer -->
+                                    <div style="display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; margin-bottom: 2px;">
+                                        <span class="role-indicator {% if o.status=='Da Confermare' %}badge-admin{% elif o.status=='Annullato' %}badge-unpaid{% else %}badge-cliente{% endif %}">
+                                            {{ o.status }}
+                                        </span>
+                                        <span class="role-indicator" style="background-color:{% if o.payment_status=='Saldato' %}#dcfce7{% else %}#fee2e2{% endif %}; color:{% if o.payment_status=='Saldato' %}#15803d{% else %}#991b1b{% endif %}; border: 1px solid {% if o.payment_status=='Saldato' %}#bbf7d0{% else %}#fca5a5{% endif %};">
+                                            {{ o.payment_status }}
+                                        </span>
+                                    </div>
 
-
-<td>
-    <!-- Status Badges View (Natively matches your new clean DB states) -->
-    <div style="margin-bottom:6px; display: flex; gap: 4px; flex-wrap: wrap;">
-        <span class="role-indicator {% if o.status=='Da Confermare' %}badge-admin{% elif o.status=='Annullato' %}badge-unpaid{% else %}badge-cliente{% endif %}">
-            {{ o.status }}
-        </span>
-        <span class="role-indicator" style="background-color:{% if o.payment_status=='Saldato' %}#dcfce7{% else %}#fee2e2{% endif %}; color:{% if o.payment_status=='Saldato' %}#15803d{% else %}#991b1b{% endif %}; border: 1px solid {% if o.payment_status=='Saldato' %}#bbf7d0{% else %}#fca5a5{% endif %};">
-            {{ o.payment_status }}
-        </span>
-    </div>
-
-    <!-- Sequential Next-Step Action Forms Grid (Clean & Direct) -->
-    <div style="display:flex; flex-direction:column; gap:4px; max-width:220px;">
-        
-        <!-- Step 1: Da Confermare -->
-        {% if o.status == 'Da Confermare' %}
-        <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="display:flex; gap:4px; align-items:center; width: 100%;">
-            <input type="hidden" name="order_id" value="{{ o.id }}">
-            <input type="hidden" name="new_status" value="Confermato">
-                <select name="delivery_time" style="width:105px; text-align:center;" required>
-                    <option value="" disabled selected>Ora...</option>
-                    {% for hour in range(7, 20) %}
-                        {% set formatted_hour = "%02d:00" | format(hour) %}
-                        <option value="{{ formatted_hour }}">{{ formatted_hour }}</option>
-                    {% endfor %}
-                </select>
-            <button type="submit" class="btn btn-success">
-                <span class="desktop-layout">✅ Conferma</span>
-                <span class="smartphone-layout">✅ Conferma</span>
-            </button>
-        </form>
-        <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Annullare l\'ordine?');">
-            <input type="hidden" name="order_id" value="{{ o.id }}">
-            <button type="submit" class="btn btn-danger" style="width:100%;">
-                <span class="desktop-layout">❌ Annulla</span>
-                <span class="smartphone-layout">❌ Annulla</span>
-            </button>
-        </form>
-        
-        <!-- Step 2: Confermato -->
-        {% elif o.status == 'Confermato' %}
-        <form action="{{ url_for('admin.update_order_status') }}" method="POST">
-            <input type="hidden" name="order_id" value="{{ o.id }}">
-            <input type="hidden" name="new_status" value="Pronto">
-            <button type="submit" class="btn btn-primary" style="width:100%;">
-                <span class="desktop-layout">📦 Pronto</span>
-                <span class="smartphone-layout">📦 Pronto</span>
-            </button>
-        </form>
-        <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Annullare l\'ordine?');">
-            <input type="hidden" name="order_id" value="{{ o.id }}">
-            <button type="submit" class="btn btn-danger" style="width:100%;">
-                <span class="desktop-layout">❌ Annulla</span>
-                <span class="smartphone-layout">❌ Annulla</span>
-            </button>
-        </form>
-        
-        <!-- Step 3: Pronto -->
-        {% elif o.status == 'Pronto' %}
-        <form action="{{ url_for('admin.update_order_status') }}" method="POST">
-            <input type="hidden" name="order_id" value="{{ o.id }}">
-            <input type="hidden" name="new_status" value="Consegnato">
-            <button type="submit" class="btn btn-success" style="width:100%;">🚚 Consegnato</button>
-        </form>
-        
-        <!-- Step 4: Consegnato -->
-        {% elif o.status == 'Consegnato' and o.payment_status != 'Saldato' %}
-        <form action="{{ url_for('admin.mark_order_paid') }}" method="POST" style="width:100%;">
-            <input type="hidden" name="order_id" value="{{ o.id }}">
-            <button type="submit" class="btn btn-success" style="width:100%; font-weight:700;">
-                <span class="desktop-layout">💶 Salda</span>
-                <span class="smartphone-layout">💶 Salda</span>
-            </button>
-        </form>
-        {% endif %}
-    </div>
-</td>
-
-                        </tr>
-
-                        {% else %}
-                        <tr>
-                            <td colspan="5" style="text-align:center; padding:16px; color:var(--text-muted);">Nessun ordine presente corrispondente ai filtri selezionati.</td>
+                                    <!-- Action Step Buttons Layout Module -->
+                                    <div style="display: flex; flex-direction: column; gap: 4px; width: 100%; max-width: 220px; align-items: flex-end;">
+                                        
+                                        <!-- Step 1: Da Confermare -->
+                                        {% if o.status == 'Da Confermare' %}
+                                        <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="display: flex; gap: 4px; width: 100%; justify-content: flex-end; align-items: center;">
+                                            <input type="hidden" name="order_id" value="{{ o.id }}">
+                                            <input type="hidden" name="new_status" value="Confermato">
+                                            <select name="delivery_time" style="width: 105px; text-align: center; height: 32px;" required>
+                                                <option value="" disabled selected>Ora...</option>
+                                                {% for hour in range(7, 20) %}
+                                                    {% set formatted_hour = "%02d:00" | format(hour) %}
+                                                    <option value="{{ formatted_hour }}">{{ formatted_hour }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="submit" class="btn btn-success" style="flex: 1;">✅ Conferma</button>
+                                        </form>
+                                        <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Annullare l\'ordine?');" style="width: 100%; margin: 0;">
+                                            <input type="hidden" name="order_id" value="{{ o.id }}">
+                                            <button type="submit" class="btn btn-danger" style="width: 100%;">❌ Annulla</button>
+                                        </form>
+                                        
+                                        <!-- Step 2: Confermato -->
+                                        {% elif o.status == 'Confermato' %}
+                                        <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="width: 100%; margin: 0;">
+                                            <input type="hidden" name="order_id" value="{{ o.id }}">
+                                            <input type="hidden" name="new_status" value="Pronto">
+                                            <button type="submit" class="btn btn-primary" style="width: 100%;">📦 Pronto</button>
+                                        </form>
+                                        <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Annullare l\'ordine?');" style="width: 100%; margin: 0;">
+                                            <input type="hidden" name="order_id" value="{{ o.id }}">
+                                            <button type="submit" class="btn btn-danger" style="width: 100%;">❌ Annulla</button>
+                                        </form>
+                                        
+                                        <!-- Step 3: Pronto -->
+                                        {% elif o.status == 'Pronto' %}
+                                        <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="width: 100%; margin: 0;">
+                                            <input type="hidden" name="order_id" value="{{ o.id }}">
+                                            <input type="hidden" name="new_status" value="Consegnato">
+                                            <button type="submit" class="btn btn-success" style="width: 100%;">🚚 Consegnato</button>
+                                        </form>
+                                        
+                                        <!-- Step 4: Consegnato -->
+                                        {% elif o.status == 'Consegnato' and o.payment_status != 'Saldato' %}
+                                        <form action="{{ url_for('admin.mark_order_paid') }}" method="POST" style="width: 100%; margin: 0;">
+                                            <input type="hidden" name="order_id" value="{{ o.id }}">
+                                            <button type="submit" class="btn btn-success" style="width: 100%; font-weight: 700;">💶 Salda</button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+
             </div>
         </div>
         {% endif %}

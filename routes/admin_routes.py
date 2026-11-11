@@ -164,12 +164,17 @@ def index():
                         unit_price = 0.0
                         if matched_prod_obj and matched_prod_obj.sizes_raw:
                             rules_dict = {}
+                            
                             # Clear whitespace and parse category options cleanly
+
                             for rule in matched_prod_obj.sizes_raw.split(","):
                                 if ":" in rule:
-                                    k, v = rule.split(":", 1)
-                                    rules_dict[k.strip().lower()] = float(v.strip())
-                            
+                                    try:
+                                        k, v = rule.split(":", 1)
+                                        rules_dict[k.strip().lower()] = float(v.strip())
+                                    except (ValueError, IndexError):
+                                        continue  # Skips malformed category rules safely
+                                                        
                             target_key = str(order_client_category).strip().lower()
                             if target_key in rules_dict:
                                 unit_price = rules_dict[target_key]

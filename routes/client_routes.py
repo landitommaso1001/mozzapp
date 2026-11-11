@@ -201,12 +201,18 @@ def index():
         for product in catalog_products:
             parsed_formats = []
             if product.sizes_raw:
-                for fmt in product.sizes_raw.split(','):
-                    f_name, f_price = parse_format_details(fmt, product.price_per_kg, current_category)
-                    if f_name:
-                        parsed_formats.append({'name': f_name, 'price': f_price})
+                # 🌟 FIX: Process the rules string intact instead of fracturing it prematurely
+                f_name, f_price = parse_format_details(product.sizes_raw, product.price_per_kg, current_category)
+                if f_name and f_price > 0.0:
+                    parsed_formats.append({'name': f_name, 'price': f_price})
+            
             if parsed_formats:
-                enriched_products.append({'id': product.id, 'name': product.name, 'price_per_kg': product.price_per_kg, 'parsed_formats': parsed_formats})
+                enriched_products.append({
+                    'id': product.id, 
+                    'name': product.name, 
+                    'price_per_kg': product.price_per_kg, 
+                    'parsed_formats': parsed_formats
+                })
 
     my_orders = Order.query.order_by(Order.serial_id.desc()).all() if is_admin else Order.query.filter_by(user_id=user_id).order_by(Order.serial_id.desc()).all()
     

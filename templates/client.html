@@ -91,8 +91,8 @@
                     <th>Stato</th>
                     <th>Pagamento</th>
                     <th>Dettagli Articoli</th>
-                    <th>Totale</th>
-                    <th>Azioni</th>
+                    <th class="text-right" style="padding-right: 16px !important;">Totale</th>
+                    <th class="text-right">Azioni</th>
                 </tr>
             </thead>
             <tbody>
@@ -105,21 +105,22 @@
                     <td>{{ order.status }}</td>
                     <td>{{ order.payment_status }}</td>
                     <td style="white-space: normal;">{{ order.items }}</td>
-                    <td><strong>€ {{ "%.2f"|format(order.total) }}</strong></td>
-                    <td>
-                        <a href="{{ url_for('client_bp.index', reorder=order.id) }}" class="btn">🔄 Ripeti</a>
-                        {% if order.status == 'Da Confermare' %}
-                        <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="display: inline;" onsubmit="return confirm('Annullare l\'ordine?');">
-                            <button type="submit" class="btn" style="background: #ef4444; color: white; border: none;">❌ Annulla</button>
-                        </form>
-                        {% endif %}
+                    <td class="text-right" style="padding-right: 16px !important;"><strong>€ {{ "%.2f"|format(order.total) }}</strong></td>
+                    <td class="text-right">
+                        <div class="flex-row-right" style="justify-content: flex-end;">
+                            <a href="{{ url_for('client_bp.index', reorder=order.id) }}" class="btn">🔄 Ripeti</a>
+                            {% if order.status == 'Da Confermare' %}
+                            <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="display: inline;" onsubmit="return confirm('Annullare l\'ordine?');">
+                                <button type="submit" class="btn" style="background: #ef4444; color: white; border: none;">❌ Annulla</button>
+                            </form>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
-                {% else %}
-                <tr><td colspan="{% if is_admin %}7{% else %}6{% endif %}" style="text-align: center; color: var(--text-muted);">Nessun ordine presente in archivio.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
+
     </div>
 </div>
 
