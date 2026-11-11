@@ -786,9 +786,17 @@ def export_monthly_ledger():
                 continue
 
     output = io.StringIO()
+    # Add Excel separator hint so Excel always splits columns properly
+    output.write("sep=;\n")
     writer = csv.writer(output, delimiter=';')
-    g1_header = "Gruppo 1 (" + ", ".join(group1_products) + ") Kg" if group1_products else "Gruppo 1 (Kg)"
-    g2_header = "Gruppo 2 (" + ", ".join(group2_products) + ") Kg" if group2_products else "Gruppo 2 (Kg)"
+    
+    # Include the client and month/year title at the top of the sheet
+    writer.writerow([f"Caseificio Vicedomini - Scheda Consegne {monthly_month:02d}/{monthly_year}", f"Cliente: {client_name.replace('_', ' ')}", ""])
+    writer.writerow([])
+
+    # Use ' - ' instead of commas inside the header so it never splits columns
+    g1_header = "Gruppo 1 (" + " - ".join(group1_products) + ") Kg" if group1_products else "Gruppo 1 (Kg)"
+    g2_header = "Gruppo 2 (" + " - ".join(group2_products) + ") Kg" if group2_products else "Gruppo 2 (Kg)"
     writer.writerow(["Data", g1_header, g2_header])
 
     tot_g1, tot_g2 = 0.0, 0.0
