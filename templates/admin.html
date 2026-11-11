@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caseificio Vicedomini - Pannello Admin</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=112">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=115">
 </head>
 <body>
 
@@ -77,7 +77,7 @@
             <h3 style="margin-bottom: 12px;">📋 Registro e Gestione degli Ordini Correnti</h3>
             
             <!-- Filter Controls -->
-            <form method="GET" action="{{ url_for('admin.index') }}" style="background: var(--bg-neutral); padding: 10px; border-radius: 4px; margin-bottom: 14px;">
+            <form method="GET" action="{{ url_for('admin.index') }}" class="filter-form-grid" style="background: var(--bg-neutral); padding: 10px; border-radius: 4px; margin-bottom: 14px;">
                 <input type="hidden" name="active_tab" value="orders">
                 <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end;">
                     <div style="flex: 1; min-width: 140px;">
