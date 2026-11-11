@@ -97,6 +97,7 @@ def index():
         else:
             unpaid_revenue += o.total
 
+    # 📂 Overwrite your admin index matching calculation loops with this structure:
     product_summary = {}
     grand_total_qty = 0
     grand_total_kg = 0.0
@@ -128,6 +129,14 @@ def index():
         if analytics_payment_status and o.payment_status != analytics_payment_status:
             continue
 
+        # Extract assigned pricing layer context dynamically
+        order_client_category = 'Privato'
+        if o.user_id:
+            buyer_user = User.query.get(o.user_id)
+            if buyer_user:
+                order_client_category = buyer_user.price_category
+
+
         if o.items:
             for item in o.items.split(','):
                 item = item.strip()
@@ -137,28 +146,70 @@ def index():
                     qty = int(qty_str.strip())
                     full_name = full_name.strip()
                     
-                    prod_matched = False
+                    # 🌟 FIX 1: Sort by name length descending so "Mozzarella Cassa" is checked before "Mozzarella"
+                    sorted_catalog = sorted(catalog_products, key=lambda x: len(x.name), reverse=True)
+                    
                     matched_prod_obj = None
-                    for p in catalog_products:
+                    for p in sorted_catalog:
                         if p.name.lower() in full_name.lower():
                             matched_prod_obj = p
                             break
                     
                     p_name = matched_prod_obj.name if matched_prod_obj else full_name
+                    
                     if not filter_product or filter_product.lower() in p_name.lower():
-                        prod_matched = True
-                        
-                    if prod_matched:
                         computed_weight = parse_format_weight_kg(full_name, qty)
-                        unit_price = parse_admin_format_price(full_name, matched_prod_obj)
+                        
+                        # 🌟 FIX 2: Direct matrix parsing from the actual matched database item row object rules string
+                        unit_price = 0.0
+                        if matched_prod_obj and matched_prod_obj.sizes_raw:
+                            rules_dict = {}
+                            
+                            # Clear whitespace and parse category options cleanly
+
+                            for rule in matched_prod_obj.sizes_raw.split(","):
+                                if ":" in rule:
+                                    try:
+                                        k, v = rule.split(":", 1)
+                                        rules_dict[k.strip().lower()] = float(v.strip())
+                                    except (ValueError, IndexError):
+                                        continue  # Skips malformed category rules safely
+                                                        
+                            target_key = str(order_client_category).strip().lower()
+                            if target_key in rules_dict:
+                                unit_price = rules_dict[target_key]
+                            elif 'privato' in rules_dict:
+                                unit_price = rules_dict['privato']
+                        
+                        # Dynamic fallback if pricing extraction returns zero
+                        if unit_price == 0.0:
+                            # 🧮 Fallback calculations attempt to extract price if it was saved inside pricing rules as a single numeric flat price string
+                            if matched_prod_obj and matched_prod_obj.sizes_raw and ":" not in matched_prod_obj.sizes_raw:
+                                try:
+                                    unit_price = float(matched_prod_obj.sizes_raw.strip())
+                                except ValueError:
+                                    unit_price = 5.0
+                            else:
+                                unit_price = 5.0  
+                            
                         computed_revenue = unit_price * qty
                         
-                        if full_name not in product_summary:
-                            product_summary[full_name] = {'qty': 0, 'kg': 0.0, 'revenue': 0.0}
+                        # 🌟 FIX 3: Extract the layout size label text straight out of parentheses inside full_name 
+                        # This ensures it shows "(12 Kg)" instead of defaulting to product.price_per_kg text labels
+                        fmt_label_extracted = ""
+                        if "(" in full_name and ")" in full_name:
+                            fmt_label_extracted = full_name.split("(")[-1].split(")")[0].strip()
+                        else:
+                            fmt_label_extracted = matched_prod_obj.price_per_kg if matched_prod_obj else ""
+                            
+                        display_row_name = f"{p_name} ({fmt_label_extracted})"
                         
-                        product_summary[full_name]['qty'] += qty
-                        product_summary[full_name]['kg'] += computed_weight
-                        product_summary[full_name]['revenue'] += computed_revenue
+                        if display_row_name not in product_summary:
+                            product_summary[display_row_name] = {'qty': 0, 'kg': 0.0, 'revenue': 0.0}
+                        
+                        product_summary[display_row_name]['qty'] += qty
+                        product_summary[display_row_name]['kg'] += computed_weight
+                        product_summary[display_row_name]['revenue'] += computed_revenue
                         
                         grand_total_qty += qty
                         grand_total_kg += computed_weight
@@ -166,6 +217,8 @@ def index():
                         
                 except ValueError: 
                     continue
+
+
 
     count_query = Order.query
     if filter_date_from:
@@ -217,6 +270,8 @@ def index():
         current_date_from=filter_date_from, 
         current_date_to=filter_date_to
     )
+
+
 @admin_bp.route('/order/update_status', methods=['POST'])
 @admin_required
 def update_order_status():
@@ -283,50 +338,91 @@ def cancel_order():
         flash(f"Errore: {str(e)}", "danger")
         
     return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=date_from, date_to=date_to))
+
 @admin_bp.route('/client/create', methods=['POST'])
 @admin_required
 def create_client():
     name = request.form.get('name')
     phone = request.form.get('phone')
     password = request.form.get('password')
+    category = request.form.get('price_category', 'Privato') # 🌟 Capture form category
+    
     if User.query.filter_by(phone=phone).first():
         flash("Errore: Questo numero di telefono appartiene già ad un utente registrato.", "danger")
         return redirect(url_for('admin.index', active_tab='users_management'))
-    new_client = User(name=name, phone=phone, role='client')
+        
+    new_client = User(name=name, phone=phone, role='client', price_category=category)
     new_client.set_password(password)
     db.session.add(new_client)
     db.session.commit()
     flash(f"Cliente '{name}' registrato con successo.", "success")
     return redirect(url_for('admin.index', active_tab='users_management'))
 
+# 📂 Replace your admin view format parsers in routes/admin_routes.py with these:
+
+# 📂 Replace these helper functions at the bottom of routes/admin_routes.py
+
 def parse_format_weight_kg(item_string, qty):
+    """
+    Safely extracts only the package volume number inside parentheses 
+    to prevent quantity prefixes from corrupting the calculation loop arithmetic.
+    """
     lower_str = item_string.lower()
-    if 'g' in lower_str or 'gr' in lower_str:
-        digits = "".join([c for c in lower_str if c.isdigit()])
-        if digits:
-            grams = float(digits)
-            if grams >= 100 and grams <= 5000: return (grams / 1000.0) * qty
+    
+    # Isolate only the text inside parentheses (e.g., "(12 kg)" -> "12 kg")
+    if "(" in lower_str and ")" in lower_str:
+        inner_content = lower_str.split("(")[-1].split(")")[0]
+    else:
+        inner_content = lower_str
+
+    # Extract digits cleanly from just that isolated section
+    digits = "".join([c for c in inner_content if c.isdigit() or c == '.'])
+    if digits:
+        try:
+            weight_val = float(digits)
+            if 'kg' in lower_str:
+                return weight_val * qty
+            if 'g' in lower_str or 'gr' in lower_str:
+                return (weight_val / 1000.0) * qty
+        except ValueError:
+            pass
+            
     if 'piccolo' in lower_str or 'vaschetta' in lower_str: return 0.25 * qty
     elif 'grande' in lower_str: return 1.0 * qty
     return 1.0 * qty
 
-def parse_admin_format_price(full_item_name, product_obj):
-    if not product_obj or not product_obj.sizes_raw: return product_obj.price_per_kg if product_obj else 0.0
-    for fmt in product_obj.sizes_raw.split(','):
-        clean_fmt = fmt.strip()
-        if not clean_fmt: continue
-        if ":" in clean_fmt:
-            try:
-                fmt_label, raw_price = clean_fmt.split(":")
-                if fmt_label.strip().lower() in full_item_name.lower(): return float(raw_price)
-            except ValueError: continue
-        else:
-            if clean_fmt.lower() in full_item_name.lower():
-                weight_str = "".join([c for c in clean_fmt if c.isdigit()])
-                if weight_str and ('g' in clean_fmt.lower() or 'gr' in clean_fmt.lower()):
-                    grams = float(weight_str)
-                    return (grams / 1000.0) * product_obj.price_per_kg
-    return product_obj.price_per_kg
+
+def parse_admin_format_price(full_item_name, product_obj, client_category='Privato'):
+    """
+    Extracts the assigned single scalar value rule directly from 
+    the active matrix row configuration string layout.
+    """
+    if not product_obj or not product_obj.sizes_raw: 
+        return 0.0
+        
+    try:
+        rules_dict = {}
+        # Parse the comma rules string: e.g., "Privato:100.00, Ristorante:90.00"
+        for rule in product_obj.sizes_raw.split(","):
+            if ":" in rule:
+                k, v = rule.split(":", 1)
+                rules_dict[k.strip().lower()] = float(v.strip())
+        
+        target_key = str(client_category).strip().lower()
+        
+        if target_key in rules_dict: 
+            return rules_dict[target_key]
+        if 'privato' in rules_dict: 
+            return rules_dict['privato']
+            
+    except Exception:
+        pass
+        
+    return 0.0
+
+
+
+# 📂 Overwrite these three catalog management routes inside routes/admin_routes.py:
 
 @admin_bp.route('/product/save_all', methods=['POST'])
 @admin_required
@@ -335,40 +431,43 @@ def save_all_products():
         all_products = Product.query.all()
         for product in all_products:
             form_name = request.form.get(f'name_{product.id}')
-            form_price = request.form.get(f'price_{product.id}')
-            form_formats = request.form.get(f'formats_{product.id}')
+            form_format_label = request.form.get(f'price_{product.id}') # 🌟 Captures the Formato label string
+            form_tier_rules = request.form.get(f'formats_{product.id}')   # Captures the categories price rules string
             
             if form_name is not None:
                 product.name = form_name.strip()
-            if form_price is not None:
-                product.price_per_kg = float(form_price) if form_price else 0.0
-            if form_formats is not None:
-                product.sizes_raw = form_formats.strip()
+            if form_format_label is not None:
+                product.price_per_kg = form_format_label.strip() # Saved as string
+            if form_tier_rules is not None:
+                product.sizes_raw = form_tier_rules.strip()
                 
             db.session.add(product)
             
         db.session.commit()
-        flash("Tutti i prodotti del catalogo sono stati aggiornati con successo!", "success")
+        flash("Tutti i prodotti e formati del listino sono stati aggiornati con successo!", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Errore durante il salvataggio collettivo: {str(e)}", "danger")
     return redirect(url_for('admin.index', active_tab='catalog'))
+
 
 @admin_bp.route('/product/add', methods=['POST'])
 @admin_required
 def add_product():
     try:
         name = request.form.get('name')
-        price = float(request.form.get('price', 0.0))
-        formats = request.form.get('formats', '')
-        new_product = Product(name=name, price_per_kg=price, sizes_raw=formats, available=True)
+        format_label = request.form.get('price') # 🌟 Formato text input
+        tier_rules = request.form.get('formats') # Rules text input
+        
+        new_product = Product(name=name, price_per_kg=format_label, sizes_raw=tier_rules, available=True)
         db.session.add(new_product)
         db.session.commit()
-        flash(f"Prodotto '{name}' aggiunto!", "success")
+        flash(f"Articolo '{name}' con formato '{format_label}' aggiunto con successo!", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Errore: {str(e)}", "danger")
     return redirect(url_for('admin.index', active_tab='catalog'))
+
 
 @admin_bp.route('/product/delete/<int:product_id>', methods=['POST'])
 @admin_required
@@ -445,9 +544,13 @@ def update_client(client_id):
     new_name = request.form.get('name')
     new_phone = request.form.get('phone')
     new_password = request.form.get('password')
+    new_category = request.form.get('price_category') # 🌟 Capture layout dropdown category
+    
     try:
         if new_name and new_name.strip(): 
             client.name = new_name.strip()
+        if new_category:
+            client.price_category = new_category.strip() # 🌟 Update model tier state
         if new_phone and new_phone.strip() != client.phone:
             existing = User.query.filter_by(phone=new_phone.strip()).first()
             if existing:
@@ -458,12 +561,7 @@ def update_client(client_id):
             clean_pass = new_password.strip()
             if len(clean_pass) >= 4:
                 client.set_password(clean_pass)
-                from sqlalchemy.orm.attributes import flag_modified
-                flag_modified(client, "password_hash")
-                flash(f"Password per '{client.name}' modificata con successo!", "success")
-            else:
-                flash(f"Modifica Fallita: Almeno 4 caratteri richiesta.", "danger")
-                return redirect(url_for('admin.index', active_tab='users_management'))
+        
         db.session.commit()
         flash(f"Dati anagrafici di '{client.name}' salvati correttamente.", "success")
     except Exception as e:
