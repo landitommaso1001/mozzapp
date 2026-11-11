@@ -6,30 +6,26 @@
     <a href="{{ url_for('client_bp.logout') }}" class="btn logout-btn-fixed" style="background: #ef4444; color: white; border: none; padding: 6px 12px;">🚪 Esci</a>
 </div>
 
-<!-- 🌟 ADD THIS BLOCK AT THE TOP OF CLIENT.HTML CONTENT -->
+
 {% if request.args.get('whatsapp_notify') == '1' %}
-<div class="card" style="background: #e0f2fe !important; border: 2px solid #25D366 !important; padding: 16px !important; margin-bottom: 16px; text-align: center;">
-    <h4 style="color: var(--text-dark); margin-bottom: 4px;">📲 Invia la Notifica d'Ordine su WhatsApp</h4>
-    <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 14px;">Invia il riepilogo dell'ordine (ID: <strong>{{ request.args.get('last_order_id') }}</strong>) al personale selezionando una delle linee attive:</p>
-    
-    <div style="display: flex; flex-direction: column; gap: 8px; max-width: 320px; margin: 0 auto;">
-        {% if active_notification_lines %}
+    {% if active_notification_lines %}
+    <div class="card" style="background: #e0f2fe !important; border: 2px solid #25D366 !important; padding: 16px !important; margin-bottom: 16px; text-align: center; max-width: 100%;">
+        <h4 style="color: var(--text-dark); margin-bottom: 4px;">📲 Invia la Notifica d'Ordine su WhatsApp</h4>
+        <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 14px;">Invia il riepilogo dell'ordine (ID: <strong>{{ request.args.get('last_order_id') }}</strong>) al personale selezionando una delle linee attive:</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 8px; max-width: 320px; margin: 0 auto;">
             {% for number in active_notification_lines %}
                 <a href="https://wa.me{{ number }}?text=Salve!%20Ho%20appena%20inserito%20un%20nuovo%20ordine%20sul%20portale%20MozzApp%20(ID:%20{{ request.args.get('last_order_id') }})." 
-                   target="_blank" class="btn btn-success" style="background-color: #25D366 !important; border-color: #128C7E !important; color: white !important; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; width: 100%;">
+                   target="_blank" class="btn btn-success" style="background-color: #25D366 !important; border-color: #128C7E !important; color: white !important; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; width: 100%; text-decoration: none;">
                     💬 Invia a Linea Notifica #{{ loop.index }} ({{ number }})
                 </a>
             {% endfor %}
-        {% else %}
-            <!-- Default backup fallback if no admin phone numbers have been saved in settings yet -->
-            <a href="https://wa.me393331234567?text=Salve!%20Ho%20appena%20inserito%20un%20nuovo%20ordine%20(ID:%20{{ request.args.get('last_order_id') }})." 
-               target="_blank" class="btn btn-success" style="background-color: #25D366 !important; color: white !important; font-weight: 700; min-height: 40px; display: inline-flex; align-items: center; justify-content: center; width: 100%;">
-                💬 Invia al Supporto Centrale
-            </a>
-        {% endif %}
+        </div>
     </div>
-</div>
+    {% endif %}
 {% endif %}
+
+
 
 <!-- 🖥️ DESKTOP PRESENTATION INTERFACE -->
 <div class="desktop-layout">
