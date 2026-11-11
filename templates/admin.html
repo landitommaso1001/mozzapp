@@ -385,17 +385,102 @@
         </div>
         {% endif %}
 
+        <!-- ================= ANALYTICS ACTIVE TAB ================= -->
         {% if active_tab == 'analytics' %}
         <div class="card">
-            <h3>📊 Resoconto Finanziario & Riepilogo Produzione</h3>
-            <!-- Analytics panel filters sitting cleanly in layout here... -->
-            <div style="background:#0284c7; color:white; padding:12px; border-radius:4px; margin-bottom:12px; display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:8px; text-align:center;">
+            <h3 style="margin-bottom: 12px;">📊 Resoconto Finanziario & Riepilogo Produzione</h3>
+            
+            <!-- Filter Form -->
+            <form method="GET" action="{{ url_for('admin.index') }}" class="filter-form-grid" style="background: var(--bg-neutral); padding: 10px; border-radius: 4px; margin-bottom: 16px;">
+                <input type="hidden" name="active_tab" value="analytics">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; align-items: flex-end;">
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 4px;">Da data:</label>
+                        <input type="date" name="start_date" value="{{ start_date }}" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 4px;">A data:</label>
+                        <input type="date" name="end_date" value="{{ end_date }}" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 4px;">Prodotto:</label>
+                        <select name="product_name" style="width: 100%;">
+                            <option value="">-- Tutti i Prodotti --</option>
+                            {% for p in products %}
+                            <option value="{{ p.name }}" {% if product_name == p.name %}selected{% endif %}>{{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 4px;">Cliente:</label>
+                        <select name="analytics_client_id" style="width: 100%;">
+                            <option value="">-- Tutti i Clienti --</option>
+                            <option value="banco" {% if analytics_client_id == 'banco' %}selected{% endif %}>Vendita Diretta / Banco</option>
+                            {% for c in clients %}
+                            <option value="{{ c.id }}" {% if analytics_client_id == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 4px;">Stato Pagamento:</label>
+                        <select name="analytics_payment_status" style="width: 100%;">
+                            <option value="">-- Tutti gli Stati --</option>
+                            <option value="Da Saldare" {% if analytics_payment_status == 'Da Saldare' %}selected{% endif %}>Da Saldare</option>
+                            <option value="Saldato" {% if analytics_payment_status == 'Saldato' %}selected{% endif %}>Saldato</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-top: 10px; display: flex; gap: 6px; justify-content: flex-end;">
+                    <button type="submit" class="btn btn-primary">🔍 Filtra</button>
+                    <a href="{{ url_for('admin.index', active_tab='analytics') }}" class="btn">🔄 Resetta</a>
+                </div>
+            </form>
+
+            <!-- Summary Totals Banner -->
+            <div style="background: #0284c7; color: white; padding: 12px; border-radius: 4px; margin-bottom: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; text-align: center;">
                 <div><strong>Pezzi:</strong> {{ grand_total_qty }} pz</div>
                 <div><strong>Massa:</strong> {{ '%.2f'|format(grand_total_kg) }} Kg</div>
                 <div><strong>Valore:</strong> € {{ '%.2f'|format(grand_total_revenue) }}</div>
             </div>
+
+            <!-- Detailed Product Breakdown Table -->
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align: left;">Descrizione Prodotto / Formato</th>
+                            <th style="text-align: right;">Quantità (Pezzi)</th>
+                            <th style="text-align: right;">Peso Totale (Kg)</th>
+                            <th style="text-align: right;">Valore (€)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if product_summary %}
+                            {% for name_key, metrics in product_summary.items() %}
+                            <tr>
+                                <td style="text-align: left;">🥛 <strong>{{ name_key }}</strong></td>
+                                <td style="text-align: right;">{{ metrics.qty }} pz</td>
+                                <td style="text-align: right;">{{ "%.2f"|format(metrics.kg) }} Kg</td>
+                                <td style="text-align: right;">€ {{ "%.2f"|format(metrics.revenue) }}</td>
+                            </tr>
+                            {% endfor %}
+                            <tr style="background: #f1f5f9; font-weight: 800;">
+                                <td style="text-align: left;">⭐ TOTALE GENERALE FILTRATO</td>
+                                <td style="text-align: right;">{{ grand_total_qty }} pz</td>
+                                <td style="text-align: right;">{{ "%.2f"|format(grand_total_kg) }} Kg</td>
+                                <td style="text-align: right;">€ {{ "%.2f"|format(grand_total_revenue) }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 16px; color: var(--text-muted);">Nessun dato corrispondente ai filtri impostati.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </div>
         {% endif %}
+
 
         {% if active_tab == 'reset_data' %}
         <div class="card" style="border: 2px solid #ef4444 !important;">
