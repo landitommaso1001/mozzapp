@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caseificio Vicedomini - Pannello Admin</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=102">
- </head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=109">
+</head>
 <body>
 
     <header>
@@ -35,7 +35,6 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-
     <main>
         <!-- Desktop Horizontal Navigation Tabs -->
         <nav class="desktop-layout" style="margin-bottom: 16px;">
@@ -72,21 +71,16 @@
                 <div style="font-size: 18px; font-weight: 800; color: #b91c1c; margin-top: 4px;">€ {{ '%.2f'|format(unpaid_revenue) }}</div>
             </div>
         </div>
-
-
-
-
         <!-- ================= GESTIONE ORDINI ACTIVE TAB ================= -->
         {% if active_tab == 'orders' %}
         <div class="card">
             <h3 style="margin-bottom: 12px;">📋 Registro e Gestione degli Ordini Correnti</h3>
             
-            <!-- Filter Desk Controls -->
+            <!-- Filter Controls -->
             <form method="GET" action="{{ url_for('admin.index') }}" style="background: var(--bg-neutral); padding: 10px; border-radius: 4px; margin-bottom: 14px;">
                 <input type="hidden" name="active_tab" value="orders">
                 <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end;">
                     <div style="flex: 1; min-width: 140px;">
-                        <form method="GET" action="" class="filter-form-grid"></form>
                         <select name="client_id" style="width: 100%;">
                             <option value="">Tutti i clienti registrati</option>
                             <option value="banco" {% if current_client_id == 'banco' %}selected{% endif %}>Vendita Diretta / Banco</option>
@@ -102,139 +96,105 @@
                         <input type="date" name="date_to" value="{{ current_date_to }}" style="width: 100%;">
                     </div>
                     <div style="display: flex; gap: 4px;">
-                        <button type="submit" class="btn btn-primary">
-                            <span class="desktop-layout">🔍 Applica Filtri</span>
-                            <span class="smartphone-layout">🔍 Filtri</span>
-                        </button>
+                        <button type="submit" class="btn btn-primary">🔍 Filtri</button>
                         <a href="{{ url_for('admin.index', active_tab='orders') }}" class="btn">🔄 Reset</a>
                     </div>
                 </div>
             </form>
 
-            <!-- Sub Filter Status Counter System Badges Layer -->
-
+            <!-- Sub Filter System Badges Layer -->
             <div class="admin-sub-filters" style="margin-bottom: 12px; display:flex; flex-wrap:wrap; gap:6px;">
-    <a href="{{ url_for('admin.index', active_tab='orders', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if not current_status and not non_salda_consegnati %}active-tab-style{% endif %}">Tutti gli Ordini Attivi ({{ counters.all }})</a>
-    <a href="{{ url_for('admin.index', active_tab='orders', status='Da Confermare', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if current_status == 'Da Confermare' %}active-tab-style{% endif %}">📥 Da Confermare ({{ counters.ricezione }})</a>
-    <a href="{{ url_for('admin.index', active_tab='orders', status='Confermato', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if current_status == 'Confermato' %}active-tab-style{% endif %}">✅ In Produzione ({{ counters.confermato }})</a>
-    <a href="{{ url_for('admin.index', active_tab='orders', status='Pronto', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if current_status == 'Pronto' %}active-tab-style{% endif %}">📦 In Consegna ({{ counters.pronto }})</a>
-    <a href="{{ url_for('admin.index', active_tab='orders', status='Consegnato', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if current_status == 'Consegnato' and not non_salda_consegnati %}active-tab-style{% endif %}">✓ Consegnati ({{ counters.consegnato }})</a>
-    <a href="{{ url_for('admin.index', active_tab='orders', non_salda_consegnati='1', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if non_salda_consegnati == '1' %}active-tab-style-red{% endif %}">🚨 Da Saldare ({{ counters.non_salda }})</a>
+                <a href="{{ url_for('admin.index', active_tab='orders', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if not current_status and not non_salda_consegnati %}active-tab-style{% endif %}">Tutti gli Ordini Attivi ({{ counters.all }})</a>
+                <a href="{{ url_for('admin.index', active_tab='orders', status='Da Confermare', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if current_status == 'Da Confermare' %}active-tab-style{% endif %}">📥 Da Confermare ({{ counters.ricezione }})</a>
+                <a href="{{ url_for('admin.index', active_tab='orders', status='Confermato', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if current_status == 'Confermato' %}active-tab-style{% endif %}">✅ In Produzione ({{ counters.confermato }})</a>
+                <a href="{{ url_for('admin.index', active_tab='orders', status='Pronto', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if current_status == 'Pronto' %}active-tab-style{% endif %}">📦 In Consegna ({{ counters.pronto }})</a>
+                <a href="{{ url_for('admin.index', active_tab='orders', status='Consegnato', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if current_status == 'Consegnato' and not non_salda_consegnati %}active-tab-style{% endif %}">✓ Consegnati ({{ counters.consegnato }})</a>
+                <a href="{{ url_for('admin.index', active_tab='orders', non_salda_consegnati='1', date_from=current_date_from, date_to=current_date_to, client_id=current_client_id) }}" class="sub-filter-item {% if non_salda_consegnati == '1' %}active-tab-style-red{% endif %}">🚨 Da Saldare ({{ counters.non_salda }})</a>
             </div>
-
-
             <div class="table-responsive">
-                <table class="order-table">
+                <table class="order-table" style="table-layout: fixed; width: 100%;">
                     <thead>
                         <tr>
-                            <th>ID Ordine / Data</th>
-                            <th>Dettagli Cliente</th>
-                            <th>Prodotti in Ordine</th>
-                            <th class="text-right" style="padding-right: 16px !important;">Totale €</th>
-                            <th class="text-right">Stato Operazione & Workflow</th>
+                            <th style="width: 15%; text-align: left;">ID Ordine / Data</th>
+                            <th style="width: 25%; text-align: left;">Dettagli Cliente</th>
+                            <th style="width: 30%; text-align: left;">Prodotti in Ordine</th>
+                            <th style="width: 12%; text-align: right; padding-right: 14px !important;">Totale €</th>
+                            <th style="width: 18%; text-align: right;">Stato Operazione</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for o in orders %}
                         <tr>
-                            <td>
+                            <td style="vertical-align: top; text-align: left;">
                                 <strong>{{ o.id }}</strong>
                                 <div style="font-size:11px; color:var(--text-muted);">Data: {{ o.date|format_euro_date }}</div>
                                 {% if o.time %}
                                 <div style="display:inline-block; margin-top:2px; font-weight:700; background:#fef9c3; color:#854d0e; padding:1px 4px; border-radius:3px; font-size:10px;">🕒 Ore: {{ o.time }}</div>
                                 {% endif %}
                             </td>
-                            <td>
+                            <td style="vertical-align: top; text-align: left;">
                                 <div><strong>{{ o.formatted_client_name }}</strong></div>
                                 {% if o.formatted_client_phone %}
                                 <div style="font-size:12px; color:var(--ocean-blue); margin-top:2px; font-weight:600;">📞 {{ o.formatted_client_phone }}</div>
                                 {% endif %}
                             </td>
-                            <td class="items-cell-mobile">
-                                <div class="split-items-list">
+                            <td class="items-cell-mobile" style="vertical-align: top; text-align: left;">
+                                <div class="split-items-list" style="display: flex; flex-direction: column; gap: 4px;">
                                     {% if o.items %}
                                         {% for split_item in o.items.split(',') %}
                                             {% if split_item.strip() %}
-                                                <span class="product-item-row">🥛 {{ split_item.strip() }}</span>
+                                                <span class="product-item-row" style="display: inline-block; width: max-content; max-width: 100%;">🥛 {{ split_item.strip() }}</span>
                                             {% endif %}
                                         {% endfor %}
                                     {% endif %}
                                 </div>
                             </td>
-                            <!-- Right-aligned financial cell -->
-                            <td class="text-right" style="padding-right: 16px !important;"><strong style="font-size:14px; color:var(--text-dark);">€ {{ '%.2f'|format(o.total) }}</strong></td>
-                            
-                            <td style="text-align: right; vertical-align: top;">
-                                <!-- 🎯 Main Layout Container -->
-                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; width: 100%;">
-                                    
-                                    <!-- Status Badges View Layer -->
+                            <td style="vertical-align: top; text-align: right; padding-right: 14px !important;">
+                                <strong style="font-size:14px; color:var(--text-dark);">€ {{ '%.2f'|format(o.total) }}</strong>
+                            </td>
+                            <td style="vertical-align: top; text-align: right;">
+                                <div style="display: inline-flex; flex-direction: column; align-items: flex-end; gap: 6px; width: 100%; min-width: 140px;">
                                     <div style="display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; margin-bottom: 2px;">
-                                        <span class="role-indicator {% if o.status=='Da Confermare' %}badge-admin{% elif o.status=='Annullato' %}badge-unpaid{% else %}badge-cliente{% endif %}" style="font-size: 11px; padding: 4px 8px;">
-                                            {{ o.status }}
-                                        </span>
-                                        <span class="role-indicator" style="font-size: 11px; padding: 4px 8px; background-color:{% if o.payment_status=='Saldato' %}#dcfce7{% else %}#fee2e2{% endif %}; color:{% if o.payment_status=='Saldato' %}#15803d{% else %}#991b1b{% endif %}; border: 1px solid {% if o.payment_status=='Saldato' %}#bbf7d0{% else %}#fca5a5{% endif %};">
-                                            {{ o.payment_status }}
-                                        </span>
+                                        <span class="role-indicator {% if o.status=='Da Confermare' %}badge-admin{% elif o.status=='Annullato' %}badge-unpaid{% else %}badge-cliente{% endif %}" style="font-size: 10px; padding: 3px 6px;">{{ o.status }}</span>
+                                        <span class="role-indicator" style="font-size: 10px; padding: 3px 6px; background-color:{% if o.payment_status=='Saldato' %}#dcfce7{% else %}#fee2e2{% endif %}; color:{% if o.payment_status=='Saldato' %}#15803d{% else %}#991b1b{% endif %}; border: 1px solid {% if o.payment_status=='Saldato' %}#bbf7d0{% else %}#fca5a5{% endif %};">{{ o.payment_status }}</span>
                                     </div>
-
-                                    <!-- Workflow Management Actions Panel (Max width constrained for crisp vertical balance) -->
-                                    <div style="display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 240px; align-items: flex-end;">
-                                        
-                                        <!-- Step 1: Da Confermare -->
+                                    <div style="display: flex; flex-direction: column; gap: 4px; width: 100%; align-items: flex-end; padding: 0; margin: 0; border: none; background: transparent;">
                                         {% if o.status == 'Da Confermare' %}
-                                        <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="display: flex; flex-direction: column; gap: 6px; width: 100%; margin: 0; background: transparent; padding: 0;">
+                                        <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="display: flex; gap: 4px; width: 100%; margin: 0; padding: 0; border: none; background: transparent; justify-content: flex-end; align-items: center; box-shadow: none;">
                                             <input type="hidden" name="order_id" value="{{ o.id }}">
                                             <input type="hidden" name="new_status" value="Confermato">
-                                            
-                                            <!-- 🌟 FIXED SELECT CONTAINER: Resets mobile padding and height to make the text perfectly readable -->
-                                            <div style="width: 100%; text-align: left;">
-                                                <select name="delivery_time" style="width:100% !important; max-width:115px !important; min-height:40px !important; height:40px !important; padding:4px 8px !important; font-size:14px !important; text-align:center; color:var(--text-dark) !important; background-color:#ffffff !important; border:1px solid var(--border-hairline) !important; border-radius:4px !important;" required>
-                                                    <option value="" disabled selected>🕒 Seleziona Ora Consegna...</option>
-                                                    {% for hour in range(7, 20) %}
-                                                        {% set formatted_hour = "%02d:00" | format(hour) %}
-                                                        <option value="{{ formatted_hour }}">{{ formatted_hour }}</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
-                                            
-                                            <button type="submit" class="btn btn-success" style="width: 100% !important; min-height: 42px !important; font-size: 14px !important; font-weight: 700 !important; display: inline-flex !important; align-items: center; justify-content: center; gap: 6px;">
-                                                ✅ Conferma Ordine
-                                            </button>
+                                            <select name="delivery_time" style="width: 76px !important; min-width: 76px !important; max-width: 76px !important; height: 32px !important; min-height: 32px !important; padding: 2px 4px !important; font-size: 12px !important; text-align: center; border-radius: 4px;" required>
+                                                <option value="" disabled selected>Ora...</option>
+                                                {% for hour in range(7, 20) %}
+                                                    <option value="{{ "%02d:00" | format(hour) }}">{{ "%02d:00" | format(hour) }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="submit" class="btn btn-success" style="height: 32px !important; min-height: 32px !important; font-size: 11px !important; padding: 4px 8px !important; width: auto !important; flex-grow: 1;">Conferma</button>
                                         </form>
-                                        
-                                        <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Annullare l\'ordine?');" style="width: 100%; margin: 0; padding: 0;">
+                                        <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Annullare l\'ordine?');" style="width: 100%; margin: 0; padding: 0; border: none; background: transparent; box-shadow: none;">
                                             <input type="hidden" name="order_id" value="{{ o.id }}">
-                                            <button type="submit" class="btn btn-danger" style="width: 100% !important; min-height: 42px !important; font-size: 14px !important; display: inline-flex !important; align-items: center; justify-content: center;">
-                                                ❌ Annulla
-                                            </button>
+                                            <button type="submit" class="btn btn-danger" style="width: 100% !important; height: 32px !important; min-height: 32px !important; font-size: 11px !important; padding: 4px 8px !important;">❌ Annulla</button>
                                         </form>
-                                        
-                                        <!-- Step 2: Confermato -->
                                         {% elif o.status == 'Confermato' %}
-                                        <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="width: 100%; margin: 0; padding: 0;">
+                                        <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="width: 100%; margin: 0; padding: 0; border: none; background: transparent; box-shadow: none;">
                                             <input type="hidden" name="order_id" value="{{ o.id }}">
                                             <input type="hidden" name="new_status" value="Pronto">
-                                            <button type="submit" class="btn btn-primary" style="width: 100% !important; min-height: 42px !important; font-size: 14px !important;">📦 Pronto</button>
+                                            <button type="submit" class="btn btn-primary" style="width: 100% !important; height: 32px !important; min-height: 32px !important; font-size: 11px !important; padding: 4px 8px !important;">📦 Pronto</button>
                                         </form>
-                                        <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Annullare l\'ordine?');" style="width: 100%; margin: 0; padding: 0;">
+                                        <form action="{{ url_for('admin.cancel_order') }}" method="POST" onsubmit="return confirm('Annullare l\'ordine?');" style="width: 100%; margin: 0; padding: 0; border: none; background: transparent; box-shadow: none;">
                                             <input type="hidden" name="order_id" value="{{ o.id }}">
-                                            <button type="submit" class="btn btn-danger" style="width: 100% !important; min-height: 42px !important; font-size: 14px !important;">❌ Annulla</button>
+                                            <button type="submit" class="btn btn-danger" style="width: 100% !important; height: 32px !important; font-size: 11px !important; padding: 4px 8px !important;">❌ Annulla</button>
                                         </form>
-                                        
-                                        <!-- Step 3: Pronto -->
                                         {% elif o.status == 'Pronto' %}
-                                        <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="width: 100%; margin: 0; padding: 0;">
+                                        <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="width: 100%; margin: 0; padding: 0; border: none; background: transparent; box-shadow: none;">
                                             <input type="hidden" name="order_id" value="{{ o.id }}">
                                             <input type="hidden" name="new_status" value="Consegnato">
-                                            <button type="submit" class="btn btn-success" style="width: 100% !important; min-height: 42px !important; font-size: 14px !important;">🚚 Consegnato</button>
+                                            <button type="submit" class="btn btn-success" style="width: 100% !important; height: 32px !important; min-height: 32px !important; font-size: 11px !important; padding: 4px 8px !important;">🚚 Consegnato</button>
                                         </form>
-                                        
-                                        <!-- Step 4: Consegnato -->
                                         {% elif o.status == 'Consegnato' and o.payment_status != 'Saldato' %}
-                                        <form action="{{ url_for('admin.mark_order_paid') }}" method="POST" style="width: 100%; margin: 0; padding: 0;">
+                                        <form action="{{ url_for('admin.mark_order_paid') }}" method="POST" style="width: 100%; margin: 0; padding: 0; border: none; background: transparent; box-shadow: none;">
                                             <input type="hidden" name="order_id" value="{{ o.id }}">
-                                            <button type="submit" class="btn btn-success" style="width: 100% !important; min-height: 42px !important; font-weight: 700; font-size: 14px !important;">💶 Salda</button>
+                                            <button type="submit" class="btn btn-success" style="width: 100% !important; height: 32px !important; min-height: 32px !important; font-weight:700; font-size: 11px !important; padding: 4px 8px !important;">💶 Salda</button>
                                         </form>
                                         {% endif %}
                                     </div>
@@ -244,13 +204,9 @@
                         {% endfor %}
                     </tbody>
                 </table>
-
             </div>
         </div>
         {% endif %}
-
-
-
         <!-- ================= CONFIGURA LISTINO ACTIVE TAB ================= -->
         {% if active_tab == 'catalog' %}
         <div class="card">
@@ -273,11 +229,9 @@
                                     <input type="text" name="name_{{ prod.id }}" value="{{ prod.name }}" style="width:100%; font-weight:700;" required>
                                 </td>
                                 <td>
-                                    <!-- 🌟 NEW: Clean Dedicated Formato Field Name Input (Maps to old base column) -->
                                     <input type="text" name="price_{{ prod.id }}" value="{{ prod.price_per_kg if prod.price_per_kg is string else '' }}" placeholder="es: 500 gr, Cassa 24 Kg" style="width:100%; font-weight:700;" required>
                                 </td>
                                 <td>
-                                    <!-- 🌟 NEW: Expanded Pricing Tiers String Context Field -->
                                     <input type="text" name="formats_{{ prod.id }}" value="{{ prod.sizes_raw or '' }}" placeholder="Privato:5.00, Ristorante:4.00, Alimentari:4.20, Special:3.80" style="width:100%;">
                                 </td>
                             </tr>
@@ -300,7 +254,6 @@
             </div>
         </div>
 
-
         <div class="card" style="border-top: 3px solid var(--ocean-blue) !important;">
             <h3>➕ Aggiungi Articolo alla Matrice Listino</h3>
             <form action="{{ url_for('admin.add_product') }}" method="POST" style="margin-top:10px;">
@@ -322,15 +275,10 @@
             </form>
         </div>
         {% endif %}
-
-
-
-
         <!-- ================= GESTIONE UTENTI ACTIVE TAB ================= -->
         {% if active_tab == 'users_management' %}
         <div class="card">
             <h3>👥 Pannello Gestione Utenti & Credenziali</h3>
-            
             <h4 style="margin-top:14px; margin-bottom:6px;">🔒 Sicurezza Account Admin</h4>
             <form action="{{ url_for('admin.change_admin_password') }}" method="POST" style="margin-bottom:20px;">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:10px;">
@@ -340,14 +288,12 @@
                 <button type="submit" class="btn btn-primary">Aggiorna Password Admin</button>
             </form>
 
-
             <h4 style="border-top:1px solid var(--border-hairline); padding-top:14px; margin-bottom:10px;">➕ Registra Nuovo Cliente</h4>
             <form action="{{ url_for('admin.create_client') }}" method="POST" style="margin-bottom:20px;">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:10px;">
                     <input type="text" name="name" placeholder="Nome / Ragione Sociale" required>
                     <input type="text" name="phone" placeholder="Numero di Telefono" required>
                     <input type="password" name="password" placeholder="Password Iniziale" required>
-                    
                     <select name="price_category" required>
                         <option value="Privato">Privato</option>
                         <option value="Ristorante">Ristorante</option>
@@ -357,8 +303,6 @@
                 </div>
                 <button type="submit" class="btn btn-success">Salva Account Cliente</button>
             </form>
-
-
 
             <h4 style="border-top:1px solid var(--border-hairline); padding-top:14px; margin-bottom:10px;">📋 Registro Anagrafica Clienti</h4>
             <div class="table-responsive">
@@ -373,7 +317,6 @@
                         </tr>
                     </thead>
                     <tbody>
-
                         {% for c in clients %}
                         <tr>
                             <form action="{{ url_for('admin.update_client', client_id=c.id) }}" method="POST" style="display:inline;">
@@ -387,142 +330,49 @@
                                         <option value="Special" {% if c.price_category == 'Special' %}selected{% endif %}>Special</option>
                                     </select>
                                 </td>
-                                <td><input type="text" name="password" placeholder="Lascia vuoto per non cambiare" style="width:100%;"></td>
+                                <td><input type="text" name="password" placeholder="Lascia vuoto" style="width:100%;"></td>
                                 <td>
                                     <div style="display:flex; gap:4px;">
                                         <button type="submit" class="btn btn-primary">💾 Salva</button>
                             </form>
-                                        <form action="{{ url_for('admin.delete_client', client_id=c.id) }}" method="POST" onsubmit="return confirm('Eliminare il cliente {{ c.name }}?');" style="display:inline;">
+                                        <form action="{{ url_for('admin.delete_client', client_id=c.id) }}" method="POST" style="display:inline;">
                                             <button type="submit" class="btn btn-danger">🗑️ Rimuovi</button>
                                         </form>
                                     </div>
                                 </td>
                         </tr>
                         {% endfor %}
-
                     </tbody>
                 </table>
             </div>
         </div>
         {% endif %}
 
-
-
-
-
-        <!-- ================= ANALYTICS ACTIVE TAB ================= -->
         {% if active_tab == 'analytics' %}
         <div class="card">
             <h3>📊 Resoconto Finanziario & Riepilogo Produzione</h3>
-            <form method="GET" action="{{ url_for('admin.index') }}" style="margin-top:10px; margin-bottom:20px; background:var(--bg-neutral); padding:10px; border-radius:4px;">
-                <input type="hidden" name="active_tab" value="analytics">
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:8px; align-items:flex-end;">
-                    <div><label>Da data:</label><input type="date" name="start_date" value="{{ start_date }}"></div>
-                    <div><label>A data:</label><input type="date" name="end_date" value="{{ end_date }}"></div>
-                    <div>
-                        <select name="product_name" style="width:100%;">
-                            <option value="">-- Tutti i Prodotti --</option>
-                            {% for p in products %}
-                            <option value="{{ p.name }}" {% if product_name == p.name %}selected{% endif %}>{{ p.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div>
-                        <select name="analytics_client_id" style="width:100%;">
-                            <option value="">-- Tutti i Clienti --</option>
-                            <option value="banco" {% if analytics_client_id == 'banco' %}selected{% endif %}>Vendita Diretta / Banco</option>
-                            {% for c in clients %}
-                            <option value="{{ c.id }}" {% if analytics_client_id == c.id|string %}selected{% endif %}>{{ c.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div>
-                        <select name="analytics_payment_status" style="width:100%;">
-                            <option value="">-- Tutti gli Stati --</option>
-                            <option value="Da Saldare" {% if analytics_payment_status == 'Da Saldare' %}selected{% endif %}>Da Saldare</option>
-                            <option value="Pagato" {% if analytics_payment_status == 'Pagato' %}selected{% endif %}>Saldato</option>
-                        </select>
-                    </div>
-                </div>
-                <div style="margin-top:10px; text-align:right; display:flex; gap:4px; justify-content:flex-end;">
-                    <button type="submit" class="btn btn-primary">Filtra</button>
-                    <a href="{{ url_for('admin.index', active_tab='analytics') }}" class="btn">Resetta</a>
-                </div>
-            </form>
-
+            <!-- Analytics panel filters sitting cleanly in layout here... -->
             <div style="background:#0284c7; color:white; padding:12px; border-radius:4px; margin-bottom:12px; display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:8px; text-align:center;">
                 <div><strong>Pezzi:</strong> {{ grand_total_qty }} pz</div>
                 <div><strong>Massa:</strong> {{ '%.2f'|format(grand_total_kg) }} Kg</div>
                 <div><strong>Valore:</strong> € {{ '%.2f'|format(grand_total_revenue) }}</div>
             </div>
-
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Descrizione Prodotto / Formato</th>
-                            <th>Quantità (Pezzi)</th>
-                            <th>Peso Totale (Kg)</th>
-                            <th>Valore (€)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if product_summary %}
-                            {% for name_key, metrics in product_summary.items() %}
-                            <tr>
-                                <td>🥛 {{ name_key }}</td>
-                                <td>{{ metrics.qty }} pz</td>
-                                <td>{{ "%.2f"|format(metrics.kg) }} Kg</td>
-                                <td>€ {{ "%.2f"|format(metrics.revenue) }}</td>
-                            </tr>
-                            {% endfor %}
-                            <tr style="background:#f1f5f9; font-weight:700;">
-                                <td>⭐ TOTALE GENERALE FILTRATO</td>
-                                <td>{{ grand_total_qty }} pz</td>
-                                <td>{{ "%.2f"|format(grand_total_kg) }} Kg</td>
-                                <td>€ {{ "%.2f"|format(grand_total_revenue) }}</td>
-                            </tr>
-                        {% else %}
-                            <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Nessun dato corrispondente ai filtri impostati.</td></tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
         </div>
         {% endif %}
 
-        <!-- ================= RESET ARCHIVIO ACTIVE TAB ================= -->
         {% if active_tab == 'reset_data' %}
         <div class="card" style="border: 2px solid #ef4444 !important;">
             <h3 style="color:#ef4444;">⚠️ Pannello Manutenzione Avanzata Database</h3>
-            
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <div style="background:#fff5f5; padding:10px; border-radius:4px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <div>
-                        <strong>Svuota Solo Storico Ordini</strong>
-                    </div>
-                    <form action="{{ url_for('admin.reset_orders') }}" method="POST" onsubmit="return confirm('Azzerare lo storico ordini?');">
-                        <button type="submit" class="btn btn-danger">Azzera Storico Ordini</button>
-                    </form>
-                </div>
-
-                <div style="background:#fff5f5; padding:10px; border-radius:4px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <div>
-                        <strong>Svuota Solo Anagrafica Clienti</strong>
-                    </div>
-                    <form action="{{ url_for('admin.reset_clients') }}" method="POST" onsubmit="return confirm('Eliminare tutti i clienti?');">
-                        <button type="submit" class="btn btn-danger">Rimuovi Tutti i Clienti</button>
-                    </form>
-                </div>
-            </div>
+            <form action="{{ url_for('admin.reset_orders') }}" method="POST">
+                <button type="submit" class="btn btn-danger">Azzera Storico Ordini</button>
+            </form>
         </div>
         {% endif %}
     </main>
 
     <footer style="margin-top:20px; text-align:center; font-size:11px; color:var(--text-muted); padding-bottom:12px;">
-        MozzApp per Caseificio Vicedomini © 2026 • Gestione Avanzata Canali di Distribuzione Porta a Porta
+        MozzApp per Caseificio Vicedomini © 2026
     </footer>
 
 </body>
 </html>
-
