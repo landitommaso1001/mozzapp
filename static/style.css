@@ -274,3 +274,51 @@ table th {
     gap: 4px;
     width: 100%;
 }
+/* 🖥️ Desktop Defaults for Workflow Elements */
+.workflow-action-form {
+    display: inline-flex !important;
+    gap: 4px !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    width: auto !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.workflow-select-time {
+    width: 76px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 2px 4px !important;
+    font-size: 12px !important;
+}
+
+.workflow-btn-confirm {
+    width: auto !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+}
+
+/* 📱 Smartphone Adaptive Overrides */
+@media (max-width: 768px) {
+    .workflow-action-form {
+        display: flex !important;
+        flex-direction: column !important; /* Stacks the time dropdown directly above the button */
+        gap: 6px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .workflow-select-time,
+    .workflow-btn-confirm {
+        width: 100% !important;        /* Expands elements to fill the full card area */
+        min-height: 42px !important;   /* Optimizes for touch inputs */
+        font-size: 14px !important;
+        text-align: center !important;
+    }
+}
