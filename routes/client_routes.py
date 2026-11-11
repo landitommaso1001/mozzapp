@@ -239,20 +239,23 @@ def index():
     if request.args.get('whatsapp_notify') == '1' and last_order_id:
         recent_order = Order.query.filter_by(id=last_order_id).first()
         if recent_order:
-            # Convert YYYY-MM-DD to European DD.MM.YYYY format
+            # Strip whitespace and convert YYYY-MM-DD to European DD.MM.YYYY format
             try:
-                euro_delivery_date = datetime.strptime(recent_order.date, "%Y-%m-%d").strftime("%d.%m.%Y")
+                clean_date_str = str(recent_order.date).strip()
+                euro_delivery_date = datetime.strptime(clean_date_str, "%Y-%m-%d").strftime("%d.%m.%Y")
             except Exception:
                 euro_delivery_date = recent_order.date
+
             items_lines = "\n".join([f"- {item.strip()}" for item in recent_order.items.split(',') if item.strip()])
             whatsapp_message_text = (
                 f"*Nuovo Ordine MozzApp*\n"
                 f"*ID:* {recent_order.id}\n"
                 f"*Cliente:* {recent_order.client}\n"
-                f"*Data Consegna:* {recent_order.date}\n"
+                f"*Data Consegna:* {euro_delivery_date}\n"
                 f"*Prodotti:*\n{items_lines}\n"
                 f"*Totale:* EUR {recent_order.total:.2f}"
             )
+
 
     return render_template(
         'client.html', 
