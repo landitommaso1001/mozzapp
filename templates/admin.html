@@ -44,6 +44,7 @@
                 <li><a href="{{ url_for('admin.index', active_tab='users_management') }}" class="btn {% if active_tab == 'users_management' %}active-tab-style{% endif %}">👥 Anagrafica Clienti</a></li>
                 <li><a href="{{ url_for('admin.index', active_tab='analytics') }}" class="btn {% if active_tab == 'analytics' %}active-tab-style{% endif %}">📊 Resoconto Analitico</a></li>
                 <li><a href="{{ url_for('admin.index', active_tab='reset_data') }}" class="btn {% if active_tab == 'reset_data' %}active-tab-style-red{% endif %}">⚠️ Manutenzione Archivio</a></li>
+                <li><a href="{{ url_for('admin.index', active_tab='monthly_ledger') }}" class="btn {% if active_tab == 'monthly_ledger' %}active-tab-style{% endif %}">📅 Scheda Mensile</a></li>
             </ul>
         </nav>
 
@@ -54,6 +55,7 @@
             <a href="{{ url_for('admin.index', active_tab='users_management') }}" class="admin-nav-item {% if active_tab == 'users_management' %}active-tab-style{% endif %}">👥 Clienti</a>
             <a href="{{ url_for('admin.index', active_tab='analytics') }}" class="admin-nav-item {% if active_tab == 'analytics' %}active-tab-style{% endif %}">📊 Report</a>
             <a href="{{ url_for('admin.index', active_tab='reset_data') }}" class="admin-nav-item {% if active_tab == 'reset_data' %}active-tab-style-red{% endif %}">⚠️ Reset</a>
+            <a href="{{ url_for('admin.index', active_tab='monthly_ledger') }}" class="admin-nav-item {% if active_tab == 'monthly_ledger' %}active-tab-style{% endif %}">📅 Mensile</a>
         </div>
 
         <!-- Global Financial Summary Overview Indicators -->
@@ -391,9 +393,10 @@
             <h3 style="margin-bottom: 12px;">📊 Resoconto Finanziario & Riepilogo Produzione</h3>
             
             <!-- Filter Form -->
-            <form method="GET" action="{{ url_for('admin.index') }}" class="filter-form-grid" style="background: var(--bg-neutral); padding: 10px; border-radius: 4px; margin-bottom: 16px;">
+            <!-- Filter Form (Removed class="filter-form-grid" so mobile stays stacked cleanly) -->
+            <form method="GET" action="{{ url_for('admin.index') }}" style="background: var(--bg-neutral); padding: 12px; border-radius: 6px; border: 1px solid var(--border-hairline); margin-bottom: 16px;">
                 <input type="hidden" name="active_tab" value="analytics">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; align-items: flex-end;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; align-items: flex-end;">
                     <div>
                         <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 4px;">Da data:</label>
                         <input type="date" name="start_date" value="{{ start_date }}" style="width: 100%;">
@@ -430,9 +433,11 @@
                         </select>
                     </div>
                 </div>
-                <div style="margin-top: 10px; display: flex; gap: 6px; justify-content: flex-end;">
-                    <button type="submit" class="btn btn-primary">🔍 Filtra</button>
-                    <a href="{{ url_for('admin.index', active_tab='analytics') }}" class="btn">🔄 Resetta</a>
+                
+                <!-- Clean 50/50 bottom button row on mobile, right-aligned on desktop -->
+                <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; max-width: 300px; margin-left: auto;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">🔍 Filtra</button>
+                    <a href="{{ url_for('admin.index', active_tab='analytics') }}" class="btn" style="width: 100%; display: inline-flex; align-items: center; justify-content: center;">🔄 Resetta</a>
                 </div>
             </form>
 
@@ -480,6 +485,137 @@
             </div>
         </div>
         {% endif %}
+
+        <!-- ================= MONTHLY CLIENT LEDGER TAB ================= -->
+        {% if active_tab == 'monthly_ledger' %}
+        <style>
+            @media print {
+                header, nav, .admin-main-nav, .no-print, footer, .card:first-of-type { display: none !important; }
+                body, main, .card { background: white !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+                #printable-ledger { display: block !important; width: 100% !important; }
+                table th, table td { border: 1px solid #94a3b8 !important; padding: 4px 8px !important; font-size: 11px !important; }
+            }
+        </style>
+
+        <div class="card">
+            <h3 style="margin-bottom: 12px;">📅 Scheda Mensile Consegne per Cliente (Kg)</h3>
+            
+            <form method="GET" action="{{ url_for('admin.index') }}" class="no-print" style="background: var(--bg-neutral); padding: 12px; border-radius: 6px; border: 1px solid var(--border-hairline); margin-bottom: 16px;">
+                <input type="hidden" name="active_tab" value="monthly_ledger">
+                
+                <!-- Client, Year, Month Row -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 12px;">
+                    <div>
+                        <label style="font-size: 11px; font-weight: 700; display: block; margin-bottom: 4px;">Seleziona Cliente:</label>
+                        <select name="monthly_client_id" style="width: 100%; height: 36px;" required>
+                            <option value="">-- Scegli Cliente --</option>
+                            <option value="banco" {% if monthly_client_id == 'banco' %}selected{% endif %}>Vendita Diretta / Banco</option>
+                            {% for c in clients %}
+                            <option value="{{ c.id }}" {% if monthly_client_id == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: 700; display: block; margin-bottom: 4px;">Mese:</label>
+                        <select name="monthly_month" style="width: 100%; height: 36px;">
+                            {% set months = [(1,'Gennaio'),(2,'Febbraio'),(3,'Marzo'),(4,'Aprile'),(5,'Maggio'),(6,'Giugno'),(7,'Luglio'),(8,'Agosto'),(9,'Settembre'),(10,'Ottobre'),(11,'Novembre'),(12,'Dicembre')] %}
+                            {% for m_num, m_name in months %}
+                            <option value="{{ m_num }}" {% if monthly_month == m_num %}selected{% endif %}>{{ m_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: 700; display: block; margin-bottom: 4px;">Anno:</label>
+                        <select name="monthly_year" style="width: 100%; height: 36px;">
+                            {% for y in range(2025, 2030) %}
+                            <option value="{{ y }}" {% if monthly_year == y %}selected{% endif %}>{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Two Product Groups Checklists -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 12px;">
+                    <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid var(--border-hairline);">
+                        <strong style="font-size: 12px; color: var(--ocean-blue); display: block; margin-bottom: 6px;">📦 Gruppo Prodotti 1 (Colonna 1)</strong>
+                        <div style="max-height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">
+                            {% for p in products %}
+                            <label style="font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <input type="checkbox" name="group1" value="{{ p.name }}" {% if p.name in group1_products %}checked{% endif %} style="width: auto !important; min-height: auto !important;">
+                                {{ p.name }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid var(--border-hairline);">
+                        <strong style="font-size: 12px; color: #16a34a; display: block; margin-bottom: 6px;">📦 Gruppo Prodotti 2 (Colonna 2)</strong>
+                        <div style="max-height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">
+                            {% for p in products %}
+                            <label style="font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <input type="checkbox" name="group2" value="{{ p.name }}" {% if p.name in group2_products %}checked{% endif %} style="width: auto !important; min-height: auto !important;">
+                                {{ p.name }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end;">
+                    <button type="submit" class="btn btn-primary">📊 Genera Scheda</button>
+                    {% if monthly_rows %}
+                    <button type="button" onclick="window.print()" class="btn" style="background: #e2e8f0 !important;">🖨️ Stampa / PDF</button>
+                    <a href="{{ url_for('admin.export_monthly_ledger', monthly_client_id=monthly_client_id, monthly_year=monthly_year, monthly_month=monthly_month, group1=group1_products, group2=group2_products) }}" class="btn btn-success" style="background: #16a34a !important; color: white !important;">📥 Scarica CSV (Excel)</a>
+                    {% endif %}
+                </div>
+            </form>
+
+            <!-- Printable Ledger Table -->
+            {% if monthly_rows %}
+            <div id="printable-ledger">
+                <div style="margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border-hairline);">
+                    <h4 style="margin: 0;">Caseificio Vicedomini — Riepilogo Consegne {{ "%02d"|format(monthly_month) }}/{{ monthly_year }}</h4>
+                    <div style="font-size: 13px; color: var(--text-dark); margin-top: 2px;">Cliente: <strong>{{ selected_monthly_client_name }}</strong></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left !important; width: 24%;">Data</th>
+                                <th style="text-align: right !important; width: 38%;">
+                                    Gruppo 1 (Kg)
+                                    {% if group1_products %}<div style="font-size: 10px; font-weight: 400; text-transform: none;">{{ group1_products|join(', ') }}</div>{% endif %}
+                                </th>
+                                <th style="text-align: right !important; width: 38%;">
+                                    Gruppo 2 (Kg)
+                                    {% if group2_products %}<div style="font-size: 10px; font-weight: 400; text-transform: none;">{{ group2_products|join(', ') }}</div>{% endif %}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in monthly_rows %}
+                            <tr>
+                                <td style="text-align: left;">{{ row.day_str }}</td>
+                                <td style="text-align: right; font-weight: 600;">{{ row.g1_kg }}</td>
+                                <td style="text-align: right; font-weight: 600;">{{ row.g2_kg }}</td>
+                            </tr>
+                            {% endfor %}
+                            <tr style="background: #f1f5f9; font-weight: 800; border-top: 2px solid var(--border-hairline);">
+                                <td style="text-align: left;">⭐ TOTALE MESE</td>
+                                <td style="text-align: right; color: var(--ocean-blue);">{{ "%.2f"|format(group1_total_kg) }} Kg</td>
+                                <td style="text-align: right; color: #16a34a;">{{ "%.2f"|format(group2_total_kg) }} Kg</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% elif monthly_client_id %}
+            <p style="text-align: center; color: var(--text-muted);">Nessun dato disponibile.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
 
 
         <!-- ================= RESET ARCHIVIO ACTIVE TAB ================= -->

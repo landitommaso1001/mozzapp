@@ -1,9 +1,13 @@
-from flask import Blueprint, render_template, request, url_for, redirect, flash, session
+from flask import Blueprint, render_template, request, url_for, redirect, flash, session, Response
 from extensions import db
 from models import Product, Order, User
 from datetime import datetime, date
 from functools import wraps
 import random
+import calendar
+import csv
+import io
+
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -222,6 +226,83 @@ def index():
                 except ValueError: 
                     continue
 
+    # ================= MONTHLY CLIENT LEDGER (SCHEDA MENSILE) =================
+    monthly_client_id = request.args.get('monthly_client_id', '')
+    monthly_year = int(request.args.get('monthly_year', date.today().year))
+    monthly_month = int(request.args.get('monthly_month', date.today().month))
+    group1_products = request.args.getlist('group1')
+    group2_products = request.args.getlist('group2')
+
+    monthly_rows = []
+    group1_total_kg = 0.0
+    group2_total_kg = 0.0
+    selected_monthly_client_name = ""
+
+    if active_tab == 'monthly_ledger' and monthly_client_id:
+        if monthly_client_id == 'banco':
+            selected_monthly_client_name = "Vendita Diretta / Banco"
+        else:
+            c_obj = User.query.get(int(monthly_client_id))
+            selected_monthly_client_name = c_obj.name if c_obj else "Cliente"
+
+        # Determine exact number of days in the chosen month/year
+        _, num_days = calendar.monthrange(monthly_year, monthly_month)
+        month_prefix = f"{monthly_year:04d}-{monthly_month:02d}-"
+
+        # Fetch only Consegnato orders for this client and month
+        ledger_query = Order.query.filter(
+            Order.status == 'Consegnato',
+            Order.date.startswith(month_prefix)
+        )
+        if monthly_client_id == 'banco':
+            ledger_query = ledger_query.filter(Order.user_id == None)
+        else:
+            ledger_query = ledger_query.filter_by(user_id=int(monthly_client_id))
+
+        month_orders = ledger_query.all()
+
+        # Map daily weights: day_int -> {'g1': float, 'g2': float}
+        daily_map = {d: {'g1': 0.0, 'g2': 0.0} for d in range(1, num_days + 1)}
+        sorted_catalog = sorted(catalog_products, key=lambda x: len(x.name), reverse=True)
+
+        for o in month_orders:
+            try:
+                day_num = int(o.date.split('-')[2])
+            except Exception:
+                continue
+            if day_num not in daily_map or not o.items:
+                continue
+
+            for item in o.items.split(','):
+                item = item.strip()
+                if not item or 'x' not in item:
+                    continue
+                try:
+                    qty_str, full_name = item.split('x', 1)
+                    qty = int(qty_str.strip())
+                    full_name = full_name.strip()
+
+                    matched_prod = next((p for p in sorted_catalog if p.name.lower() in full_name.lower()), None)
+                    p_name = matched_prod.name if matched_prod else full_name
+                    item_kg = parse_format_weight_kg(full_name, qty)
+
+                    if p_name in group1_products:
+                        daily_map[day_num]['g1'] += item_kg
+                    if p_name in group2_products:
+                        daily_map[day_num]['g2'] += item_kg
+                except ValueError:
+                    continue
+
+        for d in range(1, num_days + 1):
+            g1_val = daily_map[d]['g1']
+            g2_val = daily_map[d]['g2']
+            group1_total_kg += g1_val
+            group2_total_kg += g2_val
+            monthly_rows.append({
+                'day_str': f"{d:02d}/{monthly_month:02d}/{monthly_year}",
+                'g1_kg': f"{g1_val:.2f}" if g1_val > 0 else "",
+                'g2_kg': f"{g2_val:.2f}" if g2_val > 0 else ""
+            })
 
 
     count_query = Order.query
@@ -273,7 +354,16 @@ def index():
         current_client_id=filter_client_id,
         current_date_from=filter_date_from, 
         current_date_to=filter_date_to,
-        whatsapp_numbers_config_string=whatsapp_numbers_config_string
+        whatsapp_numbers_config_string=whatsapp_numbers_config_string,
+        monthly_client_id=monthly_client_id,
+        monthly_year=monthly_year,
+        monthly_month=monthly_month,
+        group1_products=group1_products,
+        group2_products=group2_products,
+        monthly_rows=monthly_rows,
+        group1_total_kg=group1_total_kg,
+        group2_total_kg=group2_total_kg,
+        selected_monthly_client_name=selected_monthly_client_name
     )
 
 
@@ -637,3 +727,87 @@ def save_notification_settings():
         flash(f"Errore durante il salvataggio: {str(e)}", "danger")
         
     return redirect(url_for('admin.index', active_tab='users_management'))
+
+@admin_bp.route('/monthly-ledger/export', methods=['GET'])
+@admin_required
+def export_monthly_ledger():
+    monthly_client_id = request.args.get('monthly_client_id', '')
+    monthly_year = int(request.args.get('monthly_year', date.today().year))
+    monthly_month = int(request.args.get('monthly_month', date.today().month))
+    group1_products = request.args.getlist('group1')
+    group2_products = request.args.getlist('group2')
+
+    if not monthly_client_id:
+        flash("Seleziona un cliente prima di esportare.", "warning")
+        return redirect(url_for('admin.index', active_tab='monthly_ledger'))
+
+    if monthly_client_id == 'banco':
+        client_name = "Vendita_Diretta_Banco"
+    else:
+        c_obj = User.query.get(int(monthly_client_id))
+        client_name = c_obj.name.replace(" ", "_") if c_obj else "Cliente"
+
+    _, num_days = calendar.monthrange(monthly_year, monthly_month)
+    month_prefix = f"{monthly_year:04d}-{monthly_month:02d}-"
+
+    ledger_query = Order.query.filter(Order.status == 'Consegnato', Order.date.startswith(month_prefix))
+    if monthly_client_id == 'banco':
+        ledger_query = ledger_query.filter(Order.user_id == None)
+    else:
+        ledger_query = ledger_query.filter_by(user_id=int(monthly_client_id))
+
+    catalog_products = Product.query.all()
+    sorted_catalog = sorted(catalog_products, key=lambda x: len(x.name), reverse=True)
+    daily_map = {d: {'g1': 0.0, 'g2': 0.0} for d in range(1, num_days + 1)}
+
+    for o in ledger_query.all():
+        try:
+            day_num = int(o.date.split('-')[2])
+        except Exception:
+            continue
+        if day_num not in daily_map or not o.items:
+            continue
+        for item in o.items.split(','):
+            item = item.strip()
+            if not item or 'x' not in item:
+                continue
+            try:
+                qty_str, full_name = item.split('x', 1)
+                qty = int(qty_str.strip())
+                full_name = full_name.strip()
+                matched_prod = next((p for p in sorted_catalog if p.name.lower() in full_name.lower()), None)
+                p_name = matched_prod.name if matched_prod else full_name
+                item_kg = parse_format_weight_kg(full_name, qty)
+                if p_name in group1_products:
+                    daily_map[day_num]['g1'] += item_kg
+                if p_name in group2_products:
+                    daily_map[day_num]['g2'] += item_kg
+            except ValueError:
+                continue
+
+    output = io.StringIO()
+    writer = csv.writer(output, delimiter=';')
+    g1_header = "Gruppo 1 (" + ", ".join(group1_products) + ") Kg" if group1_products else "Gruppo 1 (Kg)"
+    g2_header = "Gruppo 2 (" + ", ".join(group2_products) + ") Kg" if group2_products else "Gruppo 2 (Kg)"
+    writer.writerow(["Data", g1_header, g2_header])
+
+    tot_g1, tot_g2 = 0.0, 0.0
+    for d in range(1, num_days + 1):
+        g1_v = daily_map[d]['g1']
+        g2_v = daily_map[d]['g2']
+        tot_g1 += g1_v
+        tot_g2 += g2_v
+        writer.writerow([
+            f"{d:02d}/{monthly_month:02d}/{monthly_year}",
+            f"{g1_v:.2f}".replace('.', ',') if g1_v > 0 else "",
+            f"{g2_v:.2f}".replace('.', ',') if g2_v > 0 else ""
+        ])
+    writer.writerow(["TOTALE MESE", f"{tot_g1:.2f}".replace('.', ','), f"{tot_g2:.2f}".replace('.', ',')])
+
+    filename = f"Scheda_{client_name}_{monthly_month:02d}_{monthly_year}.csv"
+    return Response(
+        output.getvalue().encode('utf-8-sig'),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
