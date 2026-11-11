@@ -1,18 +1,52 @@
-{% extends 'layout.html' %}
+{% extends 'layout.html' %} 
 {% block content %}
-<div style="max-width: 400px; margin: 60px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-    <h2 style="color: #2c3e50; text-align: center; margin-bottom: 25px;">🔐 Accedi al Portale</h2>
-    <form method="POST" action="{{ url_for('client_bp.login') }}">
-        <div style="margin-bottom: 15px;">
-            <label style="display:block; font-weight:bold; margin-bottom:5px;">Numero di Telefono:</label>
-            <input type="text" name="phone" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+
+<div class="card" style="max-width: 400px; margin: 40px auto; padding: 24px !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+    <h2 style="margin-bottom: 20px; font-weight: 800; text-align: center;">🔐 Accedi al Portale</h2>
+    
+    <form method="POST" action="{{ url_for('client_bp.login') }}" style="display: flex; flex-direction: column; gap: 14px;">
+        <div>
+            <label style="font-weight: 600; display: block; margin-bottom: 4px;">Numero di Telefono:</label>
+            <input type="text" name="phone" placeholder="es: 3331234567" style="width: 100%; height: 40px;" required>
         </div>
-        <div style="margin-bottom: 20px;">
-            <label style="display:block; font-weight:bold; margin-bottom:5px;">Password:</label>
-            <input type="password" name="password" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+        <div>
+            <label style="font-weight: 600; display: block; margin-bottom: 4px;">Password:</label>
+            <input type="password" name="password" placeholder="••••••••" style="width: 100%; height: 40px;" required>
         </div>
-        <button type="submit" style="background:#b5835a; color:white; border:none; padding:12px; width:100%; font-weight:bold; border-radius:6px; cursor:pointer;">Entra</button>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; height: 42px; font-size: 14px !important; margin-top: 8px;">Entra</button>
     </form>
-    <p style="text-align:center; margin-top:20px; font-size:0.9rem;">Non hai un account? <a href="{{ url_for('client_bp.register') }}" style="color:#b5835a; font-weight:bold;">Registrati qui</a></p>
+    
+    <!-- 👥 Link to open the Forgot Password custom drawer popup -->
+    <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; text-align: center; font-size: 12px;">
+        <a href="#forgot-password-modal" style="color: var(--text-muted); text-decoration: underline;">Hai dimenticato la password?</a>
+        <hr style="border: 0; border-top: 1px solid var(--border-hairline); margin: 8px 0;">
+        <div>Non hai un account? <a href="{{ url_for('client_bp.register') }}" style="font-weight: 700;">Registrati qui</a></div>
+    </div>
 </div>
+
+<!-- 📲 COMPACT PURE CSS ASSISTANCE POPUP MODAL -->
+<div id="forgot-password-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); justify-content: center; align-items: center; z-index: 99999; padding: 16px;">
+    <div class="card" style="max-width: 440px; width: 100%; padding: 24px !important; position: relative; border-radius: 8px; background: white;">
+        <h3 style="color: var(--text-dark); font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">🔑 Ripristino Credenziali</h3>
+        <p style="color: var(--text-muted); line-height: 1.6; margin-bottom: 18px; font-size: 13px; text-align: left;">
+            Per motivi di sicurezza aziendale, le password sono crittografate. Per recuperare o azzerare la tua chiave d'accesso, contatta direttamente il supporto vendite del <strong>Caseificio Vicedomini</strong> tramite WhatsApp.
+        </p>
+        
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- 🌟 FIXED LINK: Contains both the mandatory forward slash (/) and question mark (?) details -->
+            <a href="https://wa.me?" 
+               target="_blank" class="btn btn-success" style="width: 100%; height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; background-color: #25D366 !important; border-color: #128C7E !important; color: white !important; font-size: 13px !important; font-weight: 700; text-decoration: none;">
+                💬 Contatta su WhatsApp
+            </a>
+            <a href="#" class="btn" style="width: 100%; height: 38px; display: inline-flex; align-items: center; justify-content: center; background: var(--bg-neutral); color: var(--text-dark); font-size: 12px; text-decoration: none;">Chiudi Finestra</a>
+        </div>
+    </div>
+</div>
+
+<!-- Simple visibility toggle engine matching standard template style properties -->
+<style>
+    #forgot-password-modal:target { display: flex !important; }
+</style>
+
 {% endblock %}
