@@ -15,7 +15,7 @@
         
         <div style="display: flex; flex-direction: column; gap: 8px; max-width: 320px; margin: 0 auto;">
             {% for number in active_notification_lines %}
-                <a href="https://wa.me{{ number }}?text={{ whatsapp_message_text | urlencode }}" 
+                <a href="https://wa.me/{{ number }}?text={{ whatsapp_message_text | urlencode }}" 
                    target="_blank" class="btn btn-success" style="background-color: #25D366 !important; border-color: #128C7E !important; color: white !important; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; width: 100%; text-decoration: none;">
                     💬 Invia Dettagli a Linea #{{ loop.index }} ({{ number }})
                 </a>
