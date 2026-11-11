@@ -511,6 +511,30 @@ def reset_clients():
         flash(f"Errore durante l'eliminazione dei clienti: {str(e)}", "danger")
     return redirect(url_for('admin.index', active_tab='reset_data'))
 
+@admin_bp.route('/database/reset_cancelled', methods=['POST'])
+@admin_required
+def reset_cancelled():
+    try:
+        Order.query.filter_by(status='Annullato').delete()
+        db.session.commit()
+        flash("Ordini annullati rimossi con successo!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Errore durante la pulizia degli ordini annullati: {str(e)}", "danger")
+    return redirect(url_for('admin.index', active_tab='reset_data'))
+
+@admin_bp.route('/database/reset_completed', methods=['POST'])
+@admin_required
+def reset_completed():
+    try:
+        Order.query.filter_by(status='Consegnato', payment_status='Saldato').delete()
+        db.session.commit()
+        flash("Ordini consegnati e saldati archiviati/rimossi con successo!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Errore durante la pulizia degli ordini completati: {str(e)}", "danger")
+    return redirect(url_for('admin.index', active_tab='reset_data'))
+
 @admin_bp.route('/profile/admin/password', methods=['POST'])
 @admin_required
 def change_admin_password():
