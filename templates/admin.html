@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caseificio Vicedomini - Pannello Admin</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=101">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=102">
  </head>
 <body>
 
@@ -137,46 +137,38 @@
                     <tbody>
                         {% for o in orders %}
                         <tr>
-                            <td style="padding: 10px; border-bottom: 1px solid var(--border-hairline); vertical-align: top; text-align: left;">
+                            <td>
                                 <strong>{{ o.id }}</strong>
                                 <div style="font-size:11px; color:var(--text-muted);">Data: {{ o.date|format_euro_date }}</div>
                                 {% if o.time %}
                                 <div style="display:inline-block; margin-top:2px; font-weight:700; background:#fef9c3; color:#854d0e; padding:1px 4px; border-radius:3px; font-size:10px;">🕒 Ore: {{ o.time }}</div>
                                 {% endif %}
                             </td>
-                            <td style="padding: 10px; border-bottom: 1px solid var(--border-hairline); vertical-align: top; text-align: left;">
+                            <td>
                                 <div><strong>{{ o.formatted_client_name }}</strong></div>
                                 {% if o.formatted_client_phone %}
                                 <div style="font-size:12px; color:var(--ocean-blue); margin-top:2px; font-weight:600;">📞 {{ o.formatted_client_phone }}</div>
                                 {% endif %}
-                                
-                                <!-- 📱 Smart Sub-Price Module: Visible ONLY on mobile via inline media-driven block simulation -->
-                                <div class="smartphone-layout" style="margin-top: 6px; font-size: 13px;">
-                                    <span style="color: var(--text-muted);">Prezzo:</span> 
-                                    <strong style="font-size:14px; color:var(--text-dark);">€ {{ '%.2f'|format(o.total) }}</strong>
-                                </div>
                             </td>
-                            <td class="items-cell-mobile" style="padding: 10px; border-bottom: 1px solid var(--border-hairline); vertical-align: top; text-align: left;">
-                                <div class="split-items-list" style="display: flex; flex-direction: column; gap: 4px;">
+                            <td class="items-cell-mobile">
+                                <div class="split-items-list">
                                     {% if o.items %}
                                         {% for split_item in o.items.split(',') %}
                                             {% if split_item.strip() %}
-                                                <span class="product-item-row" style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 12px; border-left: 3px solid var(--ocean-blue); display: inline-block; width: max-content; max-width: 100%;">🥛 {{ split_item.strip() }}</span>
+                                                <span class="product-item-row">🥛 {{ split_item.strip() }}</span>
                                             {% endif %}
                                         {% endfor %}
                                     {% endif %}
                                 </div>
                             </td>
+                            <!-- Right-aligned financial cell -->
+                            <td class="text-right" style="padding-right: 16px !important;"><strong style="font-size:14px; color:var(--text-dark);">€ {{ '%.2f'|format(o.total) }}</strong></td>
                             
-                            <!-- 🖥️ Desktop Price Module: Automatically hidden on smartphone by style.css rules -->
-                            <td class="desktop-layout" style="padding: 10px; border-bottom: 1px solid var(--border-hairline); vertical-align: top; text-align: right;">
-                                <strong style="font-size:14px; color:var(--text-dark);">€ {{ '%.2f'|format(o.total) }}</strong>
-                            </td>
-                            
-                            <td style="padding: 10px; border-bottom: 1px solid var(--border-hairline); vertical-align: top; text-align: right;">
+                            <td style="text-align: right; vertical-align: top;">
+                                <!-- 🎯 Main Layout Container -->
                                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; width: 100%;">
                                     
-                                    <!-- State Status Badges -->
+                                    <!-- Status Badges View Layer -->
                                     <div style="display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; margin-bottom: 2px;">
                                         <span class="role-indicator {% if o.status=='Da Confermare' %}badge-admin{% elif o.status=='Annullato' %}badge-unpaid{% else %}badge-cliente{% endif %}" style="font-size: 11px; padding: 4px 8px;">
                                             {{ o.status }}
@@ -186,15 +178,18 @@
                                         </span>
                                     </div>
 
-                                    <!-- Workflow Actions Engine -->
-                                    <div style="display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 260px; align-items: flex-end;">
+                                    <!-- Workflow Management Actions Panel (Max width constrained for crisp vertical balance) -->
+                                    <div style="display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 240px; align-items: flex-end;">
+                                        
+                                        <!-- Step 1: Da Confermare -->
                                         {% if o.status == 'Da Confermare' %}
-                                        <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="display: flex; flex-direction: column; gap: 6px; width: 100%; margin: 0; padding: 0; background: transparent;">
+                                        <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="display: flex; flex-direction: column; gap: 6px; width: 100%; margin: 0; background: transparent; padding: 0;">
                                             <input type="hidden" name="order_id" value="{{ o.id }}">
                                             <input type="hidden" name="new_status" value="Confermato">
                                             
-                                            <div style="width: 100%;">
-                                                <select name="delivery_time" style="width: 100% !important; min-height: 42px !important; height: 42px !important; line-height: 42px !important; padding: 6px 12px !important; font-size: 14px !important; color: var(--text-dark) !important; background-color: #ffffff !important; border: 1px solid var(--border-hairline) !important; border-radius: 4px !important; -webkit-appearance: listbox !important; appearance: listbox !important;" required>
+                                            <!-- 🌟 FIXED SELECT CONTAINER: Resets mobile padding and height to make the text perfectly readable -->
+                                            <div style="width: 100%; text-align: left;">
+                                                <select name="delivery_time" style="width:100% !important; max-width:115px !important; min-height:40px !important; height:40px !important; padding:4px 8px !important; font-size:14px !important; text-align:center; color:var(--text-dark) !important; background-color:#ffffff !important; border:1px solid var(--border-hairline) !important; border-radius:4px !important;" required>
                                                     <option value="" disabled selected>🕒 Seleziona Ora Consegna...</option>
                                                     {% for hour in range(7, 20) %}
                                                         {% set formatted_hour = "%02d:00" | format(hour) %}
@@ -203,7 +198,7 @@
                                                 </select>
                                             </div>
                                             
-                                            <button type="submit" class="btn btn-success" style="width: 100% !important; min-height: 42px !important; font-size: 14px !important; font-weight: 700 !important; display: inline-flex !important; align-items: center; justify-content: center;">
+                                            <button type="submit" class="btn btn-success" style="width: 100% !important; min-height: 42px !important; font-size: 14px !important; font-weight: 700 !important; display: inline-flex !important; align-items: center; justify-content: center; gap: 6px;">
                                                 ✅ Conferma Ordine
                                             </button>
                                         </form>
@@ -215,6 +210,7 @@
                                             </button>
                                         </form>
                                         
+                                        <!-- Step 2: Confermato -->
                                         {% elif o.status == 'Confermato' %}
                                         <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="width: 100%; margin: 0; padding: 0;">
                                             <input type="hidden" name="order_id" value="{{ o.id }}">
@@ -226,6 +222,7 @@
                                             <button type="submit" class="btn btn-danger" style="width: 100% !important; min-height: 42px !important; font-size: 14px !important;">❌ Annulla</button>
                                         </form>
                                         
+                                        <!-- Step 3: Pronto -->
                                         {% elif o.status == 'Pronto' %}
                                         <form action="{{ url_for('admin.update_order_status') }}" method="POST" style="width: 100%; margin: 0; padding: 0;">
                                             <input type="hidden" name="order_id" value="{{ o.id }}">
@@ -233,6 +230,7 @@
                                             <button type="submit" class="btn btn-success" style="width: 100% !important; min-height: 42px !important; font-size: 14px !important;">🚚 Consegnato</button>
                                         </form>
                                         
+                                        <!-- Step 4: Consegnato -->
                                         {% elif o.status == 'Consegnato' and o.payment_status != 'Saldato' %}
                                         <form action="{{ url_for('admin.mark_order_paid') }}" method="POST" style="width: 100%; margin: 0; padding: 0;">
                                             <input type="hidden" name="order_id" value="{{ o.id }}">
@@ -240,17 +238,13 @@
                                         </form>
                                         {% endif %}
                                     </div>
-
                                 </div>
                             </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="5" style="text-align:center; padding:16px; color:var(--text-muted);">Nessun ordine presente corrispondente ai filtri selezionati.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+
             </div>
         </div>
         {% endif %}
