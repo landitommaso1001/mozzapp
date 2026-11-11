@@ -272,7 +272,7 @@ def index():
         current_status=filter_status,      
         current_client_id=filter_client_id,
         current_date_from=filter_date_from, 
-        current_date_to=filter_date_to
+        current_date_to=filter_date_to,
         whatsapp_numbers_config_string=whatsapp_numbers_config_string
     )
 
