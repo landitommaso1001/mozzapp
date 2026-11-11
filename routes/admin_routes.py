@@ -67,8 +67,10 @@ def index():
             o.formatted_client_name = o.client if o.client else "Vendita Diretta / Banco"
             o.formatted_client_phone = ""
 
-    catalog_products = Product.query.order_by(Product.id.asc()).all()
-    client_list = User.query.filter_by(role='client').all()
+            # 🌟 UPDATE: Sort catalog products and client profiles alphabetically by name
+            catalog_products = Product.query.order_by(Product.name.asc()).all()
+            client_list = User.query.filter_by(role='client').order_by(User.name.asc()).all()
+
     
     catalog_map = {}
     for p in catalog_products:
