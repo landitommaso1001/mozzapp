@@ -250,7 +250,7 @@ def index():
         prefilled_items=prefilled_items,
         is_admin=is_admin,
         all_clients=all_clients,
-        selected_client_id=selected_client_id
+        selected_client_id=selected_client_id,
         active_notification_lines=active_notification_lines
     )
 
