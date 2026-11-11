@@ -178,10 +178,12 @@ def index():
         
         flash(f"Ordine inoltrato con successo per '{order_client_name}'!", 'success')
         
+        items_payload = ", ".join(item_strings)
+        
         if is_admin:
-            return redirect(url_for('client_bp.index', selected_client_id=selected_client_id, whatsapp_notify='1', last_order_id=custom_meaningful_id))
+            return redirect(url_for('client_bp.index', selected_client_id=selected_client_id, whatsapp_notify='1', last_order_id=custom_meaningful_id, order_items_summary=items_payload))
         else:
-            return redirect(url_for('client_bp.index', whatsapp_notify='1', last_order_id=custom_meaningful_id))
+            return redirect(url_for('client_bp.index', whatsapp_notify='1', last_order_id=custom_meaningful_id, order_items_summary=items_payload))
 
     prefilled_items = {}
     reorder_id = request.args.get('reorder')
