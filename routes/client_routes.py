@@ -12,7 +12,6 @@ def parse_format_details(format_rules_string, format_label_name, client_category
 
     try:
         rules_dict = {}
-        # Parses the pricing field string rules: e.g., "Privato:5.00, Ristorante:4.00"
         for rule in format_rules_string.split(","):
             if ":" in rule:
                 k, v = rule.split(":", 1)
@@ -20,18 +19,13 @@ def parse_format_details(format_rules_string, format_label_name, client_category
         
         target_key = str(client_category).strip().lower()
         
-        # 🌟 STRICT EXPLICIT MATCH: Return the defined layout data ONLY if category matches
         if target_key in rules_dict:
-            # Returns the custom Formato string text as the name layout identifier
             return format_label_name, rules_dict[target_key]
             
     except Exception:
         pass
 
-    # If the active tier is not defined inside this rules line, hide it entirely!
     return None, 0.0
-
-
 
 
 @client_bp.route('/login', methods=['GET', 'POST'])
@@ -94,8 +88,6 @@ def logout():
     session.clear()
     flash("Sessione chiusa correttamente.", "success")
     return redirect(url_for('client_bp.login'))
-
-
 @client_bp.route('/', methods=['GET', 'POST'])
 def index():
     if 'user_id' not in session:
@@ -139,54 +131,38 @@ def index():
             order_user_id = user_id
             current_user_obj = User.query.get(user_id)
             order_client_name = f"{current_user_obj.name} ({current_user_obj.phone})" if current_user_obj else session['user_name']
-        
-     # 📂 Replace the product form iteration loop inside routes/client_routes.py:
 
         for product in catalog_products:
-            # 🌟 FIX 1: Run the helper function ONCE per product using its standalone sizes_raw rules string
             fmt_name, fmt_price = parse_format_details(product.sizes_raw, product.price_per_kg, current_category)
-            
-            # If the product isn't assigned a price for this category, skip it cleanly!
             if not fmt_name or fmt_price <= 0.0:
                 continue
                 
-            # Construct the clean HTML input element key match
             qty_key = f"qty_{product.id}_{fmt_name}"
             qty = int(request.form.get(qty_key, 0)) if request.form.get(qty_key) else 0
             
             if qty > 0:
-                # 📝 FIX 2: Human-readable manifest builder -> Output: "2x Mozzarella (500 gr)"
                 item_strings.append(f"{qty}x {product.name} ({fmt_name})")
-                
-                # 🧮 FIX 3: Pure scalar calculation (Prevents the 3x-4x multiplication bug entirely)
                 calculated_total += qty * fmt_price
 
         if not item_strings:
             flash("Seleziona almeno un prodotto prima di inviare l'ordine.", "error")
             return redirect(url_for('client_bp.index', selected_client_id=selected_client_id))
 
-        chosen_delivery_date = request.form.get('delivery_date') or date.today().strftime("%Y-%m-%d")
-            
-        # 🌟 MEANINGFUL ORDER ID GENERATION ENGINE
-        # Fetches current time and generates format string prefix -> e.g., "11.11.2026-15.08"
         now_ts = datetime.now()
-        chosen_delivery_date = request.form.get('delivery_date') or now_ts.strftime("%Y-%m-%d")
+        chosen_delivery_date = request.form.get('delivery_date') or date.today().strftime("%Y-%m-%d")
         
         try:
-            # Parse the chosen date to keep the custom ID linked to the actual delivery date
             parsed_delivery_date = datetime.strptime(chosen_delivery_date, "%Y-%m-%d")
-            date_prefix = parsed_delivery_date.strftime("%d.%m.%Y") + "-" + now_ts.strftime("%H:%M")
+            date_prefix = parsed_delivery_date.strftime("%d.%m.%Y") + "-" + now_ts.strftime("%H.%M")
         except Exception:
-            date_prefix = now_ts.strftime("%d.%m.%Y-%H:%M")
+            date_prefix = now_ts.strftime("%d.%m.%Y-%H.%M")
 
-        # Counts how many existing orders are scheduled for this specific date to create the serial number suffix
         daily_order_count = Order.query.filter_by(date=chosen_delivery_date).count()
         progressive_suffix = f"{daily_order_count + 1:03d}"
-        
         custom_meaningful_id = f"{date_prefix}-{progressive_suffix}"
             
         new_order = Order(
-            id=custom_meaningful_id,  # 🎯 Injects the custom meaningful ID string
+            id=custom_meaningful_id,
             user_id=order_user_id,
             client=order_client_name,
             date=chosen_delivery_date,
@@ -199,11 +175,7 @@ def index():
 
         db.session.add(new_order)
         db.session.commit()
-        flash(f"Ordine inoltrato con successo per '{order_client_name}'!", 'success')
-                db.session.add(new_order)
-        db.session.commit()
         
-        # 🌟 FIX: Inject parameters so client.html knows a new order was created
         flash(f"Ordine inoltrato con successo per '{order_client_name}'!", 'success')
         
         if is_admin:
@@ -229,7 +201,6 @@ def index():
         for product in catalog_products:
             parsed_formats = []
             if product.sizes_raw:
-                # 🌟 FIX: Process the rules string intact instead of fracturing it prematurely
                 f_name, f_price = parse_format_details(product.sizes_raw, product.price_per_kg, current_category)
                 if f_name and f_price > 0.0:
                     parsed_formats.append({'name': f_name, 'price': f_price})
@@ -244,11 +215,9 @@ def index():
 
     my_orders = Order.query.order_by(Order.serial_id.desc()).all() if is_admin else Order.query.filter_by(user_id=user_id).order_by(Order.serial_id.desc()).all()
     
-    # 🌟 LOAD ACTIVE WHATSAPP LINE Blueprints FOR CONFIRMATION BUTTONS
     whatsapp_row = User.query.filter_by(phone='_whatsapp_config').first()
     active_notification_lines = []
     if whatsapp_row and whatsapp_row.name:
-        # Split items cleanly by comma while dropping accidental spacing gaps
         active_notification_lines = [n.strip() for n in whatsapp_row.name.split(',') if n.strip()]
 
     return render_template(
@@ -262,6 +231,7 @@ def index():
         selected_client_id=selected_client_id,
         active_notification_lines=active_notification_lines
     )
+
 
 @client_bp.route('/order/cancel/<path:order_id>', methods=['POST'])
 def cancel_order(order_id):
@@ -278,4 +248,3 @@ def cancel_order(order_id):
     else:
         flash("Impossibile annullare l'ordine.", "error")
     return redirect(url_for('client_bp.index', selected_client_id=request.form.get('hidden_selected_client_id', '0')) if is_admin else url_for('client_bp.index'))
-
