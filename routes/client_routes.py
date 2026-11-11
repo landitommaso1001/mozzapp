@@ -192,11 +192,16 @@ def index():
         if old_order and (is_admin or old_order.user_id == user_id) and old_order.items:
             for part in old_order.items.split(','):
                 part = part.strip()
-                if not part or 'x' not in part: continue
+                if not part or 'x' not in part: 
+                    continue
                 try:
                     qty_str, item_name = part.split('x', 1)
-                    prefilled_items[item_name.strip()] = int(qty_str.strip())
-                except ValueError: continue
+                    # Normalize string spaces to guarantee an accurate dictionary key match
+                    clean_item_name = item_name.strip()
+                    prefilled_items[clean_item_name] = int(qty_str.strip())
+                except ValueError: 
+                    continue
+
 
     enriched_products = []
     if current_category:
