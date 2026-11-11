@@ -167,8 +167,26 @@ def index():
 
         chosen_delivery_date = request.form.get('delivery_date') or date.today().strftime("%Y-%m-%d")
             
+        # 🌟 MEANINGFUL ORDER ID GENERATION ENGINE
+        # Fetches current time and generates format string prefix -> e.g., "11.11.2026-15.08"
+        now_ts = datetime.now()
+        chosen_delivery_date = request.form.get('delivery_date') or now_ts.strftime("%Y-%m-%d")
+        
+        try:
+            # Parse the chosen date to keep the custom ID linked to the actual delivery date
+            parsed_delivery_date = datetime.strptime(chosen_delivery_date, "%Y-%m-%d")
+            date_prefix = parsed_delivery_date.strftime("%d.%m.%Y") + "-" + now_ts.strftime("%H.%M")
+        except Exception:
+            date_prefix = now_ts.strftime("%d.%m.%Y-%H.%M")
+
+        # Counts how many existing orders are scheduled for this specific date to create the serial number suffix
+        daily_order_count = Order.query.filter_by(date=chosen_delivery_date).count()
+        progressive_suffix = f"{daily_order_count + 1:03d}"
+        
+        custom_meaningful_id = f"{date_prefix}-{progressive_suffix}"
+            
         new_order = Order(
-            id=f"ORD-{random.randint(1000, 9999)}",
+            id=custom_meaningful_id,  # 🎯 Injects the custom meaningful ID string
             user_id=order_user_id,
             client=order_client_name,
             date=chosen_delivery_date,
@@ -178,6 +196,7 @@ def index():
             payment_status='Da Saldare',
             time=""
         )
+
         db.session.add(new_order)
         db.session.commit()
         flash(f"Ordine inoltrato con successo per '{order_client_name}'!", 'success')
