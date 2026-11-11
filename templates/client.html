@@ -140,7 +140,8 @@
                     <td class="text-right" style="padding-right: 16px !important;"><strong>€ {{ "%.2f"|format(order.total) }}</strong></td>
                     <td class="text-right">
                         <div class="flex-row-right" style="justify-content: flex-end;">
-                            <a href="{{ url_for('client_bp.index', reorder=order.id) }}" class="btn">🔄 Ripeti</a>
+                            <!-- 🌟 FIX: Automatically appends the active selected client ID if logged in as admin -->
+                            <a href="{{ url_for('client_bp.index', reorder=order.id, selected_client_id=selected_client_id if is_admin else '') }}" class="btn">🔄 Ripeti</a>
                             {% if order.status == 'Da Confermare' %}
                             <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="display: inline;" onsubmit="return confirm('Annullare l\'ordine?');">
                                 <button type="submit" class="btn" style="background: #ef4444; color: white; border: none;">❌ Annulla</button>
@@ -249,7 +250,8 @@
                 {{ order.items }}
             </div>
             <div style="display: flex; gap: 6px;">
-                <a href="{{ url_for('client_bp.index', reorder=order.id) }}" class="btn" style="flex: 1; text-align: center;">🔄 Ripeti</a>
+                <!-- 🌟 FIX: Automatically appends the active selected client ID if logged in as admin -->
+                <a href="{{ url_for('client_bp.index', reorder=order.id, selected_client_id=selected_client_id if is_admin else '') }}" class="btn">🔄 Ripeti</a>
                 {% if order.status == 'Da Confermare' %}
                 <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="flex: 1;" onsubmit="return confirm('Annullare l\'ordine?');">
                     <button type="submit" class="btn" style="background: #ef4444; color: white; border: none; width: 100%;">❌ Annulla</button>

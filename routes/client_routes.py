@@ -185,23 +185,30 @@ def index():
         else:
             return redirect(url_for('client_bp.index', whatsapp_notify='1', last_order_id=custom_meaningful_id, order_items_summary=items_payload))
 
+    # 🌟 FIX: Smart reorder check that auto-restores client parameters for administrators
     prefilled_items = {}
     reorder_id = request.args.get('reorder')
     if reorder_id:
         old_order = Order.query.filter_by(id=reorder_id).first()
         if old_order and (is_admin or old_order.user_id == user_id) and old_order.items:
+            # If an admin clicked reorder and no client is selected yet, lock onto the original order's client
+            if is_admin and selected_client_id <= 0 and old_order.user_id:
+                selected_client_id = old_order.user_id
+                # Force update the current category tier logic right away
+                active_client_obj = User.query.get(selected_client_id)
+                if active_client_obj:
+                    current_category = active_client_obj.price_category
+
             for part in old_order.items.split(','):
                 part = part.strip()
                 if not part or 'x' not in part: 
                     continue
                 try:
                     qty_str, item_name = part.split('x', 1)
-                    # Normalize string spaces to guarantee an accurate dictionary key match
                     clean_item_name = item_name.strip()
                     prefilled_items[clean_item_name] = int(qty_str.strip())
                 except ValueError: 
                     continue
-
 
     enriched_products = []
     if current_category:
