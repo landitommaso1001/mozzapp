@@ -175,9 +175,9 @@ def index():
         try:
             # Parse the chosen date to keep the custom ID linked to the actual delivery date
             parsed_delivery_date = datetime.strptime(chosen_delivery_date, "%Y-%m-%d")
-            date_prefix = parsed_delivery_date.strftime("%d.%m.%Y") + "-" + now_ts.strftime("%H.%M")
+            date_prefix = parsed_delivery_date.strftime("%d.%m.%Y") + "-" + now_ts.strftime("%H:%M")
         except Exception:
-            date_prefix = now_ts.strftime("%d.%m.%Y-%H.%M")
+            date_prefix = now_ts.strftime("%d.%m.%Y-%H:%M")
 
         # Counts how many existing orders are scheduled for this specific date to create the serial number suffix
         daily_order_count = Order.query.filter_by(date=chosen_delivery_date).count()
