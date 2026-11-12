@@ -417,7 +417,7 @@
                     <div>
                         <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 4px;">Prodotto:</label>
                         <select name="product_name" style="width: 100%;">
-                            <option value="">-- Tutti i Prodotti --</option>
+                            <option value="">- Tutti i Prodotti -</option>
                             {% for p in products %}
                             <option value="{{ p.name }}" {% if product_name == p.name %}selected{% endif %}>{{ p.name }}</option>
                             {% endfor %}
@@ -426,7 +426,7 @@
                     <div>
                         <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 4px;">Cliente:</label>
                         <select name="analytics_client_id" style="width: 100%;">
-                            <option value="">-- Tutti i Clienti --</option>
+                            <option value="">- Tutti i Clienti -</option>
                             <option value="banco" {% if analytics_client_id == 'banco' %}selected{% endif %}>Vendita Diretta / Banco</option>
                             {% for c in clients %}
                             <option value="{{ c.id }}" {% if analytics_client_id == c.id|string %}selected{% endif %}>{{ c.name }}</option>
@@ -436,7 +436,7 @@
                     <div>
                         <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 4px;">Stato Pagamento:</label>
                         <select name="analytics_payment_status" style="width: 100%;">
-                            <option value="">-- Tutti gli Stati --</option>
+                            <option value="">- Tutti gli Stati -</option>
                             <option value="Da Saldare" {% if analytics_payment_status == 'Da Saldare' %}selected{% endif %}>Da Saldare</option>
                             <option value="Saldato" {% if analytics_payment_status == 'Saldato' %}selected{% endif %}>Saldato</option>
                         </select>
