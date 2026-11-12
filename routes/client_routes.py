@@ -36,14 +36,21 @@ def login():
         
         static_admin_phone = current_app.config.get('ADMIN_PHONE')
         static_admin_password = current_app.config.get('ADMIN_PASSWORD')
-        
-        if phone == static_admin_phone and password == static_admin_password:
-            session['user_id'] = 0  
-            session['user_name'] = current_app.config.get('ADMIN_NAME', 'Admin')
-            session['user_role'] = 'admin'
-            session['user_category'] = 'Admin'
-            flash(f"Accesso Amministratore Eseguito. Benvenuto {session['user_name']}!", "success")
-            return redirect(url_for('admin.index'))
+
+        if phone == static_admin_phone:
+            admin_config = User.query.filter_by(phone='_admin_config').first()
+            is_valid_admin = (
+                admin_config.check_password(password)
+                if admin_config
+                else (password == static_admin_password)
+            )
+            if is_valid_admin:
+                session['user_id'] = 0
+                session['user_name'] = current_app.config.get('ADMIN_NAME', 'Admin')
+                session['user_role'] = 'admin'
+                session['user_category'] = 'Admin'
+                flash(f"Accesso Amministratore Eseguito. Benvenuto {session['user_name']}!", "success")
+                return redirect(url_for('admin.index'))
             
         user = User.query.filter_by(phone=phone).first()
         if user and user.check_password(password):

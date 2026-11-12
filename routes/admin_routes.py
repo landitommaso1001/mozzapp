@@ -633,16 +633,36 @@ def reset_completed():
 @admin_required
 def change_admin_password():
     from flask import current_app
-    old_password = request.form.get('old_password')
-    new_password = request.form.get('new_password')
-    if old_password != current_app.config.get('ADMIN_PASSWORD'):
+    old_password = request.form.get('old_password', '').strip()
+    new_password = request.form.get('new_password', '').strip()
+
+    admin_config = User.query.filter_by(phone='_admin_config').first()
+
+    # Verify current password (check DB override first, fallback to env config)
+    if admin_config:
+        valid_old = admin_config.check_password(old_password)
+    else:
+        valid_old = (old_password == current_app.config.get('ADMIN_PASSWORD'))
+
+    if not valid_old:
         flash("Errore: La password attuale non è corretta.", "danger")
         return redirect(url_for('admin.index', active_tab='users_management'))
-    if not new_password or len(new_password.strip()) < 6:
+
+    if not new_password or len(new_password) < 6:
         flash("Errore: La nuova password deve contenere almeno 6 caratteri.", "danger")
         return redirect(url_for('admin.index', active_tab='users_management'))
-    current_app.config['ADMIN_PASSWORD'] = new_password.strip()
-    flash("Password Amministratore aggiornata con successo per questa sessione!", "success")
+
+    try:
+        if not admin_config:
+            admin_config = User(name='Admin Config', phone='_admin_config', role='admin')
+            db.session.add(admin_config)
+        admin_config.set_password(new_password)
+        db.session.commit()
+        flash("Password Amministratore salvata in modo permanente!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Errore durante il salvataggio: {str(e)}", "danger")
+
     return redirect(url_for('admin.index', active_tab='users_management'))
 
 @admin_bp.route('/client/delete/<int:client_id>', methods=['POST'])
