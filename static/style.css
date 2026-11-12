@@ -373,3 +373,36 @@ table th {
         max-width: calc(100% - 16px) !important; /* Retains safe screen margins on mobile screens */
     }
 }
+/* ==========================================================================
+   📱 CLIENT HISTORY CARD ACTION BUTTONS (50/50 COMPACT SPLIT)
+   ========================================================================== */
+.client-card-actions {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin-top: 10px !important;
+    align-items: center !important;
+}
+
+.client-card-actions form {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+}
+
+.client-card-actions a.btn,
+.client-card-actions button.btn {
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    padding: 0 10px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    font-size: 13px !important;
+}

@@ -239,12 +239,20 @@
             </div>
             <div style="display: flex; gap: 6px;">
                 <!-- 🌟 FIX: Automatically appends the active selected client ID if logged in as admin -->
-                <a href="{{ url_for('client_bp.index', reorder=order.id, selected_client_id=selected_client_id if is_admin else '') }}" class="btn">🔄 Ripeti</a>
-                {% if order.status == 'Da Confermare' %}
-                <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="flex: 1;" onsubmit="return confirm('Annullare l\'ordine?');">
-                    <button type="submit" class="btn" style="background: #ef4444; color: white; border: none; width: 100%;">❌ Annulla</button>
-                </form>
-                {% endif %}
+                <div class="client-card-actions">
+                    <a href="{{ url_for('client_bp.index', reorder=order.id, selected_client_id=selected_client_id if is_admin else '') }}" class="btn">
+                        🔄 Ripeti
+                    </a>
+
+                    {% if order.status == 'Da Confermare' %}
+                    <form action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" method="POST" onsubmit="return confirm('Annullare questo ordine?');" style="margin: 0; padding: 0; width: 100%;">
+                        {% if is_admin %}
+                        <input type="hidden" name="hidden_selected_client_id" value="{{ selected_client_id }}">
+                        {% endif %}
+                        <button type="submit" class="btn btn-danger">❌ Annulla</button>
+                    </form>
+                    {% endif %}
+                </div>
             </div>
         </div>
         {% else %}
