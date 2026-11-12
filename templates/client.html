@@ -102,7 +102,7 @@
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px;">
-                <button type="reset" class="btn" onclick="setTimeout(updateOrderTotals, 10);">🗑 Svuota</button>
+                <button type="button" class="btn" onclick="clearOrderForm();">🗑 Svuota</button>
                 <button type="submit" class="btn" style="background: var(--ocean-blue); color: white; border: none;">Invia Ordine</button>
             </div>
         </div>
@@ -229,7 +229,14 @@
                     </span>
                 </div>
 
-                <button type="submit" class="btn" style="background: var(--ocean-blue); color: white; border: none; width: 100%; margin-top: 12px;">Invia Ordine</button>
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-top: 12px;">
+                    <button type="button" class="btn" onclick="clearOrderForm();" style="width: 100%; margin: 0 !important;">
+                        🗑 Svuota
+                    </button>
+                    <button type="submit" class="btn" style="background: var(--ocean-blue); color: white; border: none; width: 100%; margin: 0 !important;">
+                        Invia Ordine
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -338,6 +345,14 @@ document.querySelectorAll('.qty-select-pc, .qty-select-mobile').forEach(sel => {
 // Run immediately on page load so "Ripeti" (Reorder) prefilled items calculate right away
 document.addEventListener('DOMContentLoaded', updateOrderTotals);
 updateOrderTotals();
+
+function clearOrderForm() {
+    document.querySelectorAll('.qty-select-pc, .qty-select-mobile').forEach(sel => {
+        sel.value = '0';
+    });
+    updateOrderTotals();
+}
+
 </script>
 
 {% endblock %}
