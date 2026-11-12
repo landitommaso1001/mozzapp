@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caseificio Vicedomini - Pannello Admin</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=129">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=130">
 </head>
 <body>
 
@@ -38,7 +38,7 @@
     <main>
         <!-- Desktop Horizontal Navigation Tabs -->
         <nav class="desktop-layout" style="margin-bottom: 16px;">
-            <ul style="display: flex; gap: 8px; list-style: none;">
+            <ul style="display: flex; flex-wrap: wrap; gap: 8px; list-style: none;">
                 <li><a href="{{ url_for('admin.index', active_tab='orders') }}" class="btn {% if active_tab == 'orders' %}active-tab-style{% endif %}">📦 Gestione Ordini Attivi</a></li>
                 <li><a href="{{ url_for('admin.index', active_tab='catalog') }}" class="btn {% if active_tab == 'catalog' %}active-tab-style{% endif %}">📋 Configura Listino Prezzi</a></li>
                 <li><a href="{{ url_for('admin.index', active_tab='users_management') }}" class="btn {% if active_tab == 'users_management' %}active-tab-style{% endif %}">👥 Anagrafica Clienti</a></li>

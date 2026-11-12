@@ -84,7 +84,21 @@ table th, table td { padding: 6px 10px !important; border-bottom: 1px solid var(
 table th { background-color: var(--bg-neutral) !important; color: var(--text-muted) !important; font-weight: 600; text-transform: uppercase; font-size: 11px !important; }
 
 input, select { background-color: var(--bg-clean) !important; border: 1px solid var(--border-hairline) !important; color: var(--text-dark) !important; font-size: 12px !important; padding: 4px 8px !important; border-radius: 4px !important; }
-button, .btn { font-size: 12px !important; font-weight: 600 !important; padding: 4px 10px !important; border-radius: 4px !important; cursor: pointer; border: 1px solid var(--border-hairline) !important; background: var(--bg-neutral); color: var(--text-dark); }
+button, .btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    gap: 4px;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    padding: 4px 10px !important;
+    border-radius: 4px !important;
+    cursor: pointer;
+    border: 1px solid var(--border-hairline) !important;
+    background: var(--bg-neutral);
+    color: var(--text-dark);
+}
 button:hover { background: #e2e8f0; }
 
 /* Desktop Switch Defaults */
