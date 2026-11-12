@@ -1,12 +1,6 @@
 {% extends 'layout.html' %}
 {% block content %}
 
-<div class="user-session-bar" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-    <span>👤 Utente: <strong>{{ session['user_name'] }}</strong></span>
-    <a href="{{ url_for('client_bp.logout') }}" class="btn logout-btn-fixed" style="background: #ef4444; color: white; border: none; padding: 6px 12px;">🚪 Esci</a>
-</div>
-
-
 {% if request.args.get('whatsapp_notify') == '1' %}
     {% if active_notification_lines and whatsapp_message_text %}
     <div id="whatsapp-notify-card" class="card" style="background: #e0f2fe !important; border: 2px solid #25D366 !important; padding: 16px !important; margin-bottom: 16px; text-align: center; max-width: 100%;">
