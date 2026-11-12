@@ -53,7 +53,7 @@
             <a href="{{ url_for('admin.index', active_tab='orders') }}" class="admin-nav-item {% if active_tab == 'orders' %}active-tab-style{% endif %}">📦 Ordini</a>
             <a href="{{ url_for('admin.index', active_tab='catalog') }}" class="admin-nav-item {% if active_tab == 'catalog' %}active-tab-style{% endif %}">📋 Listino</a>
             <a href="{{ url_for('admin.index', active_tab='users_management') }}" class="admin-nav-item {% if active_tab == 'users_management' %}active-tab-style{% endif %}">👥 Clienti</a>
-            <a href="{{ url_for('admin.index', active_tab='analytics') }}" class="admin-nav-item {% if active_tab == 'analytics' %}active-tab-style{% endif %}">📊 Report</a>
+            <a href="{{ url_for('admin.index', active_tab='analytics') }}" class="admin-nav-item {% if active_tab == 'analytics' %}active-tab-style{% endif %}">📊 Resoconto</a>
             <a href="{{ url_for('admin.index', active_tab='reset_data') }}" class="admin-nav-item {% if active_tab == 'reset_data' %}active-tab-style-red{% endif %}">⚠️ Reset</a>
             <a href="{{ url_for('admin.index', active_tab='monthly_ledger') }}" class="admin-nav-item {% if active_tab == 'monthly_ledger' %}active-tab-style{% endif %}">📅 Mensile</a>
         </div>
@@ -662,8 +662,42 @@
 
 
 
-        <!-- ================= RESET ARCHIVIO ACTIVE TAB ================= -->
+        <!-- ================= RESET & BACKUP ARCHIVIO ACTIVE TAB ================= -->
         {% if active_tab == 'reset_data' %}
+        
+        <!-- 💾 BACKUP & RESTORE CARD -->
+        <div class="card" style="border-top: 3px solid var(--ocean-blue) !important; margin-bottom: 16px;">
+            <h3 style="color: var(--text-dark); margin-bottom: 6px;">💾 Backup & Ripristino Completo Database</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+                Scarica una copia di sicurezza completa (Clienti, Listino Prezzi e Storico Ordini) oppure ripristina un file salvato in precedenza.
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+                <!-- Download Backup -->
+                <div style="background: #f0f9ff; padding: 12px; border-radius: 6px; border: 1px solid #bae6fd; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                    <div>
+                        <strong style="display: block; color: #0369a1; margin-bottom: 4px;">📥 Esporta Copia di Sicurezza</strong>
+                        <span style="font-size: 11px; color: #0c4a6e;">Genera e scarica subito un file <code>.json</code> con tutti i dati aggiornati del caseificio.</span>
+                    </div>
+                    <a href="{{ url_for('admin.export_database_backup') }}" class="btn btn-primary" style="width: 100%; text-align: center; display: inline-flex; align-items: center; justify-content: center;">
+                        ⬇️ Scarica Backup (.JSON)
+                    </a>
+                </div>
+
+                <!-- Upload & Restore Backup -->
+                <div style="background: var(--bg-neutral); padding: 12px; border-radius: 6px; border: 1px solid var(--border-hairline); display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                    <div>
+                        <strong style="display: block; color: var(--text-dark); margin-bottom: 4px;">📤 Ripristina da File Backup</strong>
+                        <span style="font-size: 11px; color: var(--text-muted);">Carica un file <code>.json</code> precedentemente scaricato. I dati già presenti non verranno duplicati.</span>
+                    </div>
+                    <form action="{{ url_for('admin.restore_database_backup') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Avviare il ripristino dei dati dal file selezionato?');" style="display: flex; flex-direction: column; gap: 6px;">
+                        <input type="file" name="backup_file" accept=".json" required style="font-size: 11px; padding: 4px;">
+                        <button type="submit" class="btn btn-success" style="width: 100%;">⬆️ Carica e Ripristina</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <div class="card" style="border: 2px solid #ef4444 !important;">
             <h3 style="color: #ef4444; margin-bottom: 6px;">⚠️ Pannello Manutenzione Avanzata Database</h3>
             <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">

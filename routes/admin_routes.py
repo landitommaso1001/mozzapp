@@ -7,6 +7,7 @@ import random
 import calendar
 import csv
 import io
+import json
 
 
 admin_bp = Blueprint('admin', __name__)
@@ -819,3 +820,123 @@ def export_monthly_ledger():
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
+@admin_bp.route('/database/backup', methods=['GET'])
+@admin_required
+def export_database_backup():
+    try:
+        backup_payload = {
+            "exported_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "users": [
+                {
+                    "id": u.id,
+                    "name": u.name,
+                    "phone": u.phone,
+                    "password_hash": u.password_hash,
+                    "role": u.role,
+                    "price_category": u.price_category
+                }
+                for u in User.query.all()
+            ],
+            "products": [
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "price_per_kg": p.price_per_kg,
+                    "sizes_raw": p.sizes_raw,
+                    "available": p.available
+                }
+                for p in Product.query.all()
+            ],
+            "orders": [
+                {
+                    "id": o.id,
+                    "user_id": o.user_id,
+                    "client": o.client,
+                    "date": o.date,
+                    "items": o.items,
+                    "total": o.total,
+                    "time": o.time,
+                    "status": o.status,
+                    "payment_status": o.payment_status
+                }
+                for o in Order.query.all()
+            ]
+        }
+
+        filename = f"MozzApp_Backup_{datetime.now().strftime('%d_%m_%Y_%H%M')}.json"
+        return Response(
+            json.dumps(backup_payload, indent=2, ensure_ascii=False),
+            mimetype="application/json",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    except Exception as e:
+        flash(f"Errore durante la creazione del backup: {str(e)}", "danger")
+        return redirect(url_for('admin.index', active_tab='reset_data'))
+
+
+@admin_bp.route('/database/restore', methods=['POST'])
+@admin_required
+def restore_database_backup():
+    uploaded_file = request.files.get('backup_file')
+    if not uploaded_file or not uploaded_file.filename.endswith('.json'):
+        flash("Seleziona un file di backup valido in formato .json.", "danger")
+        return redirect(url_for('admin.index', active_tab='reset_data'))
+
+    try:
+        data = json.load(uploaded_file)
+
+        # 1. Restore Users (skip duplicates by phone)
+        phone_to_new_user_id = {}
+        for u_data in data.get("users", []):
+            existing_user = User.query.filter_by(phone=u_data["phone"]).first()
+            if existing_user:
+                phone_to_new_user_id[u_data["id"]] = existing_user.id
+            else:
+                new_u = User(
+                    name=u_data["name"],
+                    phone=u_data["phone"],
+                    password_hash=u_data["password_hash"],
+                    role=u_data.get("role", "client"),
+                    price_category=u_data.get("price_category", "Privato")
+                )
+                db.session.add(new_u)
+                db.session.flush()
+                phone_to_new_user_id[u_data["id"]] = new_u.id
+
+        # 2. Restore Products (skip duplicates by name)
+        for p_data in data.get("products", []):
+            if not Product.query.filter_by(name=p_data["name"]).first():
+                new_p = Product(
+                    name=p_data["name"],
+                    price_per_kg=p_data["price_per_kg"],
+                    sizes_raw=p_data.get("sizes_raw"),
+                    available=p_data.get("available", True)
+                )
+                db.session.add(new_p)
+
+        # 3. Restore Orders (skip duplicates by order ID)
+        restored_orders_count = 0
+        for o_data in data.get("orders", []):
+            if not Order.query.filter_by(id=o_data["id"]).first():
+                mapped_uid = phone_to_new_user_id.get(o_data.get("user_id"))
+                new_o = Order(
+                    id=o_data["id"],
+                    user_id=mapped_uid,
+                    client=o_data["client"],
+                    date=o_data.get("date"),
+                    items=o_data.get("items"),
+                    total=o_data.get("total", 0.0),
+                    time=o_data.get("time", ""),
+                    status=o_data.get("status", "Da Confermare"),
+                    payment_status=o_data.get("payment_status", "Da Saldare")
+                )
+                db.session.add(new_o)
+                restored_orders_count += 1
+
+        db.session.commit()
+        flash(f"Ripristino completato! Importati {restored_orders_count} nuovi ordini e sincronizzati clienti e listino.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Errore durante il ripristino del backup: {str(e)}", "danger")
+
+    return redirect(url_for('admin.index', active_tab='reset_data'))
