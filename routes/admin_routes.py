@@ -333,7 +333,7 @@ def index():
     # 📲 OPTIONAL CLIENT WHATSAPP CONFIRMATION PAYLOAD
     wa_client_confirm_data = None
     confirm_order_id = request.args.get('whatsapp_confirm_order_id', '').strip()
-    if whatsapp_enabled and confirm_order_id:
+    if confirm_order_id:
         confirmed_order = Order.query.filter_by(id=confirm_order_id).first()
         if confirmed_order and confirmed_order.user_id:
             target_client = User.query.get(confirmed_order.user_id)
@@ -402,7 +402,7 @@ def index():
         group2_total_kg=group2_total_kg,
         selected_monthly_client_name=selected_monthly_client_name,
         whatsapp_enabled=whatsapp_enabled,
-
+        wa_client_confirm_data=wa_client_confirm_data
     )
 
 
@@ -439,8 +439,6 @@ def update_order_status():
         whatsapp_confirm_order_id=confirm_wa_id
     ))
         
-    return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=date_from, date_to=date_to))
-
 @admin_bp.route('/order/mark_paid', methods=['POST'])
 @admin_required
 def mark_order_paid():
