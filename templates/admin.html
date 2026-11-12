@@ -82,6 +82,24 @@
         <div class="card">
             <h3 style="margin-bottom: 12px;">📋 Registro e Gestione degli Ordini Correnti</h3>
             
+            {% if wa_client_confirm_data %}
+            <div id="admin-wa-confirm-card" class="card" style="background: #f0fdf4 !important; border: 2px solid #25D366 !important; padding: 14px !important; margin-bottom: 16px; text-align: center;">
+                <h4 style="color: var(--text-dark); margin-bottom: 4px;">📲 Vuoi inviare la conferma su WhatsApp al cliente?</h4>
+                <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px;">
+                    Ordine <strong>{{ wa_client_confirm_data.order_id }}</strong> confermato per <strong>{{ wa_client_confirm_data.client_name }}</strong>.
+                </p>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 440px; margin: 0 auto;">
+                    <a href="https://wa.me/{{ wa_client_confirm_data.phone }}?text={{ wa_client_confirm_data.message | urlencode }}" 
+                       target="_blank" class="btn btn-success" style="background-color: #25D366 !important; border-color: #128C7E !important; color: white !important; font-weight: 700; text-decoration: none; flex: 1; min-width: 200px;">
+                        💬 Invia Conferma a {{ wa_client_confirm_data.client_name }}
+                    </a>
+                    <button type="button" onclick="document.getElementById('admin-wa-confirm-card').style.display='none';" class="btn" style="background: #ffffff !important; color: var(--text-muted) !important;">
+                        ✕ Chiudi
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Filter Controls -->
             <form method="GET" action="{{ url_for('admin.index') }}" class="filter-form-grid" style="background: var(--bg-neutral); padding: 10px; border-radius: 4px; margin-bottom: 14px;">
                 <input type="hidden" name="active_tab" value="orders">
