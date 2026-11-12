@@ -32,10 +32,10 @@
         {% if is_admin %}
         <div class="card" style="background: var(--bg-neutral); margin-bottom: 16px; border-left: 4px solid var(--ocean-blue) !important;">
             <label for="admin_target_client_id_pc" style="display: block; font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px;">👤 Seleziona Cliente per Ordine:</label>
-            <select name="admin_target_client_id" id="admin_target_client_id_pc" style="font-size: 14px; padding: 8px; width: 100%; max-width: 400px;" onchange="window.location.href='{{ url_for('client_bp.index') }}?selected_client_id=' + this.value">
+            <select name="admin_target_client_id" id="admin_target_client_id_pc" style="font-size: 14px; padding: 8px; width: 100%; max-width: 480px;" onchange="window.location.href='{{ url_for('client_bp.index') }}?selected_client_id=' + this.value">
                 <option value="0" {% if selected_client_id == 0 %}selected{% endif %}>-- Vendita Diretta al Banco / Ordine Interno --</option>
                 {% for c in all_clients %}
-                    <option value="{{ c.id }}" {% if selected_client_id == c.id %}selected{% endif %}>{{ c.name }} (📞 {{ c.phone }})</option>
+                    <option value="{{ c.id }}" {% if selected_client_id == c.id %}selected{% endif %}>{{ c.name }} [{{ c.price_category }}] (📞 {{ c.phone }})</option>
                 {% endfor %}
             </select>
         </div>
@@ -168,7 +168,7 @@
             <select name="selected_client_id" id="selected_client_id_mobile" onchange="this.form.submit()">
                 <option value="0" {% if selected_client_id == 0 %}selected{% endif %}>Vendita Diretta / Banco</option>
                 {% for c in all_clients %}
-                    <option value="{{ c.id }}" {% if selected_client_id == c.id %}selected{% endif %}>{{ c.name }} ({{ c.phone }})</option>
+                    <option value="{{ c.id }}" {% if selected_client_id == c.id %}selected{% endif %}>{{ c.name }} [{{ c.price_category }}] ({{ c.phone }})</option>
                 {% endfor %}
             </select>
         </form>
