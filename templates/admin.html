@@ -352,9 +352,16 @@
                 <button type="submit" class="btn btn-success">Salva Account Cliente</button>
             </form>
 
-            <h4 style="border-top:1px solid var(--border-hairline); padding-top:14px; margin-bottom:10px;">📋 Registro Anagrafica Clienti</h4>
+            <div style="border-top:1px solid var(--border-hairline); padding-top:14px; margin-bottom:10px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
+                <h4 style="margin: 0;">📋 Registro Anagrafica Clienti (<span id="client-visible-count">{{ clients|length }}</span>)</h4>
+                <div style="display: flex; gap: 6px; flex: 1; max-width: 340px; min-width: 220px;">
+                    <input type="text" id="client-search-input" onkeyup="filterClientsTable()" placeholder="🔍 Cerca per nome, telefono o categoria..." style="width: 100%; height: 34px;">
+                    <button type="button" class="btn" onclick="resetClientSearch()" style="height: 34px; padding: 0 10px !important;">✕</button>
+                </div>
+            </div>
+
             <div class="table-responsive">
-                <table>
+                <table id="clients-registry-table">
                     <thead>
                         <tr>
                             <th style="width: 25%;">Nome Cliente</th>
@@ -366,7 +373,7 @@
                     </thead>
                     <tbody>
                         {% for c in clients %}
-                        <tr>
+                        <tr class="client-registry-row">
                             <form action="{{ url_for('admin.update_client', client_id=c.id) }}" method="POST" style="display:inline;">
                                 <td><input type="text" name="name" value="{{ c.name }}" style="width:100%;" required></td>
                                 <td><input type="text" name="phone" value="{{ c.phone }}" style="width:100%;" required></td>
@@ -768,6 +775,47 @@
     <footer style="margin-top:20px; text-align:center; font-size:11px; color:var(--text-muted); padding-bottom:12px;">
         MozzApp per Caseificio Vicedomini © 2026
     </footer>
+
+    <script>
+    function filterClientsTable() {
+        const input = document.getElementById('client-search-input');
+        if (!input) return;
+        const query = input.value.toLowerCase().trim();
+        const rows = document.querySelectorAll('#clients-registry-table tbody tr.client-registry-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const nameInput = row.querySelector('input[name="name"]');
+            const phoneInput = row.querySelector('input[name="phone"]');
+            const catSelect = row.querySelector('select[name="price_category"]');
+
+            const nameVal = nameInput ? nameInput.value.toLowerCase() : '';
+            const phoneVal = phoneInput ? phoneInput.value.toLowerCase() : '';
+            const catVal = catSelect ? catSelect.value.toLowerCase() : '';
+
+            if (!query || nameVal.includes(query) || phoneVal.includes(query) || catVal.includes(query)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        const counterEl = document.getElementById('client-visible-count');
+        if (counterEl) {
+            counterEl.textContent = visibleCount;
+        }
+    }
+
+    function resetClientSearch() {
+        const input = document.getElementById('client-search-input');
+        if (input) {
+            input.value = '';
+            filterClientsTable();
+            input.focus();
+        }
+    }
+    </script>
 
 </body>
 </html>
