@@ -160,9 +160,9 @@ def index():
         
         try:
             parsed_delivery_date = datetime.strptime(chosen_delivery_date, "%Y-%m-%d")
-            date_prefix = parsed_delivery_date.strftime("%d.%m.%Y") + "-" + now_ts.strftime("%H.%M")
+            date_prefix = parsed_delivery_date.strftime("%d.%m.%Y") + "-" + now_ts.strftime("%H:%M")
         except Exception:
-            date_prefix = now_ts.strftime("%d.%m.%Y-%H.%M")
+            date_prefix = now_ts.strftime("%d.%m.%Y-%H:%M")
 
         daily_order_count = Order.query.filter_by(date=chosen_delivery_date).count()
         progressive_suffix = f"{daily_order_count + 1:03d}"
