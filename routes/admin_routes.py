@@ -357,6 +357,7 @@ def index():
                         f"*Prodotti:*\n{items_lines}\n"
                         f"*Totale:* EUR {confirmed_order.total:.2f}"
                     )
+                    
                     wa_client_confirm_data = {
                         'order_id': confirmed_order.id,
                         'client_name': target_client.name,
