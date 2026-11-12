@@ -114,7 +114,7 @@ button span.smartphone-layout, .btn span.smartphone-layout { display: none !impo
 /* ==========================================================================
    📱 HIGH-PRECISION MOBILE OVERRIDES (Viewport Width <= 768px)
    ========================================================================== */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     div.desktop-layout, .desktop-layout { display: none !important; }
     .smartphone-layout { display: block !important; }
     .mobile-view-tabs { display: flex !important; width: 100%; background: var(--bg-clean); border: 1px solid var(--border-hairline); border-radius: 6px; margin-bottom: 16px; padding: 4px; }
@@ -305,7 +305,7 @@ table th {
 }
 
 /* 📱 Smartphone Adaptive Overrides */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .workflow-action-form {
         display: flex !important;
         flex-direction: column !important; /* Stacks the time dropdown directly above the button */
@@ -336,7 +336,7 @@ table th {
 /* ==========================================================================
    📱 MOBILE OVERRIDES TARGETING ONLY SMALL SCREEN CORES
    ========================================================================== */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .desktop-badges-row {
         flex-wrap: wrap !important; /* Permits standard stacking wrap rules on smart screen cards */
         justify-content: flex-end !important;
