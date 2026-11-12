@@ -230,9 +230,22 @@ def index():
     my_orders = Order.query.order_by(Order.serial_id.desc()).all() if is_admin else Order.query.filter_by(user_id=user_id).order_by(Order.serial_id.desc()).all()
     
     whatsapp_row = User.query.filter_by(phone='_whatsapp_config').first()
+    whatsapp_enabled = (whatsapp_row.price_category == 'ENABLED') if whatsapp_row else True
     active_notification_lines = []
-    if whatsapp_row and whatsapp_row.name:
-        active_notification_lines = [n.strip() for n in whatsapp_row.name.split(',') if n.strip()]
+    if whatsapp_enabled and whatsapp_row and whatsapp_row.name:
+        for idx, entry in enumerate(whatsapp_row.name.split(','), start=1):
+            entry = entry.strip()
+            if not entry:
+                continue
+            if ':' in entry:
+                label, num = entry.split(':', 1)
+                clean_label = label.strip() or f"Linea #{idx}"
+                clean_num = num.strip()
+            else:
+                clean_label = f"Linea #{idx}"
+                clean_num = entry
+            if clean_num:
+                active_notification_lines.append({'label': clean_label, 'number': clean_num})
 
     whatsapp_message_text = ""
     last_order_id = request.args.get('last_order_id')

@@ -27,6 +27,7 @@ def index():
     # 🌟 FETCH WHATSAPP CONFIG RETAINER ROW
     whatsapp_row = User.query.filter_by(phone='_whatsapp_config').first()
     whatsapp_numbers_config_string = whatsapp_row.name if whatsapp_row else ""
+    whatsapp_enabled = (whatsapp_row.price_category == 'ENABLED') if whatsapp_row else True
 
     catalog_products = Product.query.order_by(Product.name.asc()).all()
     client_list = User.query.filter_by(role='client').order_by(User.name.asc()).all()
@@ -364,7 +365,9 @@ def index():
         monthly_rows=monthly_rows,
         group1_total_kg=group1_total_kg,
         group2_total_kg=group2_total_kg,
-        selected_monthly_client_name=selected_monthly_client_name
+        selected_monthly_client_name=selected_monthly_client_name,
+        whatsapp_enabled=whatsapp_enabled,
+
     )
 
 
@@ -710,19 +713,21 @@ def emergency_override():
 @admin_required
 def save_notification_settings():
     numbers_string = request.form.get('whatsapp_numbers', '').strip()
+    is_enabled = 'ENABLED' if request.form.get('whatsapp_enabled') == '1' else 'DISABLED'
     
     # Locate or create the special persistent config tracker row
     config_row = User.query.filter_by(phone='_whatsapp_config').first()
     if not config_row:
-        config_row = User(name=numbers_string, phone='_whatsapp_config', role='admin')
+        config_row = User(name=numbers_string, phone='_whatsapp_config', role='admin', price_category=is_enabled)
         config_row.set_password('system_secure_config_holder')
         db.session.add(config_row)
     else:
         config_row.name = numbers_string
+        config_row.price_category = is_enabled
         
     try:
         db.session.commit()
-        flash("Linee di notifica WhatsApp aggiornate con successo!", "success")
+        flash("Impostazioni notifiche WhatsApp aggiornate con successo!", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Errore durante il salvataggio: {str(e)}", "danger")
