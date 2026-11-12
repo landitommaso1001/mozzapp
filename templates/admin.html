@@ -29,12 +29,16 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-                <div class="card" style="background-color: {% if category=='success' %}#dcfce7{% elif category=='danger' %}#fee2e2{% else %}#fef9c3{% endif %}; color: {% if category=='success' %}#15803d{% elif category=='danger' %}#991b1b{% else %}#854d0e{% endif %}; border: 1px solid #bae6fd; font-weight: 600; margin-bottom: 12px;">
-                    {{ message }}
+                <div class="card flash-banner" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; transition: opacity 0.5s ease; background-color: {% if category=='success' %}#dcfce7{% elif category in ['danger', 'error'] %}#fee2e2{% else %}#fef9c3{% endif %}; color: {% if category=='success' %}#15803d{% elif category in ['danger', 'error'] %}#991b1b{% else %}#854d0e{% endif %}; border: 1px solid #bae6fd; font-weight: 600; margin-bottom: 12px;">
+                    <span>{{ message }}</span>
+                    <button type="button" onclick="this.parentElement.remove();" aria-label="Chiudi" style="background: transparent !important; border: none !important; color: inherit !important; font-size: 16px !important; font-weight: 800 !important; padding: 0 4px !important; min-height: auto !important; width: auto !important; cursor: pointer; line-height: 1;">
+                        ✕
+                    </button>
                 </div>
             {% endfor %}
         {% endif %}
     {% endwith %}
+
     <main>
         <!-- Desktop Horizontal Navigation Tabs -->
         <nav class="desktop-layout" style="margin-bottom: 16px;">
@@ -815,6 +819,17 @@
             input.focus();
         }
     }
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.flash-banner').forEach(banner => {
+            setTimeout(() => {
+                banner.style.opacity = '0';
+                setTimeout(() => banner.remove(), 500);
+            }, 5000);
+        });
+    });
     </script>
 
 </body>
