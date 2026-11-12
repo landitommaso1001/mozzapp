@@ -62,7 +62,7 @@
                                     <td>{{ fmt.name }} <span style="font-weight: 700; color: #16a34a;">(€ {{"%.2f"|format(fmt.price)}})</span></td>
                                     <td>
                                         {% set lookup_key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
-                                        <select name="qty_{{ prod.id }}_{{ fmt.name }}" style="width: 100%; height: 38px;">
+                                        <select name="qty_{{ prod.id }}_{{ fmt.name }}" class="qty-select-pc" data-price="{{ fmt.price }}" style="width: 100%; height: 38px;">
                                             {% for i in range(0, 51) %}
                                                 <option value="{{ i }}" {% if prefilled_items.get(lookup_key) == i %}selected{% endif %}>{{ i }}</option>
                                             {% endfor %}
@@ -92,8 +92,17 @@
                 <input type="date" name="delivery_date" id="delivery_date_pc" required style="width: auto; padding: 6px 10px; font-size: 13px;">
             </div>
 
+            <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 10px 14px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; color: #0369a1; font-weight: 600;">
+                    📦 Articoli selezionati: <strong id="pc-total-qty">0</strong> pz
+                </span>
+                <span style="font-size: 15px; color: #0f172a; font-weight: 800;">
+                    Totale Provvisorio: <span style="color: #16a34a;">€ <span id="pc-total-price">0.00</span></span>
+                </span>
+            </div>
+
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px;">
-                <button type="reset" class="btn">🗑 Svuota</button>
+                <button type="reset" class="btn" onclick="setTimeout(updateOrderTotals, 10);">🗑 Svuota</button>
                 <button type="submit" class="btn" style="background: var(--ocean-blue); color: white; border: none;">Invia Ordine</button>
             </div>
         </div>
@@ -182,7 +191,7 @@
                                         <td style="font-weight: 700; color: #16a34a;">€ {{"%.2f"|format(fmt.price)}}</td>
                                         <td>
                                             {% set lookup_key = prod.name ~ ' (' ~ fmt.name ~ ')' %}
-                                            <select name="qty_{{ prod.id }}_{{ fmt.name }}">
+                                            <select name="qty_{{ prod.id }}_{{ fmt.name }}" class="qty-select-mobile" data-price="{{ fmt.price }}">
                                                 {% for i in range(0, 51) %}
                                                     <option value="{{ i }}" {% if prefilled_items.get(lookup_key, 0)|int == i %}selected{% endif %}>{{ i }}</option>
                                                 {% endfor %}
@@ -211,6 +220,15 @@
                     <label for="delivery_date_mobile" style="display: block !important; font-size: 14px !important; font-weight: 700 !important; color: var(--text-dark) !important; margin-bottom: 6px !important; text-align: left !important;">📅 Data Consegna:</label>
                     <input type="date" name="delivery_date" id="delivery_date_mobile" required style="width: 100% !important; box-sizing: border-box !important; padding: 10px !important; font-size: 16px !important; height: 42px !important; display: block !important;">
                 </div>
+                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 10px 12px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; color: #0369a1; font-weight: 600;">
+                        📦 Pezzi: <strong id="mobile-total-qty">0</strong>
+                    </span>
+                    <span style="font-size: 14px; color: #0f172a; font-weight: 800;">
+                        Totale: <span style="color: #16a34a;">€ <span id="mobile-total-price">0.00</span></span>
+                    </span>
+                </div>
+
                 <button type="submit" class="btn" style="background: var(--ocean-blue); color: white; border: none; width: 100%; margin-top: 12px;">Invia Ordine</button>
             </form>
         </div>
@@ -285,6 +303,41 @@ function switchClientTab(tabName) {
     if(document.getElementById('delivery_date_mobile')) {
         document.getElementById('delivery_date_mobile').value = todayISO;
     }
+</script>
+<script>
+function updateOrderTotals() {
+    let pcQty = 0, pcTotal = 0;
+    document.querySelectorAll('.qty-select-pc').forEach(sel => {
+        const q = parseInt(sel.value) || 0;
+        const p = parseFloat(sel.dataset.price) || 0;
+        pcQty += q;
+        pcTotal += q * p;
+    });
+    if (document.getElementById('pc-total-qty')) {
+        document.getElementById('pc-total-qty').textContent = pcQty;
+        document.getElementById('pc-total-price').textContent = pcTotal.toFixed(2);
+    }
+
+    let mobQty = 0, mobTotal = 0;
+    document.querySelectorAll('.qty-select-mobile').forEach(sel => {
+        const q = parseInt(sel.value) || 0;
+        const p = parseFloat(sel.dataset.price) || 0;
+        mobQty += q;
+        mobTotal += q * p;
+    });
+    if (document.getElementById('mobile-total-qty')) {
+        document.getElementById('mobile-total-qty').textContent = mobQty;
+        document.getElementById('mobile-total-price').textContent = mobTotal.toFixed(2);
+    }
+}
+
+document.querySelectorAll('.qty-select-pc, .qty-select-mobile').forEach(sel => {
+    sel.addEventListener('change', updateOrderTotals);
+});
+
+// Run immediately on page load so "Ripeti" (Reorder) prefilled items calculate right away
+document.addEventListener('DOMContentLoaded', updateOrderTotals);
+updateOrderTotals();
 </script>
 
 {% endblock %}
