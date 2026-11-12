@@ -330,6 +330,40 @@ def index():
         'non_salda': len([o for o in all_current_orders if o.status == 'Consegnato' and o.payment_status == 'Da Saldare'])
     }
 
+    # 📲 OPTIONAL CLIENT WHATSAPP CONFIRMATION PAYLOAD
+    wa_client_confirm_data = None
+    confirm_order_id = request.args.get('whatsapp_confirm_order_id', '').strip()
+    if whatsapp_enabled and confirm_order_id:
+        confirmed_order = Order.query.filter_by(id=confirm_order_id).first()
+        if confirmed_order and confirmed_order.user_id:
+            target_client = User.query.get(confirmed_order.user_id)
+            if target_client and target_client.phone:
+                digits_only = "".join([c for c in target_client.phone if c.isdigit()])
+                # Skip generic blueprint phones (1111, 2222, 3333, 4444)
+                if len(digits_only) >= 8:
+                    if not digits_only.startswith('39') and len(digits_only) <= 10:
+                        digits_only = '39' + digits_only
+                    try:
+                        euro_date = datetime.strptime(str(confirmed_order.date).strip(), "%Y-%m-%d").strftime("%d.%m.%Y")
+                    except Exception:
+                        euro_date = confirmed_order.date
+                    items_lines = "\n".join([f"- {i.strip()}" for i in (confirmed_order.items or "").split(',') if i.strip()])
+                    msg_text = (
+                        f"*Caseificio Vicedomini - Ordine Confermato*\n"
+                        f"*ID:* {confirmed_order.id}\n"
+                        f"*Cliente:* {target_client.name}\n"
+                        f"*Data Consegna:* {euro_date}\n"
+                        f"*Orario Previsto:* {confirmed_order.time or 'Da definire'}\n"
+                        f"*Prodotti:*\n{items_lines}\n"
+                        f"*Totale:* EUR {confirmed_order.total:.2f}"
+                    )
+                    wa_client_confirm_data = {
+                        'order_id': confirmed_order.id,
+                        'client_name': target_client.name,
+                        'phone': digits_only,
+                        'message': msg_text
+                    }
+
     return render_template(
         'admin.html',
         orders=admin_orders,
@@ -393,6 +427,17 @@ def update_order_status():
     except Exception as e:
         db.session.rollback()
         flash(f"Errore: {str(e)}", "danger")
+        
+    confirm_wa_id = order_id if new_status == 'Confermato' else ''
+    return redirect(url_for(
+        'admin.index',
+        active_tab='orders',
+        status=status,
+        client_id=client_id,
+        date_from=date_from,
+        date_to=date_to,
+        whatsapp_confirm_order_id=confirm_wa_id
+    ))
         
     return redirect(url_for('admin.index', active_tab='orders', status=status, client_id=client_id, date_from=date_from, date_to=date_to))
 
