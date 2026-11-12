@@ -11,6 +11,7 @@ import json
 
 
 admin_bp = Blueprint('admin', __name__)
+SYSTEM_CONFIG_PHONES = ('_whatsapp_config', '_admin_config')
 
 def admin_required(f):
     @wraps(f)
@@ -597,7 +598,10 @@ def reset_orders():
 @admin_required
 def reset_clients():
     try:
-        User.query.filter_by(role='client').delete()
+        User.query.filter(
+            User.role == 'client',
+            ~User.phone.in_(SYSTEM_CONFIG_PHONES)
+        ).delete(synchronize_session=False)
         db.session.commit()
         flash("Anagrafica clienti svuotata con successo!", "success")
     except Exception as e:
@@ -910,12 +914,17 @@ def restore_database_backup():
     try:
         data = json.load(uploaded_file)
 
-        # 1. Restore Users (skip duplicates by phone)
+        # 1. Restore Users & System Configs
         phone_to_new_user_id = {}
         for u_data in data.get("users", []):
             existing_user = User.query.filter_by(phone=u_data["phone"]).first()
             if existing_user:
                 phone_to_new_user_id[u_data["id"]] = existing_user.id
+                # Sync system configuration rows from backup if present
+                if u_data["phone"] in SYSTEM_CONFIG_PHONES:
+                    existing_user.name = u_data["name"]
+                    existing_user.password_hash = u_data["password_hash"]
+                    existing_user.price_category = u_data.get("price_category", existing_user.price_category)
             else:
                 new_u = User(
                     name=u_data["name"],
