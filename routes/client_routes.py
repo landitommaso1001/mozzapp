@@ -110,7 +110,7 @@ def index():
         
     selected_client_id = int(raw_selected_id) if str(raw_selected_id).replace('-', '').isdigit() else -1
     
-    catalog_products = Product.query.filter_by(available=True).all()
+    catalog_products = Product.query.filter_by(available=True).order_by(db.func.lower(Product.name).asc()).all()
     all_clients = User.query.filter_by(role='client').order_by(User.name.asc()).all() if is_admin else []
 
     current_category = None

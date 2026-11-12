@@ -30,7 +30,7 @@ def index():
     whatsapp_numbers_config_string = whatsapp_row.name if whatsapp_row else ""
     whatsapp_enabled = (whatsapp_row.price_category == 'ENABLED') if whatsapp_row else True
 
-    catalog_products = Product.query.order_by(Product.name.asc()).all()
+    catalog_products = Product.query.order_by(db.func.lower(Product.name).asc()).all()
     client_list = User.query.filter_by(role='client').order_by(User.name.asc()).all()
 
     active_tab = request.args.get('active_tab', 'orders')
