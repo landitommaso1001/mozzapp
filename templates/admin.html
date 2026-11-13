@@ -323,27 +323,29 @@
         {% endif %}
         <!-- ================= GESTIONE UTENTI ACTIVE TAB ================= -->
         {% if active_tab == 'users_management' %}
-        <div class="card" style="border-top: 3px solid #25D366 !important; margin-bottom: 20px;">
-            <h3 style="color: var(--text-dark); display: flex; align-items: center; gap: 6px;">📲 Configurazione Linee Notifiche WhatsApp</h3>
-            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px;">
-                Inserisci le destinazioni nel formato <strong>Etichetta:Numero</strong> (con prefisso internazionale, es: <code>Laboratorio:393331111111, Ufficio:393472222222</code>). Il cliente vedrà solo l'etichetta.
+        <div class="card">
+            <h3>📧 Configurazione Notifiche Email Automatiche</h3>
+            <p style="color: var(--text-muted); margin-bottom: 10px;">
+                Invia automaticamente un'email silenziosa (senza intervento dell'utente) alla registrazione di un nuovo cliente e una copia ad ogni nuovo ordine.
             </p>
-            
-            <form action="{{ url_for('admin.save_notification_settings') }}" method="POST">
-                <div style="margin-bottom: 12px; background: var(--bg-neutral); padding: 10px; border-radius: 4px; border: 1px solid var(--border-hairline);">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700; font-size: 13px; margin: 0 !important;">
-                        <input type="checkbox" name="whatsapp_enabled" value="1" {% if whatsapp_enabled %}checked{% endif %} style="width: auto !important; min-height: auto !important; transform: scale(1.2);">
-                        ✅ Abilita richiesta invio notifica WhatsApp dopo l'ordine
+            <form action="{{ url_for('admin.save_email_settings') }}" method="POST">
+                <div style="margin-bottom: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600;">
+                        <input type="checkbox" name="email_enabled" value="1" {% if email_enabled %}checked{% endif %} style="width: auto !important;">
+                        Abilita invio automatico notifiche Email
                     </label>
                 </div>
-
-                <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px;">
-                    <label style="font-weight: 700; font-size: 12px;">Destinatari WhatsApp (Etichetta:Numero):</label>
-                    <input type="text" name="whatsapp_numbers" value="{{ whatsapp_numbers_config_string }}" style="width: 100%; font-weight: 600; font-family: monospace; letter-spacing: 0.5px; height: 38px;" placeholder="es: Laboratorio:393331111111, Amministrazione:393472222222">
+                <div style="margin-bottom: 10px;">
+                    <label for="email_addresses"><strong>Destinatari Email (separati da virgola):</strong></label>
+                    <input type="text" id="email_addresses" name="email_addresses"
+                        value="{{ email_addresses_config_string }}"
+                        placeholder="es. ufficio@gmail.com, laboratorio@gmail.com"
+                        style="width: 100%; margin-top: 4px;">
                 </div>
-                <div style="text-align: right;">
-                    <button type="submit" class="btn btn-success" style="background-color: #25D366 !important; border-color: #128C7E !important; color: white !important; font-weight: 700;">💾 Salva Impostazioni WhatsApp</button>
-                </div>
+                <button type="submit" class="btn btn-primary">💾 Salva Impostazioni Email</button>
+            </form>
+            <form action="{{ url_for('admin.test_email_settings') }}" method="POST" style="margin-top: 8px;">
+                <button type="submit" class="btn btn-warning">📨 Invia Email di Test</button>
             </form>
         </div>
 

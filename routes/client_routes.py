@@ -1,7 +1,7 @@
 import random
 from datetime import date, datetime
 from flask import Blueprint, render_template, request, url_for, redirect, flash, session, current_app
-from extensions import db
+from extensions import db, send_brevo_notification
 from models import User, Product, Order
 
 client_bp = Blueprint('client_bp', __name__)
@@ -85,9 +85,19 @@ def register():
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
+
+        reg_subject = f"🆕 Nuovo Cliente Registrato su MozzApp: {name}"
+        reg_body = (
+            f"Un nuovo cliente si è registrato autonomamente su MozzApp.\n\n"
+            f"Nome / Attività: {name}\n"
+            f"Numero di Telefono: {phone}\n"
+            f"Categoria Prezzi Assegnata: Privato (Default)\n\n"
+            f"Accedi al Pannello Admin -> Anagrafica Clienti per verificare e assegnare il listino corretto (Privato, Ristorante, Alimentari, Special)."
+        )
+        send_brevo_notification(reg_subject, reg_body)
+
         flash("Registrazione completata! Effettua il login.", "success")
         return redirect(url_for('client_bp.login'))
-    return render_template('register.html')
 
 
 @client_bp.route('/logout')
@@ -212,6 +222,24 @@ def index():
 
         db.session.add(new_order)
         db.session.commit()
+
+        try:
+            euro_deliv = datetime.strptime(chosen_delivery_date, "%Y-%m-%d").strftime("%d.%m.%Y")
+        except Exception:
+            euro_deliv = chosen_delivery_date
+
+        items_bullet_list = "\n".join([f"- {i}" for i in item_strings])
+        order_subject = f"📦 Nuovo Ordine MozzApp #{custom_meaningful_id} - {order_client_name}"
+        order_body = (
+            f"Nuovo ordine registrato su MozzApp:\n\n"
+            f"ID Ordine: {custom_meaningful_id}\n"
+            f"Cliente: {order_client_name}\n"
+            f"Data Consegna: {euro_deliv}\n"
+            f"Prodotti:\n{items_bullet_list}\n\n"
+            f"Totale Ordine: EUR {calculated_total:.2f}\n"
+            f"Stato: Da Confermare"
+        )
+        send_brevo_notification(order_subject, order_body)
         
         flash(f"Ordine inoltrato con successo per '{order_client_name}'!", 'success')
         
@@ -225,34 +253,6 @@ def index():
     # 🌟 FIX: Always lock onto the repeated order's client, even if another client was previously selected
     prefilled_items = {}
     reorder_id = request.args.get('reorder')
-    if reorder_id:
-        old_order = Order.query.filter_by(id=reorder_id).first()
-        if old_order and (is_admin or old_order.user_id == user_id) and old_order.items:
-            if is_admin:
-                if old_order.user_id:
-                    selected_client_id = old_order.user_id
-                elif old_order.client:
-                    matched_user = next(
-                        (c for c in all_clients if f"{c.name} ({c.phone})" == old_order.client or c.name == old_order.client),
-                        None
-                    )
-                    selected_client_id = matched_user.id if matched_user else -1
-                else:
-                    selected_client_id = -1
-
-                active_client_obj = User.query.get(selected_client_id) if selected_client_id > 0 else None
-                current_category = active_client_obj.price_category if active_client_obj else None
-
-            for part in old_order.items.split(','):
-                part = part.strip()
-                if not part or 'x' not in part: 
-                    continue
-                try:
-                    qty_str, item_name = part.split('x', 1)
-                    clean_item_name = item_name.strip()
-                    prefilled_items[clean_item_name] = int(qty_str.strip())
-                except ValueError: 
-                    continue
 
     enriched_products = []
     if current_category:

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, url_for, redirect, flash, session, Response
-from extensions import db
+from extensions import db, send_brevo_notification
 from models import Product, Order, User
 from datetime import datetime, date
 from functools import wraps
@@ -11,7 +11,7 @@ import json
 
 
 admin_bp = Blueprint('admin', __name__)
-SYSTEM_CONFIG_PHONES = ('_whatsapp_config', '_admin_config')
+SYSTEM_CONFIG_PHONES = ('_whatsapp_config', '_admin_config', '_email_config')
 
 def admin_required(f):
     @wraps(f)
@@ -29,6 +29,9 @@ def index():
     whatsapp_row = User.query.filter_by(phone='_whatsapp_config').first()
     whatsapp_numbers_config_string = whatsapp_row.name if whatsapp_row else ""
     whatsapp_enabled = (whatsapp_row.price_category == 'ENABLED') if whatsapp_row else True
+    email_row = User.query.filter_by(phone='_email_config').first()
+    email_addresses_config_string = email_row.name if email_row else ""
+    email_enabled = (email_row.price_category == 'ENABLED') if email_row else False
 
     catalog_products = Product.query.order_by(db.func.lower(Product.name).asc()).all()
     client_list = User.query.filter_by(role='client').order_by(User.name.asc()).all()
@@ -403,9 +406,48 @@ def index():
         group2_total_kg=group2_total_kg,
         selected_monthly_client_name=selected_monthly_client_name,
         whatsapp_enabled=whatsapp_enabled,
-        wa_client_confirm_data=wa_client_confirm_data
+        wa_client_confirm_data=wa_client_confirm_data,
+        email_addresses_config_string=email_addresses_config_string,
+        email_enabled=email_enabled
     )
 
+@admin_bp.route('/settings/email/save', methods=['POST'])
+@admin_required
+def save_email_settings():
+    emails_string = request.form.get('email_addresses', '').strip()
+    is_enabled = 'ENABLED' if request.form.get('email_enabled') == '1' else 'DISABLED'
+
+    config_row = User.query.filter_by(phone='_email_config').first()
+    if not config_row:
+        config_row = User(name=emails_string, phone='_email_config', role='admin', price_category=is_enabled)
+        config_row.set_password('system_email_config_holder')
+        db.session.add(config_row)
+    else:
+        config_row.name = emails_string
+        config_row.price_category = is_enabled
+
+    try:
+        db.session.commit()
+        flash("Impostazioni notifiche Email aggiornate con successo!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Errore durante il salvataggio Email: {str(e)}", "danger")
+
+    return redirect(url_for('admin.index', active_tab='users_management'))
+
+
+@admin_bp.route('/settings/email/test', methods=['POST'])
+@admin_required
+def test_email_settings():
+    ok, info = send_brevo_notification(
+        "✅ Test Notifica Email - MozzApp Caseificio Vicedomini",
+        "Questo è un messaggio di prova inviato dal Pannello Admin di MozzApp.\n\nLa connessione con Brevo e Gmail funziona correttamente!"
+    )
+    if ok:
+        flash("Email di test inviata con successo! Controlla la casella Gmail.", "success")
+    else:
+        flash(f"Invio email di test fallito: {info}", "danger")
+    return redirect(url_for('admin.index', active_tab='users_management'))
 
 @admin_bp.route('/order/update_status', methods=['POST'])
 @admin_required
