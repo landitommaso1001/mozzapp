@@ -322,10 +322,9 @@
         </div>
         {% endif %}
 
-
-
         <!-- ================= GESTIONE UTENTI ACTIVE TAB ================= -->
 
+        {% if active_tab == 'users_management' %}
         <div class="card">
             <h3>📲 Configurazione Linee Notifiche WhatsApp</h3>
             <p style="color: var(--text-muted); margin-bottom: 10px;">
@@ -349,7 +348,6 @@
             </form>
         </div>
 
-        {% if active_tab == 'users_management' %}
         <div class="card">
             <h3>📧 Configurazione Notifiche Email Automatiche</h3>
             <p style="color: var(--text-muted); margin-bottom: 10px;">
