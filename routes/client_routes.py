@@ -113,6 +113,36 @@ def index():
     catalog_products = Product.query.filter_by(available=True).order_by(db.func.lower(Product.name).asc()).all()
     all_clients = User.query.filter_by(role='client').order_by(User.name.asc()).all() if is_admin else []
 
+    # 🌟 FIX: Process reorder BEFORE determining current_category so client & prices always load
+    prefilled_items = {}
+    reorder_id = request.args.get('reorder')
+    if reorder_id and request.method == 'GET':
+        old_order = Order.query.filter_by(id=reorder_id).first()
+        if old_order and (is_admin or old_order.user_id == user_id):
+            if is_admin:
+                if old_order.user_id:
+                    selected_client_id = old_order.user_id
+                elif old_order.client:
+                    # Fallback: match client by "Name (Phone)" or Name if user_id was unlinked
+                    matched_user = next(
+                        (c for c in all_clients if f"{c.name} ({c.phone})" == old_order.client or c.name == old_order.client),
+                        None
+                    )
+                    if matched_user:
+                        selected_client_id = matched_user.id
+
+            if old_order.items:
+                for part in old_order.items.split(','):
+                    part = part.strip()
+                    if not part or 'x' not in part: 
+                        continue
+                    try:
+                        qty_str, item_name = part.split('x', 1)
+                        clean_item_name = item_name.strip()
+                        prefilled_items[clean_item_name] = int(qty_str.strip())
+                    except ValueError: 
+                        continue
+
     current_category = None
     if is_admin:
         if selected_client_id > 0:
@@ -192,19 +222,26 @@ def index():
         else:
             return redirect(url_for('client_bp.index', whatsapp_notify='1', last_order_id=custom_meaningful_id, order_items_summary=items_payload))
 
-    # 🌟 FIX: Smart reorder check that auto-restores client parameters for administrators
+    # 🌟 FIX: Always lock onto the repeated order's client, even if another client was previously selected
     prefilled_items = {}
     reorder_id = request.args.get('reorder')
     if reorder_id:
         old_order = Order.query.filter_by(id=reorder_id).first()
         if old_order and (is_admin or old_order.user_id == user_id) and old_order.items:
-            # If an admin clicked reorder and no client is selected yet, lock onto the original order's client
-            if is_admin and selected_client_id <= 0 and old_order.user_id:
-                selected_client_id = old_order.user_id
-                # Force update the current category tier logic right away
-                active_client_obj = User.query.get(selected_client_id)
-                if active_client_obj:
-                    current_category = active_client_obj.price_category
+            if is_admin:
+                if old_order.user_id:
+                    selected_client_id = old_order.user_id
+                elif old_order.client:
+                    matched_user = next(
+                        (c for c in all_clients if f"{c.name} ({c.phone})" == old_order.client or c.name == old_order.client),
+                        None
+                    )
+                    selected_client_id = matched_user.id if matched_user else -1
+                else:
+                    selected_client_id = -1
+
+                active_client_obj = User.query.get(selected_client_id) if selected_client_id > 0 else None
+                current_category = active_client_obj.price_category if active_client_obj else None
 
             for part in old_order.items.split(','):
                 part = part.strip()
