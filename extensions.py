@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
-def send_brevo_notification(subject, body_text):
+def send_email_notification(subject, body_text):
     """
     Sends a silent transactional email directly through your Gmail Apps Script Web App.
     """
