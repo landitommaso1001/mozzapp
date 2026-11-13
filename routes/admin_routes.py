@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, url_for, redirect, flash, session, Response
-from extensions import db, send_brevo_notification
+from extensions import db, send_email_notification
 from models import Product, Order, User
 from datetime import datetime, date
 from functools import wraps
@@ -439,7 +439,7 @@ def save_email_settings():
 @admin_bp.route('/settings/email/test', methods=['POST'])
 @admin_required
 def test_email_settings():
-    ok, info = send_brevo_notification(
+    ok, info = send_email_notification(
         "✅ Test Notifica Email - MozzApp Caseificio Vicedomini",
         "Questo è un messaggio di prova inviato dal Pannello Admin di MozzApp.\n\nLa connessione con Brevo e Gmail funziona correttamente!"
     )

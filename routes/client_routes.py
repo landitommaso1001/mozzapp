@@ -1,7 +1,7 @@
 import random
 from datetime import date, datetime
 from flask import Blueprint, render_template, request, url_for, redirect, flash, session, current_app
-from extensions import db, send_brevo_notification
+from extensions import db, send_email_notification
 from models import User, Product, Order
 
 client_bp = Blueprint('client_bp', __name__)
@@ -94,7 +94,7 @@ def register():
             f"Categoria Prezzi Assegnata: Privato (Default)\n\n"
             f"Accedi al Pannello Admin -> Anagrafica Clienti per verificare e assegnare il listino corretto (Privato, Ristorante, Alimentari, Special)."
         )
-        send_brevo_notification(reg_subject, reg_body)
+        send_email_notification(reg_subject, reg_body)
 
         flash("Registrazione completata! Effettua il login.", "success")
         return redirect(url_for('client_bp.login'))
@@ -236,11 +236,11 @@ def index():
             f"ID Ordine: {custom_meaningful_id}\n"
             f"Cliente: {order_client_name}\n"
             f"Data Consegna: {euro_deliv}\n"
-            f"Prodotti:\n{items_bullet_list}\n\n"
+            f"Prodotti:\n\n{items_bullet_list}\n\n"
             f"Totale Ordine: EUR {calculated_total:.2f}\n"
             f"Stato: Da Confermare"
         )
-        send_brevo_notification(order_subject, order_body)
+        send_email_notification(order_subject, order_body)
         
         flash(f"Ordine inoltrato con successo per '{order_client_name}'!", 'success')
         
