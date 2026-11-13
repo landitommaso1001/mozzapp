@@ -98,6 +98,7 @@ def register():
 
         flash("Registrazione completata! Effettua il login.", "success")
         return redirect(url_for('client_bp.login'))
+    return render_template('register.html')
 
 
 @client_bp.route('/logout')
@@ -250,9 +251,6 @@ def index():
         else:
             return redirect(url_for('client_bp.index', whatsapp_notify='1', last_order_id=custom_meaningful_id, order_items_summary=items_payload))
 
-    # 🌟 FIX: Always lock onto the repeated order's client, even if another client was previously selected
-    prefilled_items = {}
-    reorder_id = request.args.get('reorder')
 
     enriched_products = []
     if current_category:
