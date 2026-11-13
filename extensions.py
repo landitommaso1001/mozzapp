@@ -8,8 +8,7 @@ db = SQLAlchemy()
 
 def send_brevo_notification(subject, body_text):
     """
-    Sends a silent transactional email via Brevo HTTPS API (Port 443).
-    Reads recipient addresses and ON/OFF state from the '_email_config' User row.
+    Sends a silent transactional email directly through your Gmail Apps Script Web App.
     """
     from models import User
 
@@ -17,45 +16,33 @@ def send_brevo_notification(subject, body_text):
     if not email_row or email_row.price_category != 'ENABLED' or not email_row.name:
         return False, "Notifiche email disabilitate o nessun destinatario configurato."
 
-    api_key = os.environ.get("BREVO_API_KEY", "").strip()
-    sender_email = os.environ.get("BREVO_SENDER_EMAIL", "").strip()
-    if not api_key or not sender_email:
-        msg = "Variabili Render BREVO_API_KEY o BREVO_SENDER_EMAIL mancanti."
-        print(f"⚠️ {msg}")
-        return False, msg
+    webhook_url = os.environ.get("GMAIL_WEBHOOK_URL", "").strip()
+    if not webhook_url:
+        return False, "Variabile Render GMAIL_WEBHOOK_URL mancante."
 
-    recipients = []
-    for raw_email in email_row.name.split(','):
-        clean_email = raw_email.strip()
-        if '@' in clean_email:
-            recipients.append({"email": clean_email})
-
-    if not recipients:
+    clean_recipients = ",".join([e.strip() for e in email_row.name.split(',') if '@' in e])
+    if not clean_recipients:
         return False, "Nessun indirizzo email valido trovato."
 
     payload = {
-        "sender": {"name": "MozzApp Caseificio Vicedomini", "email": sender_email},
-        "to": recipients,
+        "to": clean_recipients,
         "subject": subject,
-        "textContent": body_text
+        "body": body_text
     }
 
     req = urllib.request.Request(
-        "https://brevo.com",
+        webhook_url,
         data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "accept": "application/json",
-            "api-key": api_key,
-            "content-type": "application/json"
-        },
+        headers={"Content-Type": "application/json"},
         method="POST"
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=8) as resp:
-            if resp.status in (200, 201, 202):
-                return True, "Email inviata con successo."
-            return False, f"Risposta Brevo inattesa: HTTP {resp.status}"
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            result_text = resp.read().decode("utf-8", errors="ignore")
+            if resp.status == 200 and "OK" in result_text:
+                return True, "Email inviata con successo tramite Gmail."
+            return False, f"Risposta script inattesa: HTTP {resp.status}"
     except Exception as e:
-        print(f"⚠️ Brevo email error: {e}")
+        print(f"⚠️ Gmail Webhook error: {e}")
         return False, str(e)
