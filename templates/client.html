@@ -35,7 +35,9 @@
             <select name="admin_target_client_id" id="admin_target_client_id_pc" style="font-size: 14px; padding: 8px; width: 100%; max-width: 480px;" onchange="window.location.href='{{ url_for('client_bp.index') }}?selected_client_id=' + this.value">
                 <option value="0" {% if selected_client_id == 0 %}selected{% endif %}>-- Vendita Diretta al Banco / Ordine Interno --</option>
                 {% for c in all_clients %}
-                    <option value="{{ c.id }}" {% if selected_client_id == c.id %}selected{% endif %}>{{ c.name }} [{{ c.price_category }}] (📞 {{ c.phone }})</option>
+                    <option value="{{ c.id }}" {% if selected_client_id == c.id %}selected{% endif %}>
+                        {{ c.name }} [{{ c.price_category }}] (📞 {{ c.phone }})
+                    </option>
                 {% endfor %}
             </select>
         </div>
@@ -138,7 +140,7 @@
                     <td class="text-right">
                         <div class="flex-row-right" style="justify-content: flex-end;">
                             <!-- 🌟 FIX: Automatically appends the active selected client ID if logged in as admin -->
-                            <a href="{{ url_for('client_bp.index', reorder=order.id, selected_client_id=selected_client_id if is_admin else '') }}" class="btn">🔄 Ripeti</a>
+                                <a href="{{ url_for('client_bp.index', reorder=order.id) }}" class="btn btn-primary">🔄 Ripeti</a>
                             {% if order.status == 'Da Confermare' %}
                             <form method="POST" action="{{ url_for('client_bp.cancel_order', order_id=order.id) }}" style="display: inline;" onsubmit="return confirm('Annullare l\'ordine?');">
                                 <button type="submit" class="btn" style="background: #ef4444; color: white; border: none;">❌ Annulla</button>
@@ -177,7 +179,7 @@
         <div class="card">
             <form method="POST" action="{{ url_for('client_bp.index') }}">
                 {% if is_admin %}
-                    <input type="hidden" name="admin_target_client_id" value="{{ selected_client_id }}">
+                    <input type="hidden" name="admin_target_client_id" id="admin_target_client_id" value="{{ selected_client_id }}">
                 {% endif %}
                 <table class="order-table">
                     <tbody>
