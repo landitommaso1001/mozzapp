@@ -650,6 +650,11 @@
                     {% if monthly_rows %}
                     <button type="button" onclick="window.print()" class="btn" style="background: #e2e8f0 !important;">🖨️ Stampa / PDF</button>
                     <a href="{{ url_for('admin.export_monthly_ledger', monthly_client_id=monthly_client_id, monthly_year=monthly_year, monthly_month=monthly_month, group1=group1_products, group2=group2_products) }}" class="btn btn-success" style="background: #16a34a !important; color: white !important;">📥 Scarica CSV (Excel)</a>
+                    <a href="{{ url_for('admin.print_monthly_ledger', monthly_client_id=monthly_client_id, monthly_year=monthly_year, monthly_month=monthly_month, group1=group1_products, group2=group2_products) }}"
+                        target="_blank"
+                        class="btn btn-primary">
+                        🖨️ Stampa Nota D.P.R. 472
+                    </a>
                     {% endif %}
                 </div>
             </form>

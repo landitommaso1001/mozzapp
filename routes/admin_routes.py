@@ -935,6 +935,97 @@ def export_monthly_ledger():
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
+@admin_bp.route('/monthly-ledger/print', methods=['GET'])
+@admin_required
+def print_monthly_ledger():
+    monthly_client_id = request.args.get('monthly_client_id', '')
+    monthly_year = int(request.args.get('monthly_year', date.today().year))
+    monthly_month = int(request.args.get('monthly_month', date.today().month))
+    group1_products = request.args.getlist('group1')
+    group2_products = request.args.getlist('group2')
+
+    if not monthly_client_id:
+        flash("Seleziona un cliente prima di stampare la scheda.", "warning")
+        return redirect(url_for('admin.index', active_tab='monthly_ledger'))
+
+    if monthly_client_id == 'banco':
+        client_name = "Vendita Diretta / Banco"
+    else:
+        c_obj = User.query.get(int(monthly_client_id))
+        client_name = c_obj.name if c_obj else "Cliente"
+
+    italian_months = [
+        "", "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+        "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"
+    ]
+    month_name = italian_months[monthly_month] if 1 <= monthly_month <= 12 else str(monthly_month)
+
+    _, num_days = calendar.monthrange(monthly_year, monthly_month)
+    month_prefix = f"{monthly_year:04d}-{monthly_month:02d}-"
+
+    ledger_query = Order.query.filter(Order.status == 'Consegnato', Order.date.startswith(month_prefix))
+    if monthly_client_id == 'banco':
+        ledger_query = ledger_query.filter(Order.user_id == None)
+    else:
+        ledger_query = ledger_query.filter_by(user_id=int(monthly_client_id))
+
+    catalog_products = Product.query.all()
+    sorted_catalog = sorted(catalog_products, key=lambda x: len(x.name), reverse=True)
+    daily_map = {d: {'g1': 0.0, 'g2': 0.0} for d in range(1, 32)}
+
+    for o in ledger_query.all():
+        try:
+            day_num = int(o.date.split('-')[2])
+        except Exception:
+            continue
+        if day_num not in daily_map or not o.items:
+            continue
+        for item in o.items.split(','):
+            item = item.strip()
+            if not item or 'x' not in item:
+                continue
+            try:
+                qty_str, full_name = item.split('x', 1)
+                qty = int(qty_str.strip())
+                full_name = full_name.strip()
+                matched_prod = next((p for p in sorted_catalog if p.name.lower() in full_name.lower()), None)
+                p_name = matched_prod.name if matched_prod else full_name
+                item_kg = parse_format_weight_kg(full_name, qty)
+                if p_name in group1_products:
+                    daily_map[day_num]['g1'] += item_kg
+                if p_name in group2_products:
+                    daily_map[day_num]['g2'] += item_kg
+            except ValueError:
+                continue
+
+    rows = []
+    tot_g1, tot_g2 = 0.0, 0.0
+    for d in range(1, 32):
+        g1_v = daily_map[d]['g1'] if d <= num_days else 0.0
+        g2_v = daily_map[d]['g2'] if d <= num_days else 0.0
+        tot_g1 += g1_v
+        tot_g2 += g2_v
+        rows.append({
+            'day': d,
+            'g1': f"{g1_v:.2f}".replace('.', ',') if g1_v > 0 else "",
+            'g2': f"{g2_v:.2f}".replace('.', ',') if g2_v > 0 else ""
+        })
+
+    g1_title = " / ".join(group1_products).upper() if group1_products else "FIOR DI LATTE / PROVOLA"
+    g2_title = " / ".join(group2_products).upper() if group2_products else "RICOTTA"
+
+    return render_template(
+        'nota_consegna_print.html',
+        client_name=client_name,
+        month_name=month_name,
+        year=monthly_year,
+        g1_title=g1_title,
+        g2_title=g2_title,
+        rows=rows,
+        tot_g1=f"{tot_g1:.2f}".replace('.', ','),
+        tot_g2=f"{tot_g2:.2f}".replace('.', ',')
+    )
+
 @admin_bp.route('/database/backup', methods=['GET'])
 @admin_required
 def export_database_backup():
