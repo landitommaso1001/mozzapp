@@ -321,7 +321,34 @@
             </form>
         </div>
         {% endif %}
+
+
+
         <!-- ================= GESTIONE UTENTI ACTIVE TAB ================= -->
+
+        <div class="card">
+            <h3>📲 Configurazione Linee Notifiche WhatsApp</h3>
+            <p style="color: var(--text-muted); margin-bottom: 10px;">
+                Inserisci i contatti nel formato <strong>Nome:Numero</strong> separati da virgola (es. <code>Laboratorio:393331234567, Ufficio:393337654321</code>).
+            </p>
+            <form action="{{ url_for('admin.save_notification_settings') }}" method="POST">
+                <div style="margin-bottom: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600;">
+                        <input type="checkbox" name="whatsapp_enabled" value="1" {% if whatsapp_enabled %}checked{% endif %} style="width: auto !important;">
+                        Abilita notifiche WhatsApp (nuovi ordini e conferme ordine)
+                    </label>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label for="whatsapp_numbers"><strong>Contatti WhatsApp (Nome:Numero):</strong></label>
+                    <input type="text" id="whatsapp_numbers" name="whatsapp_numbers"
+                        value="{{ whatsapp_numbers_config_string }}"
+                        placeholder="es. Laboratorio:393331234567, Ufficio:393337654321"
+                        style="width: 100%; margin-top: 4px;">
+                </div>
+                <button type="submit" class="btn btn-success">💾 Salva Impostazioni WhatsApp</button>
+            </form>
+        </div>
+
         {% if active_tab == 'users_management' %}
         <div class="card">
             <h3>📧 Configurazione Notifiche Email Automatiche</h3>
